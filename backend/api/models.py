@@ -12,9 +12,15 @@ class Category(models.Model):
     title = models.CharField(_("Название"), max_length=255)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name_plural = "Categories"
+
 
 class Country(models.Model):
     name = models.CharField(_("Название"), max_length=255)
+
+    class Meta:
+        verbose_name_plural = "Countries"
 
 
 class City(models.Model):
@@ -22,6 +28,9 @@ class City(models.Model):
     country = models.ForeignKey(
         Country, related_name="cities", on_delete=models.CASCADE
     )
+
+    class Meta:
+        verbose_name_plural = "Cities"
 
 
 class Location(models.Model):
