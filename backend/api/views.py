@@ -1,9 +1,6 @@
 from rest_framework import generics
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.utils.timezone import now
-from django.db import models
-from .models import Event
+from .models import Event, Theme
 from . import serializers
 from .permissions import StatusPermissions
 from .enums import EventStatus
@@ -16,33 +13,30 @@ class EventListView(generics.ListAPIView):
     filterset_class = EventFilters
     queryset = Event.objects.all()
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        status = self.request.query_params.get("status", None)
-        if status:
-            queryset = queryset.filter(published=status != EventStatus.DRAFT)
-            if status == EventStatus.PUBLISHED:
-                queryset = queryset.filter(location__isnull=False)
-            if status == EventStatus.PAST:
-                queryset = queryset.filter(day_and_time__lte=now())
-            else:
-                queryset = queryset.filter(day_and_time__gt=now())
-            if status == EventStatus.POPULAR:
-                queryset = queryset.annotate(
-                    total_participants=models.Count("participants"),
-                ).order_by("-total_participants")
-            elif self.request.user.is_authenticated:
-                queryset = queryset.filter(
-                    participants__profile__user=self.request.user
-                )
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        return filterset.qs
+    def get_filters_data(self, request):
+        filterset = self.filterset_class(request.GET)
+        data = filterset.data.copy()
+        exclude_keys = ["city", "country", "category"]
+
+        data["max_age"] = int(data["max_age"])
+        data["min_age"] = int(data["min_age"])
+
+        if "category" in data:
+            category = data["category"]
+            categories = list(map(int, category.split(',')))
+            filtered_themes = Theme.objects.filter(
+                categories__id__in=categories).distinct()
+            data["themes"] = serializers.ThemeSerializer(
+                filtered_themes, many=True,
+                context={"categories": categories}).data
+
+        cleaned_data = {k: data[k] for k in data.keys()
+                        if k not in exclude_keys}
+        return cleaned_data
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        filterset = self.filterset_class(request.GET)
-        serializer = self.get_serializer(queryset, many=True)
-        response_data = {"results": serializer.data}
+        response = super().list(request, *args, **kwargs)
+        response_data = {"events": response.data}
         if request.query_params.get("status", None) == EventStatus.PUBLISHED:
-            response_data["filters"] = filterset.data
+            response_data["filters"] = self.get_filters_data(request)
         return Response(response_data)
