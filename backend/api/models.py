@@ -87,7 +87,7 @@ class Profile(models.Model):
     gender = models.CharField(_("Пол"), choices=Gender.choices(), max_length=6)
 
 
-class EventParticipants(models.Model):
+class EventParticipant(models.Model):
     event = models.ForeignKey(
         Event, related_name="participants", on_delete=models.CASCADE
     )
@@ -95,3 +95,10 @@ class EventParticipants(models.Model):
         Profile, related_name="events", on_delete=models.CASCADE
     )
     is_organizer = models.BooleanField()
+
+
+class Notification(models.Model):
+    profile = models.ForeignKey(
+        Profile, related_name="notifications", on_delete=models.CASCADE
+    )
+    read = models.BooleanField()
