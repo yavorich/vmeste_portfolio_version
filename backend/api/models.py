@@ -10,7 +10,8 @@ class Theme(models.Model):
 
 class Category(models.Model):
     title = models.CharField(_("Название"), max_length=255)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme, related_name="categories",
+                              on_delete=models.CASCADE)
 
     class Meta:
         verbose_name_plural = "Categories"
