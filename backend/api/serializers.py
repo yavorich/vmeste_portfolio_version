@@ -6,13 +6,22 @@ from .enums import Gender
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
-        fields = "__all__"
+        fields = ["id", "title"]
 
 
 class ThemeSerializer(serializers.ModelSerializer):
+    categories = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Theme
-        fields = "__all__"
+        fields = ["id", "title", "categories"]
+
+    def get_categories(self, obj):
+        categories = [c for c in obj.categories.all()
+                      if c.id in self.context["categories"]]
+        if categories:
+            return CategorySerializer(categories, many=True).data
+        return None
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -26,21 +35,19 @@ class EventSerializer(serializers.ModelSerializer):
     stats_men = serializers.SerializerMethodField()
     stats_women = serializers.SerializerMethodField()
 
-    def get_stats_men(self, obj: models.Event):
+    def get_stats(self, obj: models.Event, gender: Gender):
         total_participants = obj.participants.count()
-        men_count = obj.participants.filter(
-            profile__gender=Gender.MALE).count()
+        count = obj.participants.filter(
+            profile__gender=gender).count()
         if total_participants > 0:
-            return f"{men_count}/{total_participants}"
+            return f"{count}/{total_participants}"
         return "0/0"
 
+    def get_stats_men(self, obj: models.Event):
+        return self.get_stats(obj, Gender.MALE)
+
     def get_stats_women(self, obj: models.Event):
-        total_participants = obj.participants.count()
-        women_count = obj.participants.filter(
-            profile__gender=Gender.FEMALE).count()
-        if total_participants > 0:
-            return f"{women_count}/{total_participants}"
-        return "0/0"
+        return self.get_stats(obj, Gender.FEMALE)
 
     class Meta:
         model = models.Event
