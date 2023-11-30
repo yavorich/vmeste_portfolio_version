@@ -23,13 +23,14 @@ class EventFilters(filters.FilterSet):
     category = ListFilter(field_name="category__id")
     status = filters.CharFilter(method="filter_status")
 
-    def filter_day_and_time(self, qs, value):
+    def filter_day_and_time(self, qs, name, value):
         return qs.filter(**{"day_and_time__date": value})
 
     def filter_status(self, qs, name, value):
         qs = qs.filter(published=value != EventStatus.DRAFT)
         if value == EventStatus.PUBLISHED:
-            qs = qs.filter(location__isnull=False)
+            qs = qs.filter(
+                location__isnull=False).order_by("-day_and_time")
         if value == EventStatus.PAST:
             qs = qs.filter(day_and_time__lte=now())
         else:
@@ -38,10 +39,6 @@ class EventFilters(filters.FilterSet):
             qs = qs.annotate(
                 total_participants=Count("participants"),
             ).order_by("-total_participants")
-        elif self.request.user.is_authenticated:
-            qs = qs.filter(
-                participants__profile__user=self.request.user
-            )
         return qs
 
     class Meta:
