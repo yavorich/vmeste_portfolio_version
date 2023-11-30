@@ -34,6 +34,22 @@ class EventSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     stats_men = serializers.SerializerMethodField()
     stats_women = serializers.SerializerMethodField()
+    am_i_organizer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Event
+        fields = ["id", "title", "max_age", "min_age",
+                  "cover", "short_description", "location",
+                  "stats_men", "stats_women", "day_and_time",
+                  "am_i_organizer"]
+
+    def get_am_i_organizer(self, obj: models.Event):
+        profile = self.context.get("profile")
+        if profile:
+            participant = models.EventParticipant.objects.filter(
+                event=obj, profile=profile)[0]
+            return participant.is_organizer
+        return None
 
     def get_stats(self, obj: models.Event, gender: Gender):
         total_participants = obj.participants.count()
@@ -49,8 +65,8 @@ class EventSerializer(serializers.ModelSerializer):
     def get_stats_women(self, obj: models.Event):
         return self.get_stats(obj, Gender.FEMALE)
 
-    class Meta:
-        model = models.Event
-        fields = ["id", "title", "max_age", "min_age",
-                  "cover", "short_description", "location",
-                  "stats_men", "stats_women", "day_and_time"]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not self.context.get("profile"):
+            data.pop("am_i_organizer")
+        return data

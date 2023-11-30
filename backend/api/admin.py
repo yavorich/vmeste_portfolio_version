@@ -1,3 +1,47 @@
 from django.contrib import admin
+from . import models
 
-# Register your models here.
+
+@admin.register(models.Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.Country)
+class CountryAdmin(admin.ModelAdmin):
+    fields = ["name"]
+
+
+@admin.register(models.City)
+class CityAdmin(admin.ModelAdmin):
+    fields = ["name", "country"]
+
+
+@admin.register(models.Theme)
+class ThemeAdmin(admin.ModelAdmin):
+    fields = ["title"]
+
+
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    fields = ["title", "theme"]
+
+
+@admin.register(models.Location)
+class LocationAdmin(admin.ModelAdmin):
+    list_display = ["name", "country", "city", "address"]
+
+
+@admin.register(models.Event)
+class EventAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.EventParticipant)
+class EventParticipantAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    pass
