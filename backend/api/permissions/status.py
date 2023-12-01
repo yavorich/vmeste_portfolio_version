@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from .enums import EventStatus
+from ..enums import EventStatus
 
 
 class StatusPermissions(BasePermission):
