@@ -31,7 +31,7 @@ class EventFilters(filters.FilterSet):
                 total_participants=Count("participants"),
             ).order_by("-total_participants")
         if value not in [EventStatus.POPULAR, EventStatus.PUBLISHED]:
-            qs = qs.filter(participants__profile__user=self.request.user)
+            qs = qs.filter(participants__user=self.request.user)
         return qs
 
     class Meta:
