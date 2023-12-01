@@ -35,15 +35,15 @@ class EventListView(generics.ListAPIView):
 
         if "category" in data:
             category = data["category"]
-            categories = list(map(int, category.split(',')))
+            categories = list(map(int, category.split(",")))
             filtered_themes = Theme.objects.filter(
-                categories__id__in=categories).distinct()
+                categories__id__in=categories
+            ).distinct()
             data["themes"] = ThemeSerializer(
-                filtered_themes, many=True,
-                context={"categories": categories}).data
+                filtered_themes, many=True, context={"categories": categories}
+            ).data
 
-        cleaned_data = {k: data[k] for k in data.keys()
-                        if k not in exclude_keys}
+        cleaned_data = {k: data[k] for k in data.keys() if k not in exclude_keys}
         return cleaned_data
 
     def list(self, request, *args, **kwargs):
@@ -56,8 +56,7 @@ class EventListView(generics.ListAPIView):
 
         if self.request.user.is_authenticated:
             unread_notify = Notification.objects.filter(
-                profile=self.request.user.profile,
-                read=False
+                profile=self.request.user.profile, read=False
             ).count()
             response_data["unread_notify"] = unread_notify
 
