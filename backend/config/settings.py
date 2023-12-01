@@ -27,7 +27,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", 'django-insecure-\
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", True)
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "0.0.0.0").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS",
+                               "localhost,127.0.0.1,0.0.0.0").split(",")
 
 
 # Application definition
@@ -84,7 +85,7 @@ DATABASES = {
         'NAME': os.environ.get("POSTGRES_DB", "postgres"),
         'USER': os.environ.get("POSTGRES_USER", "postgres"),
         'PASSWORD': os.environ.get("POSTGRES_PASSWORD", "postgres"),
-        'HOST': os.environ.get("POSTGRES_HOST", "db"),
+        'HOST': os.environ.get("POSTGRES_HOST", "localhost"),
         'PORT': 5432,
     }
 }
