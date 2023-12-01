@@ -1,14 +1,14 @@
 from rest_framework import generics
 from rest_framework.response import Response
-from .models import Event, Theme, Notification
-from . import serializers
-from .permissions import StatusPermissions
-from .enums import EventStatus
-from .filters import EventFilters
+from ..models import Event, Theme, Notification
+from ..serializers import EventSerializer, ThemeSerializer
+from ..permissions import StatusPermissions
+from ..enums import EventStatus
+from ..filters import EventFilters
 
 
 class EventListView(generics.ListAPIView):
-    serializer_class = serializers.EventSerializer
+    serializer_class = EventSerializer
     permission_classes = [StatusPermissions]
     filterset_class = EventFilters
     queryset = Event.objects.all()
@@ -19,7 +19,7 @@ class EventListView(generics.ListAPIView):
         is_auth = self.request.user.is_authenticated
 
         if status != EventStatus.POPULAR and is_auth:
-            context["profile"] = self.request.user.profile
+            context["user"] = self.request.user
 
         return context
 
@@ -35,15 +35,15 @@ class EventListView(generics.ListAPIView):
 
         if "category" in data:
             category = data["category"]
-            categories = list(map(int, category.split(',')))
+            categories = list(map(int, category.split(",")))
             filtered_themes = Theme.objects.filter(
-                categories__id__in=categories).distinct()
-            data["themes"] = serializers.ThemeSerializer(
-                filtered_themes, many=True,
-                context={"categories": categories}).data
+                categories__id__in=categories
+            ).distinct()
+            data["themes"] = ThemeSerializer(
+                filtered_themes, many=True, context={"categories": categories}
+            ).data
 
-        cleaned_data = {k: data[k] for k in data.keys()
-                        if k not in exclude_keys}
+        cleaned_data = {k: data[k] for k in data.keys() if k not in exclude_keys}
         return cleaned_data
 
     def list(self, request, *args, **kwargs):
@@ -56,8 +56,7 @@ class EventListView(generics.ListAPIView):
 
         if self.request.user.is_authenticated:
             unread_notify = Notification.objects.filter(
-                profile=self.request.user.profile,
-                read=False
+                user=self.request.user, read=False
             ).count()
             response_data["unread_notify"] = unread_notify
 
