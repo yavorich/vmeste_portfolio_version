@@ -14,10 +14,7 @@ class Event(models.Model):
     cover = models.TextField(_("Обложка"))  # base64
     short_description = models.CharField(_("Краткое описание"), max_length=255)
     location = models.ForeignKey(
-        Location,
-        related_name="events",
-        on_delete=models.SET_NULL,
-        null=True
+        Location, related_name="events", on_delete=models.SET_NULL, null=True
     )
     day_and_time = models.DateTimeField(_("Дата и время"))
     theme = models.ForeignKey(

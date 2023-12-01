@@ -12,23 +12,30 @@ class EventSerializer(ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "title", "max_age", "min_age",
-                  "cover", "short_description", "location",
-                  "stats_men", "stats_women", "day_and_time",
-                  "am_i_organizer"]
+        fields = [
+            "id",
+            "title",
+            "max_age",
+            "min_age",
+            "cover",
+            "short_description",
+            "location",
+            "stats_men",
+            "stats_women",
+            "day_and_time",
+            "am_i_organizer",
+        ]
 
     def get_am_i_organizer(self, obj: Event):
         profile = self.context.get("profile")
         if profile:
-            participant = EventParticipant.objects.filter(
-                event=obj, profile=profile)[0]
+            participant = EventParticipant.objects.filter(event=obj, profile=profile)[0]
             return participant.is_organizer
         return None
 
     def get_stats(self, obj: Event, gender: Gender):
         total_participants = obj.participants.count()
-        count = obj.participants.filter(
-            profile__gender=gender).count()
+        count = obj.participants.filter(profile__gender=gender).count()
         if total_participants > 0:
             return f"{count}/{total_participants}"
         return "0/0"

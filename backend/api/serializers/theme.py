@@ -11,8 +11,9 @@ class ThemeSerializer(ModelSerializer):
         fields = ["id", "title", "categories"]
 
     def get_categories(self, obj):
-        categories = [c for c in obj.categories.all()
-                      if c.id in self.context["categories"]]
+        categories = [
+            c for c in obj.categories.all() if c.id in self.context["categories"]
+        ]
         if categories:
             return CategorySerializer(categories, many=True).data
         return None
