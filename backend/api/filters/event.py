@@ -7,7 +7,7 @@ from .list import ListFilter
 
 
 class EventFilters(filters.FilterSet):
-    date = filters.DateFilter(method="filter_day_and_time")
+    date = filters.DateFilter(method="filter_date")
     max_age = filters.NumberFilter(field_name="min_age", lookup_expr="lte")
     min_age = filters.NumberFilter(field_name="max_age", lookup_expr="gte")
     country = ListFilter(field_name="country__id")
@@ -15,17 +15,17 @@ class EventFilters(filters.FilterSet):
     category = ListFilter(field_name="category__id")
     status = filters.CharFilter(method="filter_status")
 
-    def filter_day_and_time(self, qs, name, value):
-        return qs.filter(**{"day_and_time__date": value})
+    def filter_date(self, qs, name, value):
+        return qs.filter(**{"start_datetime__date": value})
 
     def filter_status(self, qs, name, value):
         qs = qs.filter(published=value != EventStatus.DRAFT)
         if value == EventStatus.PUBLISHED:
-            qs = qs.filter(location__isnull=False).order_by("-day_and_time")
+            qs = qs.filter(location__isnull=False).order_by("-start_datetime")
         if value == EventStatus.PAST:
-            qs = qs.filter(day_and_time__lte=now())
+            qs = qs.filter(start_start_datetime__lte=now())
         else:
-            qs = qs.filter(day_and_time__gt=now())
+            qs = qs.filter(start_start_datetime__gt=now())
         if value == EventStatus.POPULAR:
             qs = qs.annotate(
                 total_participants=Count("participants"),
@@ -36,4 +36,4 @@ class EventFilters(filters.FilterSet):
 
     class Meta:
         model = Event
-        fields = ["day_and_time", "min_age", "max_age", "country", "city", "category"]
+        fields = ["start_datetime", "min_age", "max_age", "country", "city", "category"]

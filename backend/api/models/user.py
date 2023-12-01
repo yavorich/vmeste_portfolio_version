@@ -5,4 +5,5 @@ from ..enums import Gender
 
 
 class User(AbstractUser):
-    gender = models.CharField(_("Пол"), choices=Gender.choices, max_length=6)
+    gender = models.CharField(_("Пол"), choices=Gender.choices, max_length=6, null=True)
+    avatar = models.TextField(_("Аватар"), null=True)
