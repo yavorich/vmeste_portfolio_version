@@ -1,9 +1,9 @@
 from django.db import models
-from .profile import Profile
+from .user import User
 
 
 class Notification(models.Model):
-    profile = models.ForeignKey(
-        Profile, related_name="notifications", on_delete=models.CASCADE
+    user = models.ForeignKey(
+        User, related_name="notifications", on_delete=models.CASCADE
     )
     read = models.BooleanField()

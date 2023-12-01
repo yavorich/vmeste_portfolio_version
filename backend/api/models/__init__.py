@@ -7,5 +7,5 @@ from .event import Event
 from .eventparticipant import EventParticipant
 from .location import Location
 from .notification import Notification
-from .profile import Profile
+from .user import User
 from .theme import Theme

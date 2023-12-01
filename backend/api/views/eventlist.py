@@ -19,7 +19,7 @@ class EventListView(generics.ListAPIView):
         is_auth = self.request.user.is_authenticated
 
         if status != EventStatus.POPULAR and is_auth:
-            context["profile"] = self.request.user.profile
+            context["user"] = self.request.user
 
         return context
 
@@ -56,7 +56,7 @@ class EventListView(generics.ListAPIView):
 
         if self.request.user.is_authenticated:
             unread_notify = Notification.objects.filter(
-                profile=self.request.user.profile, read=False
+                user=self.request.user, read=False
             ).count()
             response_data["unread_notify"] = unread_notify
 

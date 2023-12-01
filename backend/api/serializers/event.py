@@ -27,15 +27,15 @@ class EventSerializer(ModelSerializer):
         ]
 
     def get_am_i_organizer(self, obj: Event):
-        profile = self.context.get("profile")
-        if profile:
-            participant = EventParticipant.objects.filter(event=obj, profile=profile)[0]
+        user = self.context.get("user")
+        if user:
+            participant = EventParticipant.objects.filter(event=obj, user=user)[0]
             return participant.is_organizer
         return None
 
     def get_stats(self, obj: Event, gender: Gender):
         total_participants = obj.participants.count()
-        count = obj.participants.filter(profile__gender=gender).count()
+        count = obj.participants.filter(user__gender=gender).count()
         if total_participants > 0:
             return f"{count}/{total_participants}"
         return "0/0"
@@ -48,6 +48,6 @@ class EventSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if not self.context.get("profile"):
+        if not self.context.get("user"):
             data.pop("am_i_organizer")
         return data
