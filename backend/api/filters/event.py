@@ -1,17 +1,9 @@
 from django_filters import rest_framework as filters
 from django.db.models import Count
 from django.utils.timezone import now
-from .models import Event
-from .enums import EventStatus
-
-
-class ListFilter(filters.Filter):
-    def filter(self, qs, value):
-        if not value:
-            return qs
-        self.lookup_expr = 'in'
-        values = value.split(',')
-        return super(ListFilter, self).filter(qs, values)
+from ..models import Event
+from ..enums import EventStatus
+from .list import ListFilter
 
 
 class EventFilters(filters.FilterSet):

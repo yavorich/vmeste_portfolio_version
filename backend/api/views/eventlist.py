@@ -1,14 +1,14 @@
 from rest_framework import generics
 from rest_framework.response import Response
-from .models import Event, Theme, Notification
-from . import serializers
-from .permissions import StatusPermissions
-from .enums import EventStatus
-from .filters import EventFilters
+from ..models import Event, Theme, Notification
+from ..serializers import EventSerializer, ThemeSerializer
+from ..permissions import StatusPermissions
+from ..enums import EventStatus
+from ..filters import EventFilters
 
 
 class EventListView(generics.ListAPIView):
-    serializer_class = serializers.EventSerializer
+    serializer_class = EventSerializer
     permission_classes = [StatusPermissions]
     filterset_class = EventFilters
     queryset = Event.objects.all()
@@ -38,7 +38,7 @@ class EventListView(generics.ListAPIView):
             categories = list(map(int, category.split(',')))
             filtered_themes = Theme.objects.filter(
                 categories__id__in=categories).distinct()
-            data["themes"] = serializers.ThemeSerializer(
+            data["themes"] = ThemeSerializer(
                 filtered_themes, many=True,
                 context={"categories": categories}).data
 
