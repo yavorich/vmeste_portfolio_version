@@ -3,4 +3,4 @@
 from .category import CategorySerializer
 from .theme import ThemeSerializer
 from .location import LocationSerializer
-from .event import EventSerializer
+from .event import EventSerializer, EventDetailSerializer
