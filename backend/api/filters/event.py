@@ -23,9 +23,9 @@ class EventFilters(filters.FilterSet):
         if value == EventStatus.PUBLISHED:
             qs = qs.filter(location__isnull=False).order_by("-start_datetime")
         if value == EventStatus.PAST:
-            qs = qs.filter(start_start_datetime__lte=now())
+            qs = qs.filter(start_datetime__lte=now())
         else:
-            qs = qs.filter(start_start_datetime__gt=now())
+            qs = qs.filter(start_datetime__gt=now())
         if value == EventStatus.POPULAR:
             qs = qs.annotate(
                 total_participants=Count("participants"),

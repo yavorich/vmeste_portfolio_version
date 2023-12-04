@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, CharField
 from ..models import Location
 
 
@@ -9,6 +9,9 @@ class LocationSerializer(ModelSerializer):
 
 
 class LocationDetailSerializer(ModelSerializer):
+    country = CharField(source="country.name")
+    city = CharField(source="city.name")
+
     class Meta:
         model = Location
-        fields = "__all__"
+        fields = ["name", "latitude", "longitude", "address", "country", "city"]

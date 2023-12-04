@@ -2,3 +2,4 @@
 
 from .eventlist import EventListView
 from .eventdetail import EventDetailView
+from .eventsign import EventSignView

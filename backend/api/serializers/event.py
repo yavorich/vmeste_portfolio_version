@@ -1,36 +1,36 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
+from rest_framework.serializers import (
+    ModelSerializer,
+    SerializerMethodField,
+    CharField,
+    IntegerField,
+)
 from django.template.defaultfilters import date as _date
 from django.utils.timezone import now
 from ..models import Event, EventParticipant
 from ..enums import Gender, EventState
 from .location import LocationSerializer, LocationDetailSerializer
-from .date import DateTimeSerializer
-from .user import UserSerializer
 
 
 class EventMixin:
     def get_stats(self, obj: Event, gender: Gender):
-        total_participants = obj.participants.count()
-        count = obj.participants.filter(user__gender=gender).count()
-        if total_participants > 0:
-            return f"{count}/{total_participants}"
+        participants = obj.get_participants()
+        total = participants.count()
+        count = participants.filter(user__gender=gender).count()
+        if total > 0:
+            return f"{count}/{total}"
         return "0/0"
-
-    def get_event_participant_attr(
-        self, obj: Event, attr: str
-    ) -> EventParticipant | None:
-        user = self.context.get("user")
-        if user is not None:
-            participant = EventParticipant.objects.filter(event=obj, user=user)
-            if participant.exists():
-                return participant[0].__getattribute__(attr)
-        return False
 
     def get_stats_men(self, obj: Event):
         return self.get_stats(obj, Gender.MALE)
 
     def get_stats_women(self, obj: Event):
         return self.get_stats(obj, Gender.FEMALE)
+
+    def get_date(self, obj: Event):
+        return {
+            "date_and_year": self.get_date_and_year(obj),
+            "day_and_time": self.get_day_and_time(obj),
+        }
 
     def get_date_and_year(self, obj: Event):
         return _date(obj.start_datetime, "j E, Y")
@@ -39,28 +39,36 @@ class EventMixin:
         return _date(obj.start_datetime, "l, H:i")
 
     def get_date_and_time(self, obj: Event):
-        return _date(obj.start_datetime, "j E, H:i")
+        return _date(obj.start_datetime, "j E, H:i") + _date(obj.end_datetime, "-H:i")
 
     def get_am_i_organizer(self, obj: Event):
-        return self.get_event_participant_attr(obj, "is_organizer")
+        user = self.context.get("user")
+        organizer = obj.get_organizer()
+        return user == organizer
 
     def get_am_i_registered(self, obj: Event):
-        return self.get_event_participant_attr(obj, "is_registered")
+        user = self.context.get("user")
+        if user is not None:
+            return obj.get_participant(user=user) is not None
 
     def get_am_i_confirmed(self, obj: Event):
-        return self.get_event_participant_attr(obj, "has_confirmed")
+        user = self.context.get("user")
+        if user is not None:
+            participant = obj.get_participant(user=user)
+            if participant is not None:
+                return participant.has_confirmed
+        return False
 
     def get_are_there_free_places(self, obj: Event):
-        participants = EventParticipant.objects.filter(event=obj)
-        return participants.count() < obj.num_places
+        return obj.has_free_places()
 
     def get_organizer(self, obj: Event):
-        organizer = obj.participants.filter(is_organizer=True)[0]
-        serializer = UserSerializer(organizer)
+        organizer = obj.get_organizer()
+        serializer = EventOrganizerSerializer(organizer)
         return serializer.data
 
     def get_participants(self, obj: Event):
-        participants = obj.participants.all()
+        participants = obj.get_participants()
         serializer = EventParticipantSerializer(participants, many=True)
         return serializer.data
 
@@ -85,7 +93,8 @@ class EventMixin:
         ]
         if not self.context.get("user"):
             for field in auth_only_fields:
-                data.pop(field)
+                if field in data:
+                    data.pop(field)
         return data
 
 
@@ -97,13 +106,23 @@ class EventParticipantSerializer(ModelSerializer):
         fields = ["avatar"]
 
 
+class EventOrganizerSerializer(ModelSerializer):
+    id = IntegerField(source="user.id")
+    first_name = CharField(source="user.first_name")
+    last_name = CharField(source="user.last_name")
+
+    class Meta:
+        model = EventParticipant
+        fields = ["id", "first_name", "last_name"]
+
+
 class EventDetailSerializer(EventMixin, ModelSerializer):
     location = LocationDetailSerializer()
     stats_men = SerializerMethodField()
     stats_women = SerializerMethodField()
-    date = DateTimeSerializer()
-    theme_name = CharField(source="theme.name")
-    category_name = CharField(source="category.name")
+    date = SerializerMethodField()
+    theme_name = CharField(source="theme.title")
+    category_name = CharField(source="category.title")
     state = SerializerMethodField()
     participants = SerializerMethodField()
     organizer = SerializerMethodField()
@@ -144,7 +163,7 @@ class EventSerializer(EventMixin, ModelSerializer):
     stats_men = SerializerMethodField()
     stats_women = SerializerMethodField()
     am_i_organizer = SerializerMethodField()
-    day_and_time = SerializerMethodField()
+    date_and_time = SerializerMethodField()
     short_description = SerializerMethodField()
 
     class Meta:
@@ -159,6 +178,6 @@ class EventSerializer(EventMixin, ModelSerializer):
             "location",
             "stats_men",
             "stats_women",
-            "day_and_time",
+            "date_and_time",
             "am_i_organizer",
         ]
