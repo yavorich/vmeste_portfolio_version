@@ -1,10 +1,10 @@
 from rest_framework import generics
 from rest_framework.response import Response
-from ..models import Event, Theme, Notification
-from ..serializers import EventSerializer, ThemeSerializer
-from ..permissions import StatusPermissions
-from ..enums import EventStatus
-from ..filters import EventFilters
+from api.models import Event, Theme, Notification
+from api.serializers import EventSerializer, ThemeSerializer
+from api.permissions import StatusPermissions
+from api.enums import EventStatus
+from api.filters import EventFilters
 
 
 class EventListView(generics.ListAPIView):

@@ -6,4 +6,4 @@ class Notification(models.Model):
     user = models.ForeignKey(
         User, related_name="notifications", on_delete=models.CASCADE
     )
-    read = models.BooleanField()
+    read = models.BooleanField(default=False)

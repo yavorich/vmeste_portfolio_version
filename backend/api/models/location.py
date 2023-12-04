@@ -12,6 +12,4 @@ class Location(models.Model):
     country = models.ForeignKey(
         Country, related_name="locations", on_delete=models.CASCADE
     )
-    city = models.ForeignKey(
-        City, related_name="locations", on_delete=models.CASCADE
-    )
+    city = models.ForeignKey(City, related_name="locations", on_delete=models.CASCADE)
