@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from ..models import Event, Notification
-from ..serializers import EventDetailSerializer
+from api.models import Event, Notification
+from api.serializers import EventDetailSerializer
 
 
 class EventDetailView(generics.RetrieveAPIView):

@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.db.models.manager import BaseManager
+from django.utils.timezone import now, timedelta
 from .location import Location
 from .theme import Theme
 from .category import Category
@@ -7,8 +9,6 @@ from .city import City
 from .country import Country
 from .eventparticipant import EventParticipant
 from .user import User
-from django.db.models.manager import BaseManager
-from django.utils.timezone import now, timedelta
 
 
 class Event(models.Model):

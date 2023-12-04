@@ -6,9 +6,9 @@ from rest_framework.serializers import (
 )
 from django.template.defaultfilters import date as _date
 from django.utils.timezone import now
-from ..models import Event, EventParticipant
-from ..enums import Gender, EventState
-from .location import LocationSerializer, LocationDetailSerializer
+from api.models import Event, EventParticipant
+from api.enums import Gender, EventState
+from api.serializers.location import LocationSerializer, LocationDetailSerializer
 
 
 class EventMixin:

@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, CharField
-from ..models import Location
+from api.models import Location
 
 
 class LocationSerializer(ModelSerializer):

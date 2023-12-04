@@ -34,7 +34,7 @@ class EventSignView(APIView):
                 )
             EventParticipant.objects.create(event=event, user=self.request.user)
             return Response(
-                {"message": "Запись на мероприятие выполнена"},
+                {"message": "Запись на мероприятие прошла успешно"},
                 status=status.HTTP_201_CREATED,
             )
         elif action == "cancel":
