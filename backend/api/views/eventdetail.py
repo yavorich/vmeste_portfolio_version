@@ -16,7 +16,7 @@ class EventDetailView(generics.RetrieveAPIView):
         return context
 
     def retrieve(self, request, *args, **kwargs):
-        data = super().retrieve(request, *args, **kwargs)
+        data = super().retrieve(request, *args, **kwargs).data
         if self.request.user.is_authenticated:
             unread_notify = Notification.objects.filter(
                 user=self.request.user, read=False

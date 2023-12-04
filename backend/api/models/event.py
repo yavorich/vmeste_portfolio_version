@@ -5,6 +5,10 @@ from .theme import Theme
 from .category import Category
 from .city import City
 from .country import Country
+from .eventparticipant import EventParticipant
+from .user import User
+from django.db.models.manager import BaseManager
+from django.utils.timezone import now, timedelta
 
 
 class Event(models.Model):
@@ -37,3 +41,21 @@ class Event(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def get_participants(self) -> BaseManager[EventParticipant]:
+        return EventParticipant.objects.filter(event=self, is_organizer=False)
+
+    def get_participant(self, user: User) -> EventParticipant | None:
+        try:
+            return EventParticipant.objects.get(event=self, user=user)
+        except EventParticipant.DoesNotExist:
+            return None
+
+    def get_organizer(self) -> EventParticipant:
+        return EventParticipant.objects.get(event=self, is_organizer=True)
+
+    def has_free_places(self) -> bool:
+        return self.num_places > self.get_participants().count()
+
+    def is_valid_sign_time(self) -> bool:
+        return now() <= self.start_datetime - timedelta(hours=3)
