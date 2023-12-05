@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.http.request import HttpRequest
 
 
-class PasswordlessAuthBackend(ModelBackend):
+class PhoneAuthBackend(ModelBackend):
     def authenticate(self, request: HttpRequest, phone_number):
         User = get_user_model()
         try:

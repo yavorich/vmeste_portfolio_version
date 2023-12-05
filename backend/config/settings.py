@@ -155,7 +155,7 @@ SIMPLE_JWT = {
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "api.backends.auth.PasswordlessAuthBackend",
+    "api.backends.auth.PhoneAuthBackend",
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

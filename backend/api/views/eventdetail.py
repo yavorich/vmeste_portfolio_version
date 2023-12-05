@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+
 from api.models import Event, Notification
 from api.serializers import EventDetailSerializer
 

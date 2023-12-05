@@ -72,7 +72,7 @@ class AuthView(APIView):
                     login(
                         request,
                         user,
-                        backend="api.backends.auth.PasswordlessAuthBackend",
+                        backend="api.backends.auth.PhoneAuthBackend",
                     )
                 else:
                     return Response(
