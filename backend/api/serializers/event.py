@@ -6,6 +6,7 @@ from rest_framework.serializers import (
 )
 from django.template.defaultfilters import date as _date
 from django.utils.timezone import now
+
 from api.models import Event, EventParticipant
 from api.enums import Gender, EventState
 from api.serializers.location import LocationSerializer, LocationDetailSerializer

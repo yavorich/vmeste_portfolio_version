@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
 )
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
+
 from api.enums import Gender
 
 

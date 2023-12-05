@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from api.models import User
 from api.services import generate_confirmation_code
 
