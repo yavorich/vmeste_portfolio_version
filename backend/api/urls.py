@@ -26,4 +26,6 @@ urlpatterns = [
         views.ProfileDetailViewSet.as_view({"get": "retrieve", "delete": "destroy"}),
         name="user-profile",
     ),
+    path("token/", views.UserTokenObtainPairView.as_view(), name="token"),
+    path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
 ]

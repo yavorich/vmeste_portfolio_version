@@ -5,3 +5,4 @@ from .eventdetail import EventDetailView
 from .eventsign import EventSignView
 from .auth import AuthView, AuthSendCodeView
 from .profile import ProfileUpdateViewSet, ProfileDetailViewSet
+from .token import UserTokenObtainPairView, UserTokenRefreshView
