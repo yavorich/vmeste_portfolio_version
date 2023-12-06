@@ -4,25 +4,17 @@ from api.models import User
 from api.services import generate_confirmation_code
 
 
-class PhoneAuthSendCodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["phone_number", "confirmation_code"]
+class PhoneAuthSendCodeSerializer(serializers.Serializer):
+    phone_number = serializers.CharField()
+    confirmation_code = serializers.SerializerMethodField()
 
-    def create(self, validated_data):
-        phone_number = validated_data["phone_number"]
-        # confirmation_code = generate_confirmation_code()
-        try:
-            user = User.objects.get(phone_number=phone_number)
-        except User.DoesNotExist:
-            user = User.objects.create_user(
-                phone_number=phone_number,
-                confirmation_code="11111",
-            )
-        return user
+    def get_confirmation_code(self, obj):
+        return generate_confirmation_code()
 
 
 class EmailAuthSendCodeSerializer(serializers.ModelSerializer):
+    confirmation_code = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ["email", "confirmation_code"]
@@ -32,11 +24,8 @@ class EmailAuthSendCodeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Неправильная почта")
         return value
 
-    def create(self, validated_data):
-        user = self.context["user"]
-        user.confirmation_code = generate_confirmation_code()
-        user.save()
-        return user
+    def get_confirmation_code(self, obj):
+        return generate_confirmation_code()
 
 
 class PhoneAuthSerializer(serializers.Serializer):
