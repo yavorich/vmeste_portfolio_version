@@ -4,3 +4,9 @@ from .category import CategorySerializer
 from .theme import ThemeSerializer
 from .location import LocationSerializer
 from .event import EventSerializer, EventDetailSerializer
+from .auth import (
+    PhoneAuthSerializer,
+    PhoneAuthSendCodeSerializer,
+    EmailAuthSendCodeSerializer,
+    EmailAuthSerializer,
+)

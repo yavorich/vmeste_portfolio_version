@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.db.models.manager import BaseManager
 from django.utils.timezone import now, timedelta
+
 from .location import Location
 from .theme import Theme
 from .category import Category

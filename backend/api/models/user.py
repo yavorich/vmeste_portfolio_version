@@ -1,14 +1,76 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import (
+    BaseUserManager,
+    AbstractBaseUser,
+    PermissionsMixin,
+)
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import RegexValidator
+
 from api.enums import Gender
 
 
-class User(AbstractUser):
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+
+    @staticmethod
+    def normalize_phone_number(phone_number):
+        return "".join([ch for ch in phone_number if ch.isdigit() or ch == "+"])
+
+    def create_user(self, phone_number, password=None, **extra_fields):
+        if not phone_number:
+            raise ValueError("The phone number must be set")
+        phone_number = self.normalize_phone_number(phone_number)
+        if password is not None:
+            user = self.model(
+                phone_number=phone_number, password=password, **extra_fields
+            )
+            user.save()
+        else:
+            user = self.model(
+                phone_number=phone_number, password=password, **extra_fields
+            )
+            user.set_unusable_password()
+            user.save()
+        return user
+
+    def create_superuser(self, phone_number, password, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        user = self.create_user(phone_number, password, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    username = None
+    phone_number_regex = RegexValidator(regex=r"^\+7\d{10}$")
+    phone_number = models.CharField(
+        validators=[phone_number_regex], max_length=20, unique=True
+    )
+    confirmation_code = models.CharField(max_length=5, null=True)
+    profile_is_completed = models.BooleanField(default=False)
+    first_name = models.CharField(_("Имя"), null=True)
+    last_name = models.CharField(_("Фамилия"), null=True)
+    date_of_birth = models.DateField(_("Дата рождения"), null=True)
     gender = models.CharField(_("Пол"), choices=Gender.choices, max_length=6, null=True)
     avatar = models.TextField(_("Аватар"), null=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    email = models.EmailField(null=True)
+    email_is_confirmed = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
-        if self.password:
-            self.set_password(self.password)
-        super().save(*args, **kwargs)
+    USERNAME_FIELD = "phone_number"
+
+    objects = UserManager()
+
+    def __str__(self) -> str:
+        return self.phone_number

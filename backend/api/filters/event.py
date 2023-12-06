@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
 from django.db.models import Count
 from django.utils.timezone import now
+
 from api.models import Event
 from api.enums import EventStatus
 from .list import ListFilter

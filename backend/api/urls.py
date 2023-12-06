@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = "api"
@@ -11,4 +12,6 @@ urlpatterns = [
         views.EventSignView.as_view(),
         name="event-sign",
     ),
+    path("auth/send_code", views.AuthSendCodeView.as_view(), name="auth-code"),
+    path("auth/", views.AuthView.as_view(), name="auth"),
 ]
