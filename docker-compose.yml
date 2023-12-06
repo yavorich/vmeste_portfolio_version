@@ -2,6 +2,7 @@ version: "3"
 
 services:
   backend:
+    container_name: vmeste_backend
     build:
       context: .
       dockerfile: ./docker/backend/Dockerfile.dev
@@ -18,6 +19,7 @@ services:
       - db
   
   db:
+    container_name: vmeste_db
     image: postgres:14.5-alpine
     restart: always
     volumes:
@@ -28,6 +30,7 @@ services:
       - 5432:5432
 
   nginx:
+    container_name: vmeste_nginx
     build: ./docker/nginx
     volumes:
       - static:/app/backend/static/
@@ -35,6 +38,38 @@ services:
       - 8000:80
     depends_on:
       - backend
+  
+  celery:
+    container_name: vmeste_celery
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile.dev
+    volumes:
+      - .:/app
+    env_file:
+      - ./docker/backend/dev.env
+    entrypoint: ./docker/backend/celery-entrypoint.sh
+    depends_on:
+      - backend
+      - db
+      - rabbit
+
+  rabbit:
+    container_name: vmeste_rabbit
+    restart: always
+    image: rabbitmq:3.10-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - ./docker/backend/dev.env
+    volumes:
+      - .:/app
+      - rabbitmqdata:/var/lib/rabbitmq
+    
 
 volumes:
   static:
+  rabbitmqdata:
