@@ -8,6 +8,11 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
 
 from api.enums import Gender
+from .country import Country
+from .city import City
+from .category import Category
+from .occupation import Occupation
+from .subscription import Subscription
 
 
 class UserManager(BaseUserManager):
@@ -67,6 +72,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     email = models.EmailField(null=True)
     email_is_confirmed = models.BooleanField(default=False)
+    country = models.ForeignKey(
+        Country, related_name="users", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    city = models.ForeignKey(
+        City, related_name="users", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    telegram = models.CharField(max_length=255, null=True, blank=True)
+    occupation = models.ForeignKey(
+        Occupation,
+        related_name="users",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    interests = models.ManyToManyField(
+        Category, related_name="users", null=True, blank=True
+    )
+    about_me = models.TextField(max_length=2000, null=True, blank=True)
+    subscription = models.ForeignKey(
+        Subscription, related_name="users", on_delete=models.SET_NULL, null=True
+    )
+    subscription_expires = models.DateTimeField(null=True)
 
     USERNAME_FIELD = "phone_number"
 
