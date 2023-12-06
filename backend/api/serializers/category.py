@@ -7,3 +7,9 @@ class CategorySerializer(ModelSerializer):
     class Meta:
         model = Category
         fields = ["id", "title"]
+
+
+class CategoryTitleSerializer(ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["title"]
