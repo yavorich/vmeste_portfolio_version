@@ -1,18 +1,41 @@
-from rest_framework import generics
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 
 from api.models import Event, Theme, Notification
-from api.serializers import EventSerializer, ThemeSerializer
-from api.permissions import StatusPermissions
+from api.serializers import (
+    EventSerializer,
+    ThemeSerializer,
+    EventCreateUpdateSerializer,
+)
+from api.permissions import StatusPermissions, IsMailConfirmed
 from api.enums import EventStatus
 from api.filters import EventFilters
 
 
-class EventListView(generics.ListAPIView):
-    serializer_class = EventSerializer
-    permission_classes = [StatusPermissions]
-    filterset_class = EventFilters
+class EventListViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
+    serializer_class = {
+        "list": EventSerializer,
+        "create": EventCreateUpdateSerializer,
+    }
+    permission_classes = {
+        "list": [StatusPermissions],
+        "create": [IsMailConfirmed],
+    }
+
+    @property
+    def filterset_class(self):
+        if self.action == 'list':
+            return EventFilters
+
     queryset = Event.objects.all()
+
+    def get_permissions(self):
+        self.permission_classes = self.permission_classes[self.action]
+        return super(EventListViewSet, self).get_permissions()
+
+    def get_serializer_class(self):
+        return self.serializer_class[self.action]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
