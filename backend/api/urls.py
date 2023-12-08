@@ -48,4 +48,5 @@ urlpatterns = [
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),
     path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
     path("docs/", views.DocsView.as_view(), name="docs"),
+    path("marking/", views.EventMarkingDetailView.as_view(), name="marking"),
 ]
