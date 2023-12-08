@@ -201,6 +201,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
+            "id",
             "cover",
             "title",
             "country",
@@ -244,3 +245,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["location"] = location
         validated_data["organizer"] = self.context["user"]
         return super().create(validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {"id": data["id"]}
