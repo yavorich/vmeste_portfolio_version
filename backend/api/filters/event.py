@@ -1,6 +1,4 @@
 from django_filters import rest_framework as filters
-from django.db.models import Count
-from django.utils.timezone import now
 
 from api.models import Event
 from api.enums import EventStatus
@@ -8,33 +6,46 @@ from .list import ListFilter
 
 
 class EventFilters(filters.FilterSet):
-    date = filters.DateFilter(method="filter_date")
+    date = filters.DateFilter()
     max_age = filters.NumberFilter(field_name="min_age", lookup_expr="lte")
     min_age = filters.NumberFilter(field_name="max_age", lookup_expr="gte")
     country = ListFilter(field_name="country__id")
     city = ListFilter(field_name="city__id")
-    category = ListFilter(field_name="category__id")
-    status = filters.CharFilter(method="filter_status")
+    category = filters.Filter(field_name="categories", method="filter_category")
+    status = filters.CharFilter(method="filter_status", required=True)
 
-    def filter_date(self, qs, name, value):
-        return qs.filter(**{"start_datetime__date": value})
+    def filter_category(self, qs, name, value):
+        values = value.split(",")
+        return qs.filter(categories__in=values)
 
     def filter_status(self, qs, name, value):
-        qs = qs.filter(published=value != EventStatus.DRAFT)
-        if value == EventStatus.PUBLISHED:
-            qs = qs.filter(location__isnull=False).order_by("-start_datetime")
+        user = self.request.user
+
+        # "Мои встречи": пользователь является участником/организатором
+        if value in [EventStatus.UPCOMING, EventStatus.PAST, EventStatus.DRAFT]:
+            qs = qs.filter_organizer_or_participant(user)
+
+        # все события опубликованы, если статус не DRAFT
+        qs = qs.filter(is_draft=value == EventStatus.DRAFT)
+
+        # PAST включает в себя начавшиеся и прошедшие события, все др. статусы - будущие
         if value == EventStatus.PAST:
-            qs = qs.filter(start_datetime__lte=now())
+            qs = qs.filter_past()
         else:
-            qs = qs.filter(start_datetime__gt=now())
+            qs = qs.filter_upcoming()
+
+        # все события гл. страницы фильтруются на наличие свободных мест и открытость
+        # если пользователь залогинен, фильтр также учитывает его пол
+        if value in [EventStatus.POPULAR, EventStatus.PUBLISHED]:
+            gender = user.gender if user.is_authenticated else None
+            qs = qs.filter(is_close_event=False).filter_has_free_places(gender)
+
+        # POPULAR события сортируются по кол-ву свободных мест в сумме
         if value == EventStatus.POPULAR:
-            qs = qs.annotate(
-                total_participants=Count("participants"),
-            ).order_by("-total_participants")
-        if value not in [EventStatus.POPULAR, EventStatus.PUBLISHED]:
-            qs = qs.filter(participants__user=self.request.user)
+            qs = qs.order_by("free_places")
+
         return qs
 
     class Meta:
         model = Event
-        fields = ["start_datetime", "min_age", "max_age", "country", "city", "category"]
+        fields = ["date", "min_age", "max_age", "country", "city", "categories"]

@@ -2,8 +2,8 @@
 
 from .category import CategorySerializer, CategoryTitleSerializer
 from .theme import ThemeSerializer
-from .location import LocationSerializer
-from .event import EventSerializer, EventDetailSerializer
+from .location import LocationSerializer, LocationDetailSerializer
+from .event import EventSerializer, EventDetailSerializer, EventCreateUpdateSerializer
 from .auth import (
     PhoneAuthSerializer,
     PhoneAuthSendCodeSerializer,

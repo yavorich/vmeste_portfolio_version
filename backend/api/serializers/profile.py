@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.utils.timezone import now
 from dateutil.relativedelta import relativedelta
 
-from api.models import User, Notification, EventParticipant
+from api.models import User, Notification, EventParticipant, Event
 from api.serializers import CategoryTitleSerializer
 
 
@@ -85,8 +85,8 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
 
     def get_stats(self, obj: User):
         participation = EventParticipant.objects.filter(user=obj)
-        organized = participation.filter(is_organizer=True).count()
-        signed = participation.filter(is_organizer=False).count()
+        organized = Event.objects.filter(organizer=obj, is_draft=False).count()  # drafts по идее исключаем
+        signed = participation.filter().count()
         visited = participation.filter(has_confirmed=True).count()
         return {"organized": organized, "signed": signed, "visited": visited}
 
