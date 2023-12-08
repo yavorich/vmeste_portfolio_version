@@ -46,3 +46,8 @@ class EventParticipantAdmin(admin.ModelAdmin):
 @admin.register(models.Notification)
 class NotificationAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.Docs)
+class DocsAdmin(admin.ModelAdmin):
+    pass

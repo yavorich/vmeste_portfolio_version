@@ -1,17 +1,36 @@
-from django.urls import path
+from django.urls import path, re_path, include
+from rest_framework.routers import DefaultRouter
 
 from . import views
 
 app_name = "api"
 
+router = DefaultRouter()
+router.register(
+    "events/published",
+    views.EventPublishedSignViewSet,
+    basename="event-published",
+)
+
 urlpatterns = [
-    path("events/", views.EventListView.as_view(), name="events-list"),
-    path("event/<int:pk>/", views.EventDetailView.as_view(), name="event-detail"),
+    path("", include(router.urls)),
     path(
-        "events/published/<int:id>/<str:action>/",
-        views.EventSignView.as_view(),
-        name="event-sign",
+        "events/",
+        views.EventListViewSet.as_view({"get": "list", "post": "create"}),
+        name="event-list",
     ),
+    re_path(
+        r"^events/(?P<pk>[0-9]+|[0-9a-f-]+)/$",
+        views.EventDetailViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update"}
+        ),
+        name="event-detail",
+    ),
+    # path(
+    #     "events/published/<int:id>/<str:action>/",
+    #     views.EventPublishedSignViewSet.as_view(),
+    #     name="event-sign",
+    # ),
     path("auth/send_code", views.AuthSendCodeView.as_view(), name="auth-code"),
     path("auth/", views.AuthView.as_view(), name="auth"),
     path(
@@ -28,4 +47,5 @@ urlpatterns = [
     ),
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),
     path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
+    path("docs/", views.DocsView.as_view(), name="docs"),
 ]

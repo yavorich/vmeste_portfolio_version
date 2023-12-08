@@ -6,6 +6,10 @@ from .city import City
 
 
 class Location(models.Model):
+    class Status(models.TextChoices):
+        VERIFIED = "verified", "Подтверждено"
+        RECOMMENDED = "recommended", "Рекомендовано"
+        UNKNOWN = "unknown", "Неизвестно"
     name = models.CharField(_("Название"), max_length=255)
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -14,3 +18,4 @@ class Location(models.Model):
         Country, related_name="locations", on_delete=models.CASCADE
     )
     city = models.ForeignKey(City, related_name="locations", on_delete=models.CASCADE)
+    status = models.CharField(choices=Status.choices, max_length=11)

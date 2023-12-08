@@ -11,3 +11,4 @@ from .occupation import Occupation
 from .user import User
 from .theme import Theme
 from .subscription import Subscription
+from .docs import Docs

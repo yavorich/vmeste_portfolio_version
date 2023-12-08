@@ -1,21 +1,31 @@
-from rest_framework.serializers import (
-    ModelSerializer,
-    SerializerMethodField,
-    CharField,
-    IntegerField,
-)
+from rest_framework import serializers
 from django.template.defaultfilters import date as _date
-from django.utils.timezone import now
+from django.template.defaultfilters import time as _time
+from django.utils.timezone import now, datetime
 
-from api.models import Event, EventParticipant
-from api.enums import Gender, EventState
-from api.serializers.location import LocationSerializer, LocationDetailSerializer
+from api.models import (
+    Event,
+    EventParticipant,
+    Location,
+    City,
+    Country,
+    Theme,
+    Category,
+    User,
+)
+from api.enums import EventState, Gender
+from api.serializers import (
+    LocationSerializer,
+    LocationDetailSerializer,
+    CategoryTitleSerializer,
+)
 
 
 class EventMixin:
     def get_stats(self, obj: Event, gender: Gender):
-        participants = obj.get_participants()
-        total = participants.count()
+        total_field = "total_" + gender
+        participants = obj.get_participants_by_gender(gender)
+        total = getattr(obj, total_field)
         count = participants.filter(user__gender=gender).count()
         if total > 0:
             return f"{count}/{total}"
@@ -34,18 +44,20 @@ class EventMixin:
         }
 
     def get_date_and_year(self, obj: Event):
-        return _date(obj.start_datetime, "j E, Y")
+        return _date(obj.date, "j E, Y")
 
     def get_day_and_time(self, obj: Event):
-        return _date(obj.start_datetime, "l, H:i")
+        return (
+            _date(obj.date, "l")
+            + _time(obj.start_time, ", H:i")
+            + _time(obj.end_time, "-H:i")
+        )
 
     def get_date_and_time(self, obj: Event):
-        return _date(obj.start_datetime, "j E, H:i") + _date(obj.end_datetime, "-H:i")
+        return _date(obj.date, "j E") + _time(obj.start_time, ", H:i")
 
     def get_am_i_organizer(self, obj: Event):
-        user = self.context.get("user")
-        organizer = obj.get_organizer()
-        return user == organizer
+        return self.context.get("user") == obj.organizer
 
     def get_am_i_registered(self, obj: Event):
         user = self.context.get("user")
@@ -61,12 +73,9 @@ class EventMixin:
         return False
 
     def get_are_there_free_places(self, obj: Event):
-        return obj.has_free_places()
-
-    def get_organizer(self, obj: Event):
-        organizer = obj.get_organizer()
-        serializer = EventOrganizerSerializer(organizer)
-        return serializer.data
+        user = self.context.get("user")
+        if user is not None:
+            return obj.has_free_places(gender=user.gender)
 
     def get_participants(self, obj: Event):
         participants = obj.get_participants()
@@ -74,14 +83,11 @@ class EventMixin:
         return serializer.data
 
     def get_state(self, obj: Event):
-        if now() < obj.start_datetime:
+        if now() < datetime.combine(obj.date, obj.start_time, tzinfo=now().tzinfo):
             return EventState.BEFORE
-        if now() > obj.end_datetime:
+        if now() > datetime.combine(obj.date, obj.end_time, tzinfo=now().tzinfo):
             return EventState.AFTER
         return EventState.WHILE
-
-    def get_short_description(self, obj: Event):
-        return obj.description.split(".")[0]  # what if sentence is too long?
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -99,38 +105,35 @@ class EventMixin:
         return data
 
 
-class EventParticipantSerializer(ModelSerializer):
-    avatar = CharField(source="user.avatar")
+class EventParticipantSerializer(serializers.ModelSerializer):
+    avatar = serializers.CharField(source="user.avatar")
 
     class Meta:
         model = EventParticipant
         fields = ["avatar"]
 
 
-class EventOrganizerSerializer(ModelSerializer):
-    id = IntegerField(source="user.id")
-    first_name = CharField(source="user.first_name")
-    last_name = CharField(source="user.last_name")
-
+# можно позже сделать как UserSerializer, если понадобится где-то еще
+class EventOrganizerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EventParticipant
+        model = User
         fields = ["id", "first_name", "last_name"]
 
 
-class EventDetailSerializer(EventMixin, ModelSerializer):
+class EventDetailSerializer(EventMixin, serializers.ModelSerializer):
     location = LocationDetailSerializer()
-    stats_men = SerializerMethodField()
-    stats_women = SerializerMethodField()
-    date = SerializerMethodField()
-    theme_name = CharField(source="theme.title")
-    category_name = CharField(source="category.title")
-    state = SerializerMethodField()
-    participants = SerializerMethodField()
-    organizer = SerializerMethodField()
-    am_i_organizer = SerializerMethodField()
-    am_i_registered = SerializerMethodField()
-    are_there_free_places = SerializerMethodField()
-    am_i_confirmed = SerializerMethodField()
+    stats_men = serializers.SerializerMethodField()
+    stats_women = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    theme_name = serializers.CharField(source="theme.title")
+    category_name = CategoryTitleSerializer(source="categories", many=True)
+    state = serializers.SerializerMethodField()
+    participants = serializers.SerializerMethodField()
+    organizer = EventOrganizerSerializer()
+    am_i_organizer = serializers.SerializerMethodField()
+    am_i_registered = serializers.SerializerMethodField()
+    are_there_free_places = serializers.SerializerMethodField()
+    am_i_confirmed = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -159,13 +162,12 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
         ]
 
 
-class EventSerializer(EventMixin, ModelSerializer):
+class EventSerializer(EventMixin, serializers.ModelSerializer):
     location = LocationSerializer()
-    stats_men = SerializerMethodField()
-    stats_women = SerializerMethodField()
-    am_i_organizer = SerializerMethodField()
-    date_and_time = SerializerMethodField()
-    short_description = SerializerMethodField()
+    stats_men = serializers.SerializerMethodField()
+    stats_women = serializers.SerializerMethodField()
+    am_i_organizer = serializers.SerializerMethodField()
+    date_and_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -182,3 +184,68 @@ class EventSerializer(EventMixin, ModelSerializer):
             "date_and_time",
             "am_i_organizer",
         ]
+
+
+class EventCreateUpdateSerializer(serializers.ModelSerializer):
+    country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
+    city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all())
+    theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all())
+    categories = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), many=True
+    )
+    location_name = serializers.CharField(write_only=True)
+    address = serializers.CharField(write_only=True)
+    latitude = serializers.FloatField(write_only=True)
+    longitude = serializers.FloatField(write_only=True)
+
+    class Meta:
+        model = Event
+        fields = [
+            "id",
+            "cover",
+            "title",
+            "country",
+            "city",
+            "date",
+            "start_time",
+            "end_time",
+            "location_name",
+            "address",
+            "latitude",
+            "longitude",
+            "max_age",
+            "min_age",
+            "theme",
+            "categories",
+            "total_male",
+            "total_female",
+            "short_description",
+            "description",
+            "is_close_event",
+            "is_draft",
+        ]
+        extra_kwargs = {f: {"required": True} for f in fields}
+
+    def get_organizer(self):
+        return self.context["user"]
+
+    def create(self, validated_data):
+        location, created = Location.objects.get_or_create(
+            country=validated_data["country"],
+            city=validated_data["city"],
+            name=validated_data.pop("location_name"),
+            address=validated_data.pop("address"),
+            defaults={
+                "latitude": validated_data.pop("latitude"),
+                "longitude": validated_data.pop("longitude"),
+                "status": Location.Status.UNKNOWN,
+            },
+        )
+
+        validated_data["location"] = location
+        validated_data["organizer"] = self.context["user"]
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {"id": data["id"]}
