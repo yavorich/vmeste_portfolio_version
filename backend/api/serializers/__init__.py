@@ -18,3 +18,4 @@ from .profile import (
     SelfProfileRetrieveSerializer,
 )
 from .token import UserTokenObtainPairSerializer, UserTokenRefreshSerializer
+from .docs import DocsSerializer
