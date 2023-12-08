@@ -10,7 +10,4 @@ class StatusPermissions(BasePermission):
         if status in [EventStatus.UPCOMING, EventStatus.PAST, EventStatus.DRAFT]:
             return request.user.is_authenticated
 
-        elif status in [EventStatus.PUBLISHED, EventStatus.POPULAR]:
-            return True
-
-        return False  # запрос без статуса не предусмотрен
+        return True

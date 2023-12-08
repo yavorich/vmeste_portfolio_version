@@ -86,9 +86,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
-    interests = models.ManyToManyField(
-        Category, related_name="users", null=True, blank=True
-    )
+    interests = models.ManyToManyField(Category, related_name="users", blank=True)
     about_me = models.TextField(max_length=2000, null=True, blank=True)
     subscription = models.ForeignKey(
         Subscription, related_name="users", on_delete=models.SET_NULL, null=True
