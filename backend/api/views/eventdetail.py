@@ -6,12 +6,12 @@ from django.shortcuts import get_object_or_404
 
 from api.models import Event, Notification
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
-from api.permissions import IsMailConfirmed
+from api.permissions import MailIsConfirmed
 
 
 class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Event.objects.all()
-    permission_classes = {"retrieve": [AllowAny], "partial_update": [IsMailConfirmed]}
+    permission_classes = {"retrieve": [AllowAny], "partial_update": [MailIsConfirmed]}
     serializer_class = {
         "retrieve": EventDetailSerializer,
         "partial_update": EventCreateUpdateSerializer,

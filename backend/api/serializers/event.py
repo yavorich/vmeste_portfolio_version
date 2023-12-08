@@ -16,7 +16,6 @@ from api.models import (
 from api.enums import EventState, Gender
 from api.serializers import (
     LocationSerializer,
-    LocationDetailSerializer,
     CategoryTitleSerializer,
 )
 
@@ -121,7 +120,7 @@ class EventOrganizerSerializer(serializers.ModelSerializer):
 
 
 class EventDetailSerializer(EventMixin, serializers.ModelSerializer):
-    location = LocationDetailSerializer()
+    location = LocationSerializer()
     stats_men = serializers.SerializerMethodField()
     stats_women = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
@@ -163,7 +162,9 @@ class EventDetailSerializer(EventMixin, serializers.ModelSerializer):
 
 
 class EventSerializer(EventMixin, serializers.ModelSerializer):
-    location = LocationSerializer()
+    location = LocationSerializer(
+        remove_fields=["city", "country", "latitude", "longitude"]
+    )
     stats_men = serializers.SerializerMethodField()
     stats_women = serializers.SerializerMethodField()
     am_i_organizer = serializers.SerializerMethodField()
@@ -247,5 +248,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def to_representation(self, instance):
+        instance.link = instance.get_absolute_url()
+        instance.save()
         data = super().to_representation(instance)
         return {"id": data["id"]}
