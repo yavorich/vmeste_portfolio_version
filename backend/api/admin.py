@@ -51,3 +51,13 @@ class NotificationAdmin(admin.ModelAdmin):
 @admin.register(models.Docs)
 class DocsAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.SupportTheme)
+class SupportThemeAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.SupportMessage)
+class SupportMessageAdmin(admin.ModelAdmin):
+    pass

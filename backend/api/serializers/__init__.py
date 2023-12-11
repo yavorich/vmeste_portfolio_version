@@ -26,3 +26,4 @@ from .participants import (
     EventParticipantDeleteSerializer,
 )
 from .notifications import NotificationListSerializer, NotificationBulkUpdateSerializer
+from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
