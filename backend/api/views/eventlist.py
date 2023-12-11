@@ -8,7 +8,7 @@ from api.serializers import (
     ThemeSerializer,
     EventCreateUpdateSerializer,
 )
-from api.permissions import StatusPermissions, IsMailConfirmed
+from api.permissions import StatusPermissions, MailIsConfirmed
 from api.enums import EventStatus
 from api.filters import EventFilters
 
@@ -20,7 +20,7 @@ class EventListViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     }
     permission_classes = {
         "list": [StatusPermissions],
-        "create": [IsMailConfirmed],
+        "create": [MailIsConfirmed],
     }
 
     @property

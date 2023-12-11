@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.shortcuts import get_object_or_404
 
+from api.services import get_event_object
 from api.models import Event, EventParticipant
 
 
@@ -13,11 +13,7 @@ class EventPublishedSignViewSet(GenericViewSet):
     queryset = Event.objects.all()
 
     def get_object(self):
-        pk = self.kwargs["pk"]
-        print(pk)
-        if pk.isdigit():
-            return get_object_or_404(Event, id=pk)
-        return get_object_or_404(Event, uuid=pk)
+        return get_event_object(self.kwargs["pk"])
 
     @action(detail=True, methods=["post"])
     def sign(self, request, pk=None):

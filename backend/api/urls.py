@@ -48,4 +48,15 @@ urlpatterns = [
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),
     path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
     path("docs/", views.DocsView.as_view(), name="docs"),
+    path("marking/", views.EventMarkingDetailView.as_view(), name="marking"),
+    path(
+        "events/<str:event_id>/participants/",
+        views.EventParticipantRetrieveUpdateView.as_view(),
+        name="participants-list-update",
+    ),
+    path(
+        "events/<str:event_id>/participants/<int:id>/",
+        views.EventParticipantDeleteView.as_view(),
+        name="participant-delete",
+    ),
 ]

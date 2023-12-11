@@ -1,5 +1,8 @@
 import random
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
 
+from api.models import Event
 from api.tasks import send_mail_confirmation_code
 
 
@@ -12,3 +15,12 @@ def send_confirmation_code(user, confirm_type):
         send_mail_confirmation_code.delay(user.email, user.confirmation_code)
     elif confirm_type == "phone":
         pass  # нужен смс-сервис
+
+
+def get_event_object(id):
+    if id.isdigit():
+        event = get_object_or_404(Event, id=id)
+        if event.is_close_event:
+            raise PermissionDenied("Закрытые события доступны только по uuid")
+
+    return get_object_or_404(Event, uuid=id)
