@@ -25,7 +25,7 @@ class EventListViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
     @property
     def filterset_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return EventFilters
 
     queryset = Event.objects.all()
