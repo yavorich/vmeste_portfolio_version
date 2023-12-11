@@ -25,3 +25,4 @@ from .participants import (
     EventParticipantBulkUpdateSerializer,
     EventParticipantDeleteSerializer,
 )
+from .notifications import NotificationListSerializer, NotificationBulkUpdateSerializer

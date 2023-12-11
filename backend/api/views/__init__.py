@@ -12,3 +12,4 @@ from .participants import (
     EventParticipantRetrieveUpdateView,
     EventParticipantDeleteView,
 )
+from .notifications import NotificationListUpdateApiView
