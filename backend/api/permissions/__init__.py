@@ -2,3 +2,4 @@
 
 from .status import StatusPermissions
 from .mail import MailIsConfirmed
+from .event import IsEventOrganizer

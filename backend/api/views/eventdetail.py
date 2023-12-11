@@ -2,11 +2,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
-from django.shortcuts import get_object_or_404
 
 from api.models import Event, Notification
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
 from api.permissions import MailIsConfirmed
+from api.services import get_event_object
 
 
 class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
@@ -18,10 +18,7 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     }
 
     def get_object(self):
-        pk = self.kwargs["pk"]
-        if pk.isdigit():
-            return get_object_or_404(Event, pk=pk)
-        return get_object_or_404(Event, uuid=pk)
+        return get_event_object(self.kwargs["pk"])
 
     def get_permissions(self):
         self.permission_classes = self.permission_classes[self.action]
