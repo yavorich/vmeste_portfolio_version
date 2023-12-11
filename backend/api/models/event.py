@@ -45,8 +45,10 @@ class EventQuerySet(models.QuerySet):
             )
         )
 
-    def filter_past(self):
-        return self.get_start_datetime().filter(start__lte=now())
+    def filter_past(self, hours=0):
+        return self.get_start_datetime().filter(
+            start__lte=now() - timedelta(hours=hours)
+        )
 
     def filter_upcoming(self):
         return self.get_start_datetime().filter(start__gt=now())
@@ -101,7 +103,7 @@ class Event(models.Model):
     is_draft = models.BooleanField(_("Черновик"))
     total_male = models.PositiveSmallIntegerField(_("Всего мужчин"))
     total_female = models.PositiveSmallIntegerField(_("Всего женщин"))
-    link = models.URLField(_("Ссылка"))
+    link = models.URLField(_("Ссылка"), default="#")
     organizer = models.ForeignKey(
         verbose_name=_("Организатор"),
         to=User,
@@ -118,7 +120,7 @@ class Event(models.Model):
         ordering = ["date"]
 
     def __str__(self) -> str:
-        return self.title
+        return str(self.uuid) if self.is_close_event else str(self.id)
 
     def get_participants(self) -> BaseManager[EventParticipant]:
         return EventParticipant.objects.filter(event=self)
@@ -144,9 +146,12 @@ class Event(models.Model):
         start = datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
         return now() <= start - timedelta(hours=3)
 
-    def save(self, *args, **kwargs):
+    def get_absolute_url(self):
         if self.is_close_event:
-            self.link = reverse("api:event-detail", kwargs={"pk": self.uuid})
-        else:
-            self.link = reverse("api:event-detail", kwargs={"pk": self.pk})
-        super().save(*args, **kwargs)
+            return reverse("api:event-detail", kwargs={"pk": self.uuid})
+        return reverse("api:event-detail", kwargs={"pk": self.pk})
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            self.link = self.get_absolute_url()
+        return super().save(*args, **kwargs)
