@@ -64,4 +64,14 @@ urlpatterns = [
         views.NotificationListUpdateApiView.as_view(),
         name="notifications-list-update",
     ),
+    path(
+        "support/themes/",
+        views.SupportThemeListView.as_view(),
+        name="support-theme-list",
+    ),
+    path(
+        "support/",
+        views.SupportMessageCreateView.as_view(),
+        name="support-message-create",
+    ),
 ]
