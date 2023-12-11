@@ -59,4 +59,9 @@ urlpatterns = [
         views.EventParticipantDeleteView.as_view(),
         name="participant-delete",
     ),
+    path(
+        "notifications/",
+        views.NotificationListUpdateApiView.as_view(),
+        name="notifications-list-update",
+    ),
 ]
