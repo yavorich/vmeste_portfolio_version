@@ -120,7 +120,7 @@ class Event(models.Model):
         ordering = ["date"]
 
     def __str__(self) -> str:
-        return self.title
+        return str(self.uuid) if self.is_close_event else str(self.id)
 
     def get_participants(self) -> BaseManager[EventParticipant]:
         return EventParticipant.objects.filter(event=self)

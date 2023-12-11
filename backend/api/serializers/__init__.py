@@ -19,4 +19,9 @@ from .profile import (
 )
 from .token import UserTokenObtainPairSerializer, UserTokenRefreshSerializer
 from .docs import DocsSerializer
-from .marking import EventMarkingSerializer
+from .participants import (
+    EventMarkingSerializer,
+    EventRetrieveParticipantsSerializer,
+    EventParticipantBulkUpdateSerializer,
+    EventParticipantDeleteSerializer,
+)

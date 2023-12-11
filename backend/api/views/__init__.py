@@ -7,4 +7,8 @@ from .auth import AuthView, AuthSendCodeView
 from .profile import ProfileUpdateViewSet, ProfileDetailViewSet
 from .token import UserTokenObtainPairView, UserTokenRefreshView
 from .docs import DocsView
-from .eventmarking import EventMarkingDetailView
+from .participants import (
+    EventMarkingDetailView,
+    EventParticipantRetrieveUpdateView,
+    EventParticipantDeleteView,
+)
