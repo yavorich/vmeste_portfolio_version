@@ -2,7 +2,7 @@
 
 from .category import CategorySerializer, CategoryTitleSerializer
 from .theme import ThemeSerializer
-from .location import LocationSerializer
+from .location import LocationSerializer, LocationDocumentSerializer, LocationCreateSerializer
 from .event import (
     EventDocumentSerializer,
     EventDetailSerializer,

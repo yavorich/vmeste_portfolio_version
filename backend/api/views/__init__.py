@@ -14,3 +14,4 @@ from .participants import (
 )
 from .notifications import NotificationListUpdateApiView
 from .support import SupportThemeListView, SupportMessageCreateView
+from .location import LocationListViewSet
