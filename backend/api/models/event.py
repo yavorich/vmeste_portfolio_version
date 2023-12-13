@@ -4,6 +4,8 @@ from django.db.models.functions import Concat, Cast
 from django.utils.translation import gettext_lazy as _
 from django.db.models.manager import BaseManager
 from django.utils.timezone import now, timedelta, datetime
+from django.template.defaultfilters import date as _date
+from django.template.defaultfilters import time as _time
 from django.urls import reverse
 import uuid as _uuid
 
@@ -122,6 +124,49 @@ class Event(models.Model):
     def __str__(self) -> str:
         return str(self.uuid) if self.is_close_event else str(self.id)
 
+    @property
+    def stats_men(self):
+        return self.get_stats(Gender.MALE)
+
+    @property
+    def stats_women(self):
+        return self.get_stats(Gender.FEMALE)
+
+    @property
+    def date_and_time(self):
+        return _date(self.date, "j E") + _time(self.start_time, ", H:i")
+
+    @property
+    def date_and_year(self):
+        return _date(self.date, "j E, Y")
+
+    @property
+    def day_and_time(self):
+        return (
+            _date(self.date, "l")
+            + _time(self.start_time, ", H:i")
+            + _time(self.end_time, "-H:i")
+        )
+
+    @property
+    def start_timestamp(self):
+        return datetime.timestamp(
+            datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
+        )
+
+    @property
+    def end_timestamp(self):
+        return datetime.timestamp(
+            datetime.combine(self.date, self.end_time, tzinfo=now().tzinfo)
+        )
+
+    def get_stats(self, gender: Gender):
+        total_field = "total_" + gender
+        participants = EventParticipant.objects.filter(event=self, user__gender=gender)
+        total = getattr(self, total_field)
+        count = participants.count()
+        return f"{count}/{total}"
+
     def get_participants(self) -> BaseManager[EventParticipant]:
         return EventParticipant.objects.filter(event=self)
 
@@ -136,11 +181,14 @@ class Event(models.Model):
         except EventParticipant.DoesNotExist:
             return None
 
-    def has_free_places(self, gender: Gender) -> bool:
-        total_field = "total_" + gender
-        return (
-            getattr(self, total_field) > self.get_participants_by_gender(gender).count()
-        )
+    def get_free_places(self, gender: Gender | None = None) -> bool:
+        if gender:
+            total_field = "total_" + gender
+            return (
+                getattr(self, total_field)
+                - self.get_participants_by_gender(gender).count()
+            )
+        return self.total_male + self.total_female - self.get_participants().count()
 
     def is_valid_sign_time(self) -> bool:
         start = datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)

@@ -32,7 +32,7 @@ class EventPublishedSignViewSet(GenericViewSet):
                 {"message": "Пользователь уже записан или является организатором"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if not obj.has_free_places(user.gender):
+        if obj.get_free_places(user.gender) == 0:
             return Response(
                 {"message": "На данное мероприятие не осталось свободных мест"},
                 status=status.HTTP_400_BAD_REQUEST,
