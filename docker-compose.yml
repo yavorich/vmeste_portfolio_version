@@ -36,6 +36,7 @@ services:
     volumes:
       - ./docker/nginx/conf/:/etc/nginx/conf.d/
       - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
       - static:/app/backend/static/
     ports:
       - 80:80
