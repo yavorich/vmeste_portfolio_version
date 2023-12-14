@@ -69,7 +69,20 @@ services:
       - .:/app
       - rabbitmqdata:/var/lib/rabbitmq
     
+  elasticsearch:
+    container_name: vmeste_elasticsearch
+    image: elasticsearch:8.11.1
+    restart: always
+    volumes:
+      - elsdata:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - 9200:9200
+
 
 volumes:
   static:
   rabbitmqdata:
+  elsdata:

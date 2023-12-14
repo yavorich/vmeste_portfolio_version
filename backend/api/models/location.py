@@ -10,6 +10,7 @@ class Location(models.Model):
         VERIFIED = "verified", "Подтверждено"
         RECOMMENDED = "recommended", "Рекомендовано"
         UNKNOWN = "unknown", "Неизвестно"
+    cover = models.TextField(_("Обложка"))  # base64
     name = models.CharField(_("Название"), max_length=255)
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -19,3 +20,4 @@ class Location(models.Model):
     )
     city = models.ForeignKey(City, related_name="locations", on_delete=models.CASCADE)
     status = models.CharField(choices=Status.choices, max_length=11)
+    discount = models.IntegerField(_("Скидка"), default=0)

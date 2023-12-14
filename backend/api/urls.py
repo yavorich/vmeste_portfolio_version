@@ -74,4 +74,9 @@ urlpatterns = [
         views.SupportMessageCreateView.as_view(),
         name="support-message-create",
     ),
+    path(
+        "places/",
+        views.LocationListViewSet.as_view({"get": "list", "post": "create"}),
+        name="places-list-create",
+    ),
 ]
