@@ -22,5 +22,6 @@ def get_event_object(id):
         event = get_object_or_404(Event, id=id)
         if event.is_close_event:
             raise PermissionDenied("Закрытые события доступны только по uuid")
+        return event
 
     return get_object_or_404(Event, uuid=id)
