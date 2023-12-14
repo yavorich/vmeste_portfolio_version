@@ -60,9 +60,9 @@ services:
     restart: always
     image: rabbitmq:3.10-management
     hostname: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    expose:
+      - 5672
+      - 15672
     env_file:
       - ./docker/backend/dev.env
     volumes:
