@@ -60,6 +60,7 @@ class SenderSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = SenderSerializer()
+    is_mine = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -70,11 +71,14 @@ class MessageSerializer(serializers.ModelSerializer):
             "sent_at",
             "is_info",
             "is_incoming",
+            "is_mine",
         ]
 
+    def get_is_mine(self, obj: Message):
+        return self.context["user"] == obj.sender
+
     def to_representation(self, instance: Message):
-        user = self.context["user"]
-        ReadMessage.objects.create(message=instance, user=user)
+        ReadMessage.objects.create(message=instance, user=self.context["user"])
         return super().to_representation(instance)
 
 

@@ -1,9 +1,11 @@
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
+from rest_framework.exceptions import ValidationError
 
 from api.models import Event
 from api.permissions import MailIsConfirmed
+from api.enums import EventStatus
 from chat.serializers import (
     ChatListSerializer,
     MessageSerializer,
@@ -22,7 +24,15 @@ class ChatListView(ListAPIView):
     serializer_class = ChatListSerializer
 
     def get_queryset(self):
-        return Event.objects.filter(participants__user=self.request.user)
+        status = self.request.query_params.get("status")
+
+        if status not in [EventStatus.UPCOMING, EventStatus.PAST]:
+            raise ValidationError("Status query parameter is required (upcoming/past)")
+
+        queryset = Event.objects.filter(participants__user=self.request.user)
+        kwargs = {"days": 90} if status == EventStatus.PAST else {}
+        queryset = getattr(queryset, f"filter_{status}")(**kwargs)
+        return queryset
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
