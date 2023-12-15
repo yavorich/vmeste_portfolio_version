@@ -96,8 +96,10 @@ class EventDocument(Document):
             return related_instance.objects.all()
         if isinstance(related_instance, EventParticipant):
             return related_instance.event
-        if isinstance(related_instance, (Country, City, Category, Location, User)):
+        if isinstance(related_instance, (Country, City, Category, Location)):
             return related_instance.events.all()
+        if isinstance(related_instance, User):
+            return Event.objects.filter_organizer_or_participant(related_instance)
 
     @staticmethod
     def prepare_participants(instance: Event):

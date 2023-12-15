@@ -15,4 +15,4 @@ done
 
 python manage.py collectstatic --noinput
 
-gunicorn config.wsgi:application --bind 0.0.0.0:8000 --reload
+uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload
