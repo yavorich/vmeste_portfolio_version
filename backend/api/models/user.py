@@ -86,7 +86,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     subscription = models.ForeignKey(
         Subscription, related_name="users", on_delete=models.SET_NULL, null=True
     )
-    subscription_expires = models.DateTimeField(null=True)
+    subscription_expires = models.DateTimeField()
 
     USERNAME_FIELD = "phone_number"
 

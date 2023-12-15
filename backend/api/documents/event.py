@@ -5,10 +5,23 @@ from django_elasticsearch_dsl.fields import (
     IntegerField,
     TextField,
     BooleanField,
+    KeywordField,
 )
+from elasticsearch_dsl import analyzer
+from elasticsearch_dsl.analysis import token_filter
 
 from api.models import Event, Location, EventParticipant, User, Country, City, Category
 from api.enums import Gender
+
+edge_ngram_completion_filter = token_filter(
+    "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
+)
+
+edge_ngram_completion = analyzer(
+    "edge_ngram_completion",
+    tokenizer="standard",
+    filter=["lowercase", edge_ngram_completion_filter],
+)
 
 
 @registry.register_document
@@ -17,15 +30,21 @@ class EventDocument(Document):
     uuid = TextField()
     is_close_event = BooleanField()
     is_draft = BooleanField()
-    title = TextField()
+    title = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     max_age = IntegerField()
     min_age = IntegerField()
     cover = TextField()
-    short_description = TextField()
+    short_description = TextField(
+        fields={"raw": KeywordField()}, analyzer=edge_ngram_completion
+    )
     location = ObjectField(
         properties={
-            "name": TextField(),
-            "address": TextField(),
+            "name": TextField(
+                fields={"raw": KeywordField()}, analyzer=edge_ngram_completion
+            ),
+            "address": TextField(
+                fields={"raw": KeywordField()}, analyzer=edge_ngram_completion
+            ),
         }
     )
     total_male = IntegerField()

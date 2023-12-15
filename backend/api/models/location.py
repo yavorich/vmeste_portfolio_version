@@ -21,3 +21,13 @@ class Location(models.Model):
     city = models.ForeignKey(City, related_name="locations", on_delete=models.CASCADE)
     status = models.CharField(choices=Status.choices, max_length=11)
     discount = models.IntegerField(_("Скидка"), default=0)
+
+    @property
+    def coords_field_indexing(self):
+        """Coords for indexing.
+        Used in Elasticsearch indexing/tests of `geo_distance` native filter.
+        """
+        return {
+            'lat': self.latitude,
+            'lon': self.longitude,
+        }
