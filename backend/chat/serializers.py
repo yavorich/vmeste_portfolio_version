@@ -1,7 +1,8 @@
 from rest_framework import serializers
+from django.db.models import Q
 
 from api.models import Event, User
-from chat.models import Message
+from chat.models import Message, ReadMessage
 
 
 class ChatListSerializer(serializers.ModelSerializer):
@@ -23,8 +24,7 @@ class ChatListSerializer(serializers.ModelSerializer):
 
     def get_unread_messages(self, obj: Event):
         user = self.context["user"]
-        last_time = obj.participants.get(user=user).last_time_viewed_chat
-        unread_messages = obj.messages.filter(sent_at__gt=last_time)
+        unread_messages = obj.messages.filter(~Q(read__user=user))
         return unread_messages.count()
 
 
@@ -71,6 +71,11 @@ class MessageSerializer(serializers.ModelSerializer):
             "is_info",
             "is_incoming",
         ]
+
+    def to_representation(self, instance: Message):
+        user = self.context["user"]
+        ReadMessage.objects.create(message=instance, user=user)
+        return super().to_representation(instance)
 
 
 class MessageSendSerializer(serializers.ModelSerializer):

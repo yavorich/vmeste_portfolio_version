@@ -1,6 +1,10 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from django.db import IntegrityError
 import logging
+
+from chat.models import ReadMessage
 
 logger = logging.getLogger("ws")
 
@@ -29,11 +33,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
         logger.debug("Message received")
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            text_data_json,
-        )
+
+        if text_data_json["type"] == "read_message":
+            await self.read_message(text_data_json)
+
+        elif text_data_json["type"] == "send_message":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                text_data_json,
+            )
 
     async def chat_message(self, event):
         logger.debug("Message sending to each group member")
         await self.send(text_data=json.dumps(event))
+
+    @database_sync_to_async
+    def read_message(self, data):
+        try:
+            ReadMessage.objects.create(
+                user=data["user"],
+                message=data["message"],
+            )
+        except IntegrityError:
+            pass  # TODO: test

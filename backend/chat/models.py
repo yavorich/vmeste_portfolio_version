@@ -22,3 +22,8 @@ class Message(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True)
     is_info = models.BooleanField()
     is_incoming = models.BooleanField(null=True)  # join/left
+
+
+class ReadMessage(models.Model):
+    message = models.ForeignKey(Message, related_name="read", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="read", on_delete=models.CASCADE)
