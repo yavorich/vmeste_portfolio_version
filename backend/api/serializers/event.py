@@ -210,6 +210,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 "latitude": validated_data.pop("latitude"),
                 "longitude": validated_data.pop("longitude"),
                 "status": Location.Status.UNKNOWN,
+                "cover": validated_data["cover"],
             },
         )
 

@@ -79,4 +79,12 @@ urlpatterns = [
         views.LocationListViewSet.as_view({"get": "list", "post": "create"}),
         name="places-list-create",
     ),
+    path("countries/", views.CountryListView.as_view(), name="country-list"),
+    path(
+        "countries/<int:pk>/cities/",
+        views.CityListView.as_view(),
+        name="city-list",
+    ),
+    path("interests/", views.InterestListView.as_view(), name="interest_list"),
+    path("occupations/", views.OccupationListView.as_view(), name="occupation_list"),
 ]
