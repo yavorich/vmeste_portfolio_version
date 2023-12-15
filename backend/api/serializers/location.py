@@ -1,8 +1,28 @@
-from rest_framework.serializers import ModelSerializer, CharField, FloatField
+from rest_framework.serializers import (
+    ModelSerializer,
+    CharField,
+    FloatField,
+    IntegerField,
+    ValidationError,
+)
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
-from api.models import Location
+from api.models import Location, Country, City
 from api.documents import LocationDocument
+
+
+class CountrySerializer(ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ["id", "name"]
+
+
+class CitySerializer(ModelSerializer):
+    country_id = IntegerField(source="country.id")
+
+    class Meta:
+        model = City
+        fields = ["id", "name", "country_id"]
 
 
 class LocationSerializer(ModelSerializer):
@@ -14,7 +34,7 @@ class LocationSerializer(ModelSerializer):
         fields = ["name", "latitude", "longitude", "address", "country", "city"]
 
     def __init__(self, *args, **kwargs):
-        remove_fields = kwargs.pop('remove_fields', None)
+        remove_fields = kwargs.pop("remove_fields", None)
         super(LocationSerializer, self).__init__(*args, **kwargs)
 
         if remove_fields:
@@ -36,11 +56,45 @@ class LocationDocumentSerializer(DocumentSerializer):
             "longitude",
             "address",
             "discount",
-            "city",
         ]
 
 
 class LocationCreateSerializer(ModelSerializer):
+    country = CountrySerializer()
+    city = CitySerializer()
+
     class Meta:
         model = Location
-        fields = []
+        fields = [
+            "id",
+            "cover",
+            "name",
+            "latitude",
+            "longitude",
+            "address",
+            "country",
+            "city",
+        ]
+
+    def create(self, validated_data):
+        validated_data["country"], created = Country.objects.get_or_create(
+            name=validated_data["country"]["name"]
+        )
+        validated_data["city"], created = City.objects.get_or_create(
+            name=validated_data["city"]["name"], country=validated_data["country"]
+        )
+        if Location.objects.filter(
+            **{
+                k: validated_data[k]
+                for k in validated_data
+                if k not in ["latitude", "longitude"]
+            }
+        ).exists():
+            raise ValidationError("Такая локация уже существует")
+
+        validated_data["status"] = Location.Status.RECOMMENDED
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {"id": data["id"]}
