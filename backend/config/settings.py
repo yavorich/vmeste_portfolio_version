@@ -40,18 +40,21 @@ CSRF_TRUSTED_ORIGINS = ["http://" + host + ":8000" for host in ALLOWED_HOSTS]
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "api",
+    "chat",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
-    "api",
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -84,7 +87,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
+ASGI_APPLICATION = "config.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -190,4 +193,39 @@ CELERY_BROKER_URL = (
 
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://elasticsearch:9200"},  # add to env later
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                (
+                    os.environ.get("REDIS_HOST", "localhost"),
+                    os.environ.get("REDIS_PORT", 6379),
+                )
+            ]
+        },
+    }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'ws': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/ws.log',
+            'maxBytes': 1024 * 1024 * 5,
+            'backupCount': 5,
+        },
+    },
+    'loggers': {
+        'ws': {
+            'handlers': ['ws'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }

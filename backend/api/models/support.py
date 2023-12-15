@@ -16,20 +16,20 @@ class SupportMessage(models.Model):
         verbose_name=_("Тема"),
         to=SupportTheme,
         on_delete=models.CASCADE,
-        related_name="messages",
+        related_name="support_messages",
     )
     event = models.ForeignKey(
         verbose_name=_("Событие"),
         to=Event,
         on_delete=models.CASCADE,
-        related_name="messages",
+        related_name="support_messages",
         null=True,
     )
     profile = models.ForeignKey(
         verbose_name=_("Профиль"),
         to=User,
         on_delete=models.CASCADE,
-        related_name="messages",
+        related_name="support_messages",
         null=True,
     )
     text = models.TextField(max_length=500)

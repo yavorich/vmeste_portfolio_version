@@ -81,6 +81,12 @@ services:
     ports:
       - 9200:9200
 
+  redis:
+    image: redis:7.0.10-alpine
+    restart: always
+    container_name: vmeste_redis
+    expose:
+      - 6379
 
 volumes:
   static:

@@ -1,4 +1,6 @@
 celery==5.3.6
+channels-redis==4.1.0
+channels[daphne]==4.0.0
 django-elasticsearch-dsl-drf==0.22.5
 django-elasticsearch-dsl==8.0
 django-filter==23.4
@@ -6,5 +8,5 @@ Django==4.2.7
 djangorestframework-bulk==0.2.1
 djangorestframework-simplejwt==5.3.1
 djangorestframework==3.14.0
-gunicorn==21.2.0
 psycopg2-binary==2.9.9
+uvicorn[standard]==0.24.0.post1

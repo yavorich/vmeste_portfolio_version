@@ -9,3 +9,4 @@ class EventParticipant(models.Model):
     )
     user = models.ForeignKey(User, related_name="events", on_delete=models.CASCADE)
     has_confirmed = models.BooleanField(default=False)
+    last_time_viewed_chat = models.DateTimeField(auto_now_add=True)
