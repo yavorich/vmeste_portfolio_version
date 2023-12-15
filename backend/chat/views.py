@@ -44,6 +44,11 @@ class MessageListView(ListAPIView):
     def get_queryset(self):
         return Message.objects.filter(event=self.kwargs["event_id"])
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.request.user
+        return context
+
 
 class MessageSendView(CreateAPIView):
     permission_classes = [MailIsConfirmed]
