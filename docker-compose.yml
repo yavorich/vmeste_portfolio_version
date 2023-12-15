@@ -18,6 +18,8 @@ services:
       - ./docker/backend/dev.env
     depends_on:
       - db
+    networks:
+      - vmeste_back_default
   
   db:
     container_name: vmeste_db
@@ -29,6 +31,8 @@ services:
       - ./docker/backend/dev.env
     ports:
       - 5432:5432
+    networks:
+      - vmeste_back_default
 
   nginx:
     container_name: vmeste_nginx
@@ -44,6 +48,8 @@ services:
     restart: always
     depends_on:
       - backend
+    networks:
+      - vmeste_back_default
 
   certbot:
     image: certbot/certbot:latest
@@ -52,6 +58,8 @@ services:
       - ./certbot/conf/:/etc/letsencrypt/:rw
     depends_on:
       - nginx
+    networks:
+      - vmeste_back_default
 
   celery:
     container_name: vmeste_celery
@@ -68,6 +76,8 @@ services:
       - backend
       - db
       - rabbit
+    networks:
+      - vmeste_back_default
 
   rabbit:
     container_name: vmeste_rabbit
@@ -82,6 +92,8 @@ services:
     volumes:
       - .:/app
       - rabbitmqdata:/var/lib/rabbitmq
+    networks:
+      - vmeste_back_default
     
   elasticsearch:
     container_name: vmeste_elasticsearch
@@ -94,6 +106,8 @@ services:
       - xpack.security.enabled=false
     ports:
       - 9200:9200
+    networks:
+      - vmeste_back_default
 
   redis:
     image: redis:7.0.10-alpine
@@ -101,8 +115,13 @@ services:
     container_name: vmeste_redis
     expose:
       - 6379
+    networks:
+      - vmeste_back_default
 
 volumes:
   static:
   rabbitmqdata:
   elsdata:
+
+networks:
+  vmeste_back_default:
