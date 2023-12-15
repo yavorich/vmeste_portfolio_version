@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, CharField
+from rest_framework.serializers import ModelSerializer, CharField, FloatField
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
 from api.models import Location
@@ -23,9 +23,21 @@ class LocationSerializer(ModelSerializer):
 
 
 class LocationDocumentSerializer(DocumentSerializer):
+    latitude = FloatField(source="coords.lat")
+    longitude = FloatField(source="coords.lon")
 
     class Meta:
         document = LocationDocument
+        fields = [
+            "id",
+            "cover",
+            "name",
+            "latitude",
+            "longitude",
+            "address",
+            "discount",
+            "city",
+        ]
 
 
 class LocationCreateSerializer(ModelSerializer):
