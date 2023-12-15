@@ -61,3 +61,8 @@ class SupportThemeAdmin(admin.ModelAdmin):
 @admin.register(models.SupportMessage)
 class SupportMessageAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    pass

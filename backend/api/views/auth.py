@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, login
+from django.utils.timezone import now
 
 from api.serializers import (
     PhoneAuthSerializer,
@@ -12,7 +13,7 @@ from api.serializers import (
     EmailAuthSendCodeSerializer,
 )
 from api.services import send_confirmation_code
-from api.models import User
+from api.models import User, Subscription
 
 
 class AuthSendCodeView(APIView):
@@ -41,7 +42,12 @@ class AuthSendCodeView(APIView):
             try:
                 user = User.objects.get(phone_number=data["phone_number"])
             except User.DoesNotExist:
-                user = User.objects.create_user(phone_number=data["phone_number"])
+                subscription, created = Subscription.objects.get_or_create(is_trial=True)
+                user = User.objects.create_user(
+                    phone_number=data["phone_number"],
+                    subscription=subscription,
+                    subscription_expires=now() + subscription.duration,
+                )
         elif _type == "mail":
             user = request.user
         user.confirmation_code = data["confirmation_code"]

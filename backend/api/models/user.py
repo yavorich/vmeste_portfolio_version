@@ -26,17 +26,12 @@ class UserManager(BaseUserManager):
         if not phone_number:
             raise ValueError("The phone number must be set")
         phone_number = self.normalize_phone_number(phone_number)
-        if password is not None:
-            user = self.model(
-                phone_number=phone_number, password=password, **extra_fields
-            )
-            user.save()
-        else:
-            user = self.model(
-                phone_number=phone_number, password=password, **extra_fields
-            )
+        user = self.model(
+            phone_number=phone_number, password=password, **extra_fields
+        )
+        if password is None:
             user.set_unusable_password()
-            user.save()
+        user.save()
         return user
 
     def create_superuser(self, phone_number, password, **extra_fields):
