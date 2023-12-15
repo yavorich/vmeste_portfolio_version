@@ -66,3 +66,8 @@ class SupportMessageAdmin(admin.ModelAdmin):
 @admin.register(models.Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.Occupation)
+class OccupationAdmin(admin.ModelAdmin):
+    pass

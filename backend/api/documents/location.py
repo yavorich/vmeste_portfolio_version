@@ -39,6 +39,7 @@ class LocationDocument(Document):
             "id": IntegerField(),
         }
     )
+    status = TextField()
 
     class Index:
         name = "location"

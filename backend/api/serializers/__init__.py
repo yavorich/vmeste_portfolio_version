@@ -2,7 +2,13 @@
 
 from .category import CategorySerializer, CategoryTitleSerializer
 from .theme import ThemeSerializer
-from .location import LocationSerializer, LocationDocumentSerializer, LocationCreateSerializer
+from .location import (
+    LocationSerializer,
+    LocationDocumentSerializer,
+    LocationCreateSerializer,
+    CitySerializer,
+    CountrySerializer,
+)
 from .event import (
     EventDocumentSerializer,
     EventDetailSerializer,
@@ -32,3 +38,4 @@ from .participants import (
 )
 from .notifications import NotificationListSerializer, NotificationBulkUpdateSerializer
 from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
+from .occupations import OccupationSerializer
