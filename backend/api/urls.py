@@ -87,4 +87,9 @@ urlpatterns = [
     ),
     path("interests/", views.InterestListView.as_view(), name="interest_list"),
     path("occupations/", views.OccupationListView.as_view(), name="occupation_list"),
+    path(
+        "event/<str:pk>/media/",
+        views.EventMediaListCreateView.as_view(),
+        name="event-media",
+    ),
 ]
