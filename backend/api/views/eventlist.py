@@ -26,10 +26,6 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         "list": EventDocumentSerializer,
         "create": EventCreateUpdateSerializer,
     }
-    permission_classes = {
-        "list": [StatusPermissions],
-        "create": [MailIsConfirmed],
-    }
 
     filter_backends = [
         CompoundSearchFilterBackend,
@@ -104,7 +100,11 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         return queryset
 
     def get_permissions(self):
-        self.permission_classes = self.permission_classes[self.action]
+        permission_classes = {
+            "list": [StatusPermissions],
+            "create": [MailIsConfirmed],
+        }
+        self.permission_classes = permission_classes[self.action]
         return super(EventListViewSet, self).get_permissions()
 
     def get_serializer_class(self):

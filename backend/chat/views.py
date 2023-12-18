@@ -14,10 +14,6 @@ from chat.serializers import (
 from chat.models import Message
 from chat.utils import send_ws_message
 
-import logging
-
-logger = logging.getLogger("ws")
-
 
 class ChatListView(ListAPIView):
     permission_classes = [MailIsConfirmed]
@@ -75,5 +71,4 @@ class MessageSendView(CreateAPIView):
         serializer.save()
         message = serializer.data
         event_id = self.kwargs["event_id"]
-        logger.debug("Sending ws message...")
         send_ws_message(message, event_id)

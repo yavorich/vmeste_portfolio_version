@@ -17,18 +17,18 @@ from api.models import User, Subscription
 
 
 class AuthSendCodeView(APIView):
-    permission_classes = {
-        "phone": [AllowAny],
-        "mail": [IsAuthenticated],  # AllowAny for test
-    }
     serializer_class = {
         "phone": PhoneAuthSendCodeSerializer,
         "mail": EmailAuthSendCodeSerializer,
     }
 
     def get_permissions(self):
+        permission_classes = {
+            "phone": [AllowAny],
+            "mail": [IsAuthenticated],
+        }
         _type = self.request.query_params.get("type")
-        self.permission_classes = self.permission_classes[_type]
+        self.permission_classes = permission_classes[_type]
         return super(AuthSendCodeView, self).get_permissions()
 
     def post(self, request, *args, **kwargs):
@@ -42,7 +42,9 @@ class AuthSendCodeView(APIView):
             try:
                 user = User.objects.get(phone_number=data["phone_number"])
             except User.DoesNotExist:
-                subscription, created = Subscription.objects.get_or_create(is_trial=True)
+                subscription, created = Subscription.objects.get_or_create(
+                    is_trial=True
+                )
                 user = User.objects.create_user(
                     phone_number=data["phone_number"],
                     subscription=subscription,
@@ -57,15 +59,15 @@ class AuthSendCodeView(APIView):
 
 
 class AuthView(APIView):
-    permission_classes = {
-        "phone": [AllowAny],
-        "mail": [IsAuthenticated],  # AllowAny for test
-    }
     serializer_class = {"phone": PhoneAuthSerializer, "mail": EmailAuthSerializer}
 
     def get_permissions(self):
+        permission_classes = {
+            "phone": [AllowAny],
+            "mail": [IsAuthenticated],
+        }
         _type = self.request.query_params.get("type")
-        self.permission_classes = self.permission_classes[_type]
+        self.permission_classes = permission_classes[_type]
         return super(AuthView, self).get_permissions()
 
     def post(self, request, *args, **kwargs):
