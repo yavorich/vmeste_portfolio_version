@@ -14,3 +14,4 @@ from .subscription import Subscription
 from .docs import Docs
 from .support import SupportMessage, SupportTheme
 from .media import EventMedia
+from .pushtoken import PushToken

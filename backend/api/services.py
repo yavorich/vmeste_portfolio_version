@@ -1,6 +1,8 @@
 import random
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
+from httpx import AsyncClient, HTTPError
+from django.conf import settings
 
 from api.models import Event
 from api.tasks import send_mail_confirmation_code
@@ -25,3 +27,29 @@ def get_event_object(id):
         return event
 
     return get_object_or_404(Event, uuid=id)
+
+
+async def send_fcm_push(token, title, body):
+    url = "https://fcm.googleapis.com/fcm/send"
+    payload = {
+        "registration_ids": [token],
+        "content_available": True,
+        # "android_channel_id": "default_notification_channel_id",
+        "priority": "high",
+        "notification": {
+            "title": title,
+            "body": body,
+        },
+        "data": {"click_action": "FLUTTER_NOTIFICATION_CLICK"},
+        "apns": {"payload": {"aps": {"content_available": 1, "mutable-content": 1}}},
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"key={settings.FCM_TOKEN}",
+    }
+
+    async with AsyncClient() as client:
+        try:
+            await client.post(url, headers=headers, json=payload)
+        except HTTPError:
+            pass

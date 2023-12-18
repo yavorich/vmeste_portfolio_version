@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django_celery_results.admin import TaskResult, GroupResult
 
 from . import models
 
@@ -71,3 +72,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 @admin.register(models.Occupation)
 class OccupationAdmin(admin.ModelAdmin):
     pass
+
+
+admin.site.unregister(TaskResult)
+admin.site.unregister(GroupResult)
