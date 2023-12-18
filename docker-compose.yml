@@ -11,6 +11,7 @@ services:
     volumes:
       - .:/app
       - ./backend/static/:/app/backend/static/
+      - ./backend/media/:/app/backend/media/
       - /var/certbot/conf:/etc/letsencrypt/:ro
     expose:
       - 8000
@@ -42,6 +43,7 @@ services:
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
       - ./backend/static/:/app/backend/static/
+      - ./backend/media/:/app/backend/media/
     ports:
       - 80:80
       - 443:443
