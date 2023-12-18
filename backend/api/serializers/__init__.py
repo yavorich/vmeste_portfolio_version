@@ -39,4 +39,4 @@ from .participants import (
 from .notifications import NotificationListSerializer, NotificationBulkUpdateSerializer
 from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
 from .occupations import OccupationSerializer
-from .media import EventMediaBulkCreateSerializer
+from .media import EventMediaBulkCreateSerializer, EventMediaListSerializer

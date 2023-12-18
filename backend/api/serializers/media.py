@@ -3,7 +3,7 @@ import filetype
 import binascii
 
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
 from rest_framework.serializers import ValidationError
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext_lazy as _
@@ -108,3 +108,26 @@ class EventMediaBulkCreateSerializer(BulkSerializerMixin, ModelSerializer):
                 validated_data.pop("duration")
 
         return super().create(validated_data)
+
+
+class EventMediaListSerializer(ModelSerializer):
+    link = CharField(source="file")
+    image = SerializerMethodField()
+
+    class Meta:
+        model = EventMedia
+        fields = [
+            "id",
+            "file_type",
+            "link",
+            "weight",
+            "duration",
+            "uploaded_at",
+            "image",
+        ]
+
+    def get_image(self, obj: EventMedia):
+        extension = obj.file.path.split(".")[-1]
+        with open(obj.file.path, "rb") as img_file:
+            data = img_file.read()
+            return "data:image/%s;base64,%s" % (extension, base64.b64encode(data))
