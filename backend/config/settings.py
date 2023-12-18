@@ -35,7 +35,9 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").s
     ","
 )
 
-CSRF_TRUSTED_ORIGINS = ["http://" + host + ":8000" for host in ALLOWED_HOSTS]
+CSRF_TRUSTED_ORIGINS = ["http://" + host + ":8000" for host in ALLOWED_HOSTS] + [
+    "https://" + host for host in ALLOWED_HOSTS
+]
 
 # Application definition
 
@@ -210,22 +212,22 @@ CHANNEL_LAYERS = {
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'ws': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'logs/ws.log',
-            'maxBytes': 1024 * 1024 * 5,
-            'backupCount': 5,
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "ws": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "logs/ws.log",
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
         },
     },
-    'loggers': {
-        'ws': {
-            'handlers': ['ws'],
-            'level': 'DEBUG',
-            'propagate': True,
+    "loggers": {
+        "ws": {
+            "handlers": ["ws"],
+            "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
