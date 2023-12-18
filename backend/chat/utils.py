@@ -3,10 +3,6 @@ from asgiref.sync import async_to_sync
 
 from chat.models import Message
 
-import logging
-
-logger = logging.getLogger("ws")
-
 channel_layer = get_channel_layer()
 
 
@@ -16,7 +12,6 @@ async def send_ws_message(message, event_id):
 
 
 async def asend_ws_message(message: Message, event_id, _channel_layer):
-    logger.debug("Sending ws message...")
     print(message)
     await _channel_layer.group_send(
         "chat_%s" % event_id,
@@ -25,4 +20,3 @@ async def asend_ws_message(message: Message, event_id, _channel_layer):
             "message": message["text"],
         }
     )
-    logger.debug("Message sent")

@@ -67,10 +67,6 @@ class EventParticipantRetrieveUpdateView(
         "GET": EventRetrieveParticipantsSerializer,
         "PATCH": EventParticipantBulkUpdateSerializer,
     }
-    permission_classes = {
-        "GET": [IsEventOrganizer],
-        "PATCH": [MailIsConfirmed],
-    }
 
     def get_object(self):
         return get_event_object(self.kwargs["event_id"])
@@ -82,7 +78,11 @@ class EventParticipantRetrieveUpdateView(
         return self.serializer_class[self.request.method]
 
     def get_permissions(self):
-        self.permission_classes = self.permission_classes[self.request.method]
+        permission_classes = {
+            "GET": [IsEventOrganizer],
+            "PATCH": [MailIsConfirmed],
+        }
+        self.permission_classes = permission_classes[self.request.method]
         return super(EventParticipantRetrieveUpdateView, self).get_permissions()
 
     def get(self, request, *args, **kwargs):

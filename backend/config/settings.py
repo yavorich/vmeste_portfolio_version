@@ -210,24 +210,3 @@ CHANNEL_LAYERS = {
         },
     }
 }
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "ws": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs/ws.log",
-            "maxBytes": 1024 * 1024 * 5,
-            "backupCount": 5,
-        },
-    },
-    "loggers": {
-        "ws": {
-            "handlers": ["ws"],
-            "level": "DEBUG",
-            "propagate": True,
-        },
-    },
-}

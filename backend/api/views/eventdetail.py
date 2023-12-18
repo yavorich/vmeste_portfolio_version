@@ -11,7 +11,6 @@ from api.services import get_event_object
 
 class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Event.objects.all()
-    permission_classes = {"retrieve": [AllowAny], "partial_update": [MailIsConfirmed]}
     serializer_class = {
         "retrieve": EventDetailSerializer,
         "partial_update": EventCreateUpdateSerializer,
@@ -21,7 +20,11 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
         return get_event_object(self.kwargs["pk"])
 
     def get_permissions(self):
-        self.permission_classes = self.permission_classes[self.action]
+        permission_classes = {
+            "retrieve": [AllowAny],
+            "partial_update": [MailIsConfirmed],
+        }
+        self.permission_classes = permission_classes[self.action]
         return super(EventDetailViewSet, self).get_permissions()
 
     def get_serializer_class(self):
