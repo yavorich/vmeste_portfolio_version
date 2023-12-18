@@ -6,7 +6,7 @@ from api.models import Event
 
 
 def get_upload_path(instance, filename):
-    return os.path.join("images", str(instance.event.id), filename)
+    return os.path.join(f"{instance.file_type}s", str(instance.event.id), filename)
 
 
 class EventMedia(models.Model):

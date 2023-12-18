@@ -1,13 +1,15 @@
 from rest_framework_bulk.mixins import BulkCreateModelMixin
-from rest_framework.generics import ListAPIView
-
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.viewsets import GenericViewSet
 from api.permissions import MailIsConfirmed
 from api.serializers import EventMediaBulkCreateSerializer, EventMediaListSerializer
 from api.models import EventMedia
 from api.services import get_event_object
 
 
-class EventMediaListCreateView(BulkCreateModelMixin, ListAPIView):
+class EventMediaViewSet(
+    BulkCreateModelMixin, RetrieveAPIView, ListAPIView, GenericViewSet
+):
     permission_classes = [MailIsConfirmed]
     serializer_class = {
         "GET": EventMediaListSerializer,
@@ -16,12 +18,15 @@ class EventMediaListCreateView(BulkCreateModelMixin, ListAPIView):
     queryset = EventMedia.objects.all()
 
     def get_queryset(self):
-        event = get_event_object(self.kwargs["pk"])
+        event = get_event_object(self.kwargs["event_pk"])
         return self.queryset.filter(event=event)
+
+    def get_object(self):
+        return self.get_queryset().get(pk=self.kwargs[self.lookup_field])
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["event"] = get_event_object(self.kwargs["pk"])
+        context["event"] = get_event_object(self.kwargs["event_pk"])
         return context
 
     def get_serializer_class(self):
