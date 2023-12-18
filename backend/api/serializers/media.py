@@ -97,12 +97,13 @@ class EventMediaBulkCreateSerializer(BulkSerializerMixin, ModelSerializer):
         ]
 
     def create(self, validated_data):
-        if validated_data["media_type"] == EventMedia.MediaType.VIDEO:
+        validated_data["event"] = self.context["event"]
+        if validated_data["file_type"] == EventMedia.FileType.VIDEO:
             if not validated_data.get("duration"):
                 raise ValidationError(
                     "File of type 'video' must have 'duration' parameter"
                 )
-        if validated_data["media_type"] == EventMedia.MediaType.PHOTO:
+        if validated_data["file_type"] == EventMedia.FileType.PHOTO:
             if "duration" in validated_data:
                 validated_data.pop("duration")
 
