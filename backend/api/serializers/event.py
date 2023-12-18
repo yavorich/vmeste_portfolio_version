@@ -200,7 +200,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     def get_organizer(self):
         return self.context["user"]
 
-    def create(self, validated_data):
+    def prepare_location(self, validated_data):
         location, created = Location.objects.get_or_create(
             country=validated_data["country"],
             city=validated_data["city"],
@@ -216,7 +216,15 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
         validated_data["location"] = location
         validated_data["organizer"] = self.context["user"]
+        return validated_data
+
+    def create(self, validated_data):
+        validated_data = self.prepare_location(validated_data)
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data = self.prepare_location(validated_data)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         instance.link = instance.get_absolute_url()
