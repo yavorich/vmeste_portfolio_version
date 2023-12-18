@@ -16,4 +16,4 @@ from .notifications import NotificationListUpdateApiView
 from .support import SupportThemeListView, SupportMessageCreateView
 from .location import LocationListViewSet, CountryListView, CityListView
 from .interests import InterestListView, OccupationListView
-from .media import EventMediaListCreateView
+from .media import EventMediaViewSet
