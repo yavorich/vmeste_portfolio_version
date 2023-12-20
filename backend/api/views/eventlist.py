@@ -1,3 +1,5 @@
+import six
+import operator
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
@@ -20,6 +22,24 @@ from api.enums import EventStatus
 from api.documents import EventDocument
 
 
+class CustomFilteringFilterBackend(FilteringFilterBackend):
+    @classmethod
+    def apply_query_in(cls, queryset, options, value):
+        __values = cls.split_lookup_complex_multiple_value(value)
+        __queries = []
+        for __value in __values:
+            __queries.append(Q("term", **{options["field"]: __value}))
+
+        if __queries:
+            queryset = cls.apply_query(
+                queryset=queryset,
+                options=options,
+                args=[six.moves.reduce(operator.or_, __queries)],
+            )
+
+        return queryset
+
+
 class EventListViewSet(CreateModelMixin, DocumentViewSet):
     document = EventDocument
     serializer_class = {
@@ -29,13 +49,16 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     filter_backends = [
         CompoundSearchFilterBackend,
-        FilteringFilterBackend,
+        CustomFilteringFilterBackend,
     ]
 
     filter_fields = {
         "country": "country.id",
         "city": "city.id",
-        "category": "categories.id",
+        "category": {
+            "field": "categories.id",
+            "lookups": ["in"],
+        },
         "date": "date",
     }
 
