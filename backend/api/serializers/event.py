@@ -20,6 +20,7 @@ from api.serializers import (
     ThemeSerializer,
 )
 from api.documents import EventDocument
+from core.utils import convert_file_to_base64
 
 
 class EventMixin:
@@ -81,11 +82,14 @@ class EventMixin:
 
 
 class EventParticipantSerializer(ModelSerializer):
-    avatar = serializers.CharField(source="user.avatar")
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = EventParticipant
         fields = ["avatar"]
+
+    def get_avatar(self, obj: EventParticipant):
+        return convert_file_to_base64(obj.user.avatar)
 
 
 # можно позже сделать как UserSerializer, если понадобится где-то еще
