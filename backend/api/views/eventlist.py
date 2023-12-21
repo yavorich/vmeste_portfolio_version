@@ -69,6 +69,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     def get_queryset(self):
         qs: Search = super().get_queryset()
+        qs = qs.filter(Q("term", is_active=True))
         user = self.request.user
         status = self.request.query_params.get("status")
 

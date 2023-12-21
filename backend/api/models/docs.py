@@ -11,3 +11,7 @@ class Docs(models.Model):
         _("Тип документа"), choices=Name.choices, max_length=10, unique=True
     )
     text = models.TextField()
+
+    class Meta:
+        verbose_name = "Документ"
+        verbose_name = "Документы"

@@ -19,6 +19,7 @@ services:
       - ./docker/backend/dev.env
     depends_on:
       - db
+      - elasticsearch
     networks:
       - vmeste_back_default
 
@@ -28,8 +29,8 @@ services:
     restart: always
     volumes:
       - ./data/db:/var/lib/postgresql/data
-      - static:/app/backend/static/
-      - media:/app/backend/media/
+      - ./backend/static/:/app/backend/static/
+      - ./backend/media/:/app/backend/media/
     env_file:
       - ./docker/backend/dev.env
     ports:
@@ -42,8 +43,8 @@ services:
     build: ./docker/nginx
     volumes:
       - ./docker/nginx/conf/:/etc/nginx/conf.d/
-      - static:/app/backend/static/
-      - media:/app/backend/media/
+      - ./backend/static/:/app/backend/static/
+      - ./backend/media/:/app/backend/media/
     ports:
       - 8000:80
     restart: always
@@ -112,8 +113,6 @@ services:
 volumes:
   rabbitmqdata:
   elsdata:
-  static:
-  media:
 
 networks:
   vmeste_back_default:

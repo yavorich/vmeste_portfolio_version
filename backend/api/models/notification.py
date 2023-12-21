@@ -17,3 +17,7 @@ class Notification(models.Model):
         related_name="notifications",
     )
     text = models.TextField(max_length=255)
+
+    class Meta:
+        verbose_name = "Уведомление"
+        verbose_name_plural = "Уведомления"
