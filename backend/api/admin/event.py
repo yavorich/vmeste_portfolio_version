@@ -2,16 +2,20 @@ from django.contrib import admin
 from django.contrib.admin import DateFieldListFilter
 
 from core.admin import ManyToManyMixin
-from api.models import Event, EventParticipant, User
+from api.models import Event, EventParticipant, User, EventMedia
 
 
 class EventParticipantInline(admin.TabularInline):
     model = EventParticipant
 
 
+class EventMediaInline(admin.TabularInline):
+    model = EventMedia
+
+
 @admin.register(Event)
 class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
-    inlines = [EventParticipantInline]
+    inlines = [EventParticipantInline, EventMediaInline]
     list_display = [
         "id",
         "is_active",
