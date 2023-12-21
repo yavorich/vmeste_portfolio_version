@@ -90,7 +90,9 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
 
     def get_stats(self, obj: User):
         participation = EventParticipant.objects.filter(user=obj)
-        organized = Event.objects.filter(organizer=obj, is_draft=False).count()
+        organized = Event.objects.filter(
+            organizer=obj, is_draft=False, is_active=True
+        ).count()
         signed = participation.filter().count()
         visited = participation.filter(has_confirmed=True).count()
         return {"organized": organized, "signed": signed, "visited": visited}

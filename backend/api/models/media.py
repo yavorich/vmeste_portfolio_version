@@ -21,3 +21,7 @@ class EventMedia(models.Model):
     weight = models.FloatField()
     duration = models.FloatField(null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Медиафайл"
+        verbose_name_plural = "Медиафайлы"

@@ -2,7 +2,10 @@ import base64
 
 
 def convert_file_to_base64(file):
-    path = file.path
+    try:
+        path = file.path
+    except ValueError:
+        return None
     extension = path.split(".")[-1]
     with open(path, "rb") as f:
         data = f.read()

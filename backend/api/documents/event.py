@@ -30,6 +30,7 @@ class EventDocument(Document):
     uuid = TextField()
     is_close_event = BooleanField()
     is_draft = BooleanField()
+    is_active = BooleanField()
     title = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     max_age = IntegerField()
     min_age = IntegerField()

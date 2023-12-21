@@ -10,6 +10,7 @@ class Location(models.Model):
         VERIFIED = "verified", "Подтверждено"
         RECOMMENDED = "recommended", "Рекомендовано"
         UNKNOWN = "unknown", "Неизвестно"
+
     cover = models.TextField(_("Обложка"))  # base64
     name = models.CharField(_("Название"), max_length=255)
     latitude = models.FloatField()
@@ -22,12 +23,16 @@ class Location(models.Model):
     status = models.CharField(choices=Status.choices, max_length=11)
     discount = models.IntegerField(_("Скидка"), default=0)
 
+    class Meta:
+        verbose_name = "Локация"
+        verbose_name_plural = "Локации"
+
     @property
     def coords_field_indexing(self):
         """Coords for indexing.
         Used in Elasticsearch indexing/tests of `geo_distance` native filter.
         """
         return {
-            'lat': self.latitude,
-            'lon': self.longitude,
+            "lat": self.latitude,
+            "lon": self.longitude,
         }
