@@ -24,6 +24,7 @@ class EventMediaBulkCreateSerializer(BulkSerializerMixin, ModelSerializer):
 
     def create(self, validated_data):
         validated_data["event"] = self.context["event"]
+        validated_data["author"] = self.context["user"]
         if validated_data["file_type"] == EventMedia.FileType.VIDEO:
             if not validated_data.get("duration"):
                 raise ValidationError(
