@@ -101,7 +101,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     interests = models.ManyToManyField(
-        Category, verbose_name=_("Интересы"), related_name="users"
+        Category, verbose_name=_("Интересы"), related_name="users",
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
     subscription = models.ForeignKey(

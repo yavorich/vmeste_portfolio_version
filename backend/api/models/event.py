@@ -79,7 +79,7 @@ class Event(models.Model):
     start_time = models.TimeField(_("Время начала"))
     end_time = models.TimeField(_("Время завершения"))
     theme = models.ForeignKey(
-        verbose_name=_("Тема"),
+        verbose_name=_("Категория"),
         to=Theme,
         related_name="events",
         on_delete=models.SET_NULL,
