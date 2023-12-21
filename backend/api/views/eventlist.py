@@ -149,7 +149,11 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         status = request.query_params.get("status", None)
 
         if status == EventStatus.PUBLISHED:
-            serializer = FilterQuerySerializer(data=request.query_params)
+            query_params = self.request.query_params.dict()
+            if "category__in" in query_params:
+                query_params["category"] = list(map(int, query_params["category__in"].split(",")))
+                query_params.pop("category__in")
+            serializer = FilterQuerySerializer(data=query_params)
             serializer.is_valid(raise_exception=True)
             response_data["filters"] = serializer.data
 
