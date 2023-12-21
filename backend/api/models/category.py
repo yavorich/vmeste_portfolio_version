@@ -5,14 +5,17 @@ from .theme import Theme
 
 
 class Category(models.Model):
-    title = models.CharField(_("Категория"), max_length=255)
+    title = models.CharField(_("Название"), max_length=255)
     theme = models.ForeignKey(
-        Theme, related_name="categories", on_delete=models.CASCADE
+        Theme,
+        verbose_name="Категория",
+        related_name="categories",
+        on_delete=models.CASCADE,
     )
 
     class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
+        verbose_name = "Подкатегория"
+        verbose_name_plural = "Подкатегории"
 
     def __str__(self) -> str:
         return str(self.title)
