@@ -1,0 +1,5 @@
+# flake8: noqa: F401
+
+from .user import admin
+from .category import admin
+from .event import admin
