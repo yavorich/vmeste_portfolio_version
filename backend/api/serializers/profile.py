@@ -5,9 +5,13 @@ from dateutil.relativedelta import relativedelta
 
 from api.models import User, Notification, EventParticipant, Event
 from api.serializers import CategoryTitleSerializer
+from core.utils import validate_file_size, convert_file_to_base64
+from core.serializers import CustomFileField
 
 
 class ProfilePartialUpdateSerializer(serializers.ModelSerializer):
+    avatar = CustomFileField(validators=[validate_file_size])
+
     class Meta:
         model = User
         fields = [
@@ -58,6 +62,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
     occupation = serializers.CharField(source="occupation.name", allow_null=True)
     interests = CategoryTitleSerializer(many=True)
     stats = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -85,10 +90,13 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
 
     def get_stats(self, obj: User):
         participation = EventParticipant.objects.filter(user=obj)
-        organized = Event.objects.filter(organizer=obj, is_draft=False).count()  # drafts по идее исключаем
+        organized = Event.objects.filter(organizer=obj, is_draft=False).count()
         signed = participation.filter().count()
         visited = participation.filter(has_confirmed=True).count()
         return {"organized": organized, "signed": signed, "visited": visited}
+
+    def get_avatar(self, obj: User):
+        return convert_file_to_base64(obj.avatar)
 
 
 class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):

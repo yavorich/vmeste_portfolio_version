@@ -7,6 +7,7 @@ from django.template.defaultfilters import time as _time
 from api.models import Event, EventParticipant, User
 from api.serializers import LocationSerializer
 from api.enums import Gender
+from core.utils import convert_file_to_base64
 
 
 class EventMarkingSerializer(ModelSerializer):
@@ -41,7 +42,7 @@ class EventTitleSerializer(ModelSerializer):
 
 
 class EventParticipantUserSerializer(ModelSerializer):
-    avatar = serializers.CharField(source="user.avatar")
+    avatar = serializers.SerializerMethodField()
     name_and_surname = serializers.SerializerMethodField()
     user_confirmed = serializers.BooleanField(source="has_confirmed")
 
@@ -57,10 +58,14 @@ class EventParticipantUserSerializer(ModelSerializer):
     def get_name_and_surname(self, obj: EventParticipant):
         return obj.user.get_full_name()
 
+    def get_avatar(self, obj: EventParticipant):
+        return convert_file_to_base64(obj.user.avatar)
+
 
 class EventOrganizerUserSerializer(ModelSerializer):
     name_and_surname = serializers.SerializerMethodField()
     in_men = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -76,6 +81,9 @@ class EventOrganizerUserSerializer(ModelSerializer):
 
     def get_in_men(self, obj: User):
         return obj.gender == Gender.MALE
+
+    def get_avatar(self, obj: User):
+        return convert_file_to_base64(obj.avatar)
 
 
 class EventRetrieveParticipantsSerializer(ModelSerializer):

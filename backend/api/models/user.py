@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager,
@@ -15,6 +17,10 @@ from .occupation import Occupation
 from .subscription import Subscription
 
 
+def get_upload_path(instance, filename):
+    return os.path.join("users", str(instance.pk), "avatar", filename)
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -26,9 +32,7 @@ class UserManager(BaseUserManager):
         if not phone_number:
             raise ValueError("The phone number must be set")
         phone_number = self.normalize_phone_number(phone_number)
-        user = self.model(
-            phone_number=phone_number, password=password, **extra_fields
-        )
+        user = self.model(phone_number=phone_number, password=password, **extra_fields)
         if password is None:
             user.set_unusable_password()
         user.save()
@@ -61,7 +65,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_("Фамилия"), null=True)
     date_of_birth = models.DateField(_("Дата рождения"), null=True)
     gender = models.CharField(_("Пол"), choices=Gender.choices, max_length=6, null=True)
-    avatar = models.TextField(_("Аватар"), null=True)
+    avatar = models.ImageField(_("Аватар"), upload_to=get_upload_path, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -87,6 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Subscription, related_name="users", on_delete=models.SET_NULL, null=True
     )
     subscription_expires = models.DateTimeField(null=True)
+    agreement_applied_at = models.DateTimeField(null=True)
 
     USERNAME_FIELD = "phone_number"
 
@@ -97,3 +102,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+
+    def get_interests(self) -> list[str]:
+        return "\n".join([str(i) for i in self.interests.all()])
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
