@@ -1,16 +1,28 @@
 from django.contrib import admin
+from django.forms import ModelForm, ModelChoiceField
 
 from core.admin import ManyToManyMixin
-from api.models import User
+from api.models import User, Category
 
 
-# class InterestInline(admin.TabularInline):
-#     model = Category
+class InterestForm(ModelForm):
+    interests = ModelChoiceField(queryset=Category.objects.all(), label="Категория")
+
+    class Meta:
+        model = Category
+        fields = ("interests",)
+
+
+class InterestInline(admin.TabularInline):
+    model = User.interests.through
+    verbose_name = "Категория"
+    verbose_name_plural = "Категории"
+    form = InterestForm
 
 
 @admin.register(User)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    # inlines = [InterestInline]
+    inlines = [InterestInline]
     list_display = [
         "is_active",
         "id",
@@ -67,7 +79,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "agreement_applied_at",
                     "last_login",
                 ]
-            }
+            },
         )
     ]
     readonly_fields = []

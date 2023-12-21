@@ -111,7 +111,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
         EventStatusFilter,
         "city",
         "theme",
-        "categories__title",
+        "categories",
         ("date", DateRangeFilterBuilder()),
     ]
     search_fields = [
