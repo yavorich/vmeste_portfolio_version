@@ -27,6 +27,7 @@ class EventMediaViewSet(
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["event"] = get_event_object(self.kwargs["event_pk"])
+        context["user"] = self.request.user
         return context
 
     def get_serializer_class(self):
