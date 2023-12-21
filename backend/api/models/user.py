@@ -57,41 +57,66 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = None
     phone_number_regex = RegexValidator(regex=r"^\+7\d{10}$")
     phone_number = models.CharField(
-        validators=[phone_number_regex], max_length=20, unique=True
+        _("Телефон"), validators=[phone_number_regex], max_length=20, unique=True
     )
-    confirmation_code = models.CharField(max_length=5, null=True)
+    confirmation_code = models.CharField(max_length=5, blank=True, null=True)
     profile_is_completed = models.BooleanField(default=False)
-    first_name = models.CharField(_("Имя"), null=True)
-    last_name = models.CharField(_("Фамилия"), null=True)
-    date_of_birth = models.DateField(_("Дата рождения"), null=True)
-    gender = models.CharField(_("Пол"), choices=Gender.choices, max_length=6, null=True)
-    avatar = models.ImageField(_("Аватар"), upload_to=get_upload_path, null=True)
-    is_active = models.BooleanField(default=True)
+    first_name = models.CharField(_("Имя"), blank=True, null=True)
+    last_name = models.CharField(_("Фамилия"), blank=True, null=True)
+    date_of_birth = models.DateField(_("Дата рождения"), blank=True, null=True)
+    gender = models.CharField(
+        _("Пол"), choices=Gender.choices, max_length=6, blank=True, null=True
+    )
+    avatar = models.ImageField(
+        _("Аватар"), upload_to=get_upload_path, blank=True, null=True
+    )
+    is_active = models.BooleanField(_("Активен"), default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    email = models.EmailField(null=True)
-    email_is_confirmed = models.BooleanField(default=False)
+    email = models.EmailField(_("Почта"), blank=True, null=True)
+    email_is_confirmed = models.BooleanField(_("Почта подтверждена"), default=False)
     country = models.ForeignKey(
-        Country, related_name="users", on_delete=models.SET_NULL, null=True, blank=True
-    )
-    city = models.ForeignKey(
-        City, related_name="users", on_delete=models.SET_NULL, null=True, blank=True
-    )
-    telegram = models.CharField(max_length=255, null=True, blank=True)
-    occupation = models.ForeignKey(
-        Occupation,
+        Country,
+        verbose_name=_("Страна"),
         related_name="users",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
-    interests = models.ManyToManyField(Category, related_name="users", blank=True)
-    about_me = models.TextField(max_length=2000, null=True, blank=True)
-    subscription = models.ForeignKey(
-        Subscription, related_name="users", on_delete=models.SET_NULL, null=True
+    city = models.ForeignKey(
+        City,
+        verbose_name=_("Город"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
-    subscription_expires = models.DateTimeField(null=True)
-    agreement_applied_at = models.DateTimeField(null=True)
+    telegram = models.CharField(max_length=255, null=True, blank=True)
+    occupation = models.ForeignKey(
+        Occupation,
+        verbose_name=_("Профессия"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    interests = models.ManyToManyField(
+        Category, verbose_name=_("Интересы"), related_name="users"
+    )
+    about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
+    subscription = models.ForeignKey(
+        Subscription,
+        verbose_name=_("Подписка"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    subscription_expires = models.DateTimeField(
+        _("Дата окончания подписки"), blank=True, null=True
+    )
+    agreement_applied_at = models.DateTimeField(
+        _("Дата принятия соглашения"), null=True
+    )
 
     USERNAME_FIELD = "phone_number"
 
