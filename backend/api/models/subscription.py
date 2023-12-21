@@ -7,3 +7,7 @@ class Subscription(models.Model):
     duration = models.DurationField(default=timedelta(days=7))
     worth = models.TextField(default="")
     is_trial = models.BooleanField()
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"

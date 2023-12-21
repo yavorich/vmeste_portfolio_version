@@ -1,6 +1,6 @@
 import random
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from api.models import Event
 from api.tasks import send_mail_confirmation_code
@@ -22,6 +22,8 @@ def get_event_object(id):
         event = get_object_or_404(Event, id=id)
         if event.is_close_event:
             raise PermissionDenied("Закрытые события доступны только по uuid")
+        if not event.is_active:
+            raise ValidationError("Событие заблокировано администрацией")
         return event
 
     return get_object_or_404(Event, uuid=id)

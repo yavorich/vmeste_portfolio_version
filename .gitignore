@@ -163,3 +163,4 @@ cython_debug/
 certbot/
 */logs
 data/
+*/media

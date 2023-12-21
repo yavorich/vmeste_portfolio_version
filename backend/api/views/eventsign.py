@@ -26,6 +26,9 @@ class EventPublishedSignViewSet(GenericViewSet):
         if obj.is_draft:
             raise ValidationError("Событие ещё не опубликовано")
 
+        if not obj.is_active:
+            raise ValidationError("Событие удалено или заблокировано")
+
         if participant is not None or user_is_organizer:
             raise ValidationError("Пользователь уже записан или является организатором")
 

@@ -79,7 +79,7 @@ class Event(models.Model):
     start_time = models.TimeField(_("Время начала"))
     end_time = models.TimeField(_("Время завершения"))
     theme = models.ForeignKey(
-        verbose_name=_("Категория"),
+        verbose_name=_("Тема"),
         to=Theme,
         related_name="events",
         on_delete=models.SET_NULL,
@@ -103,6 +103,7 @@ class Event(models.Model):
         null=True,
     )
     is_draft = models.BooleanField(_("Черновик"))
+    is_active = models.BooleanField(default=True)
     total_male = models.PositiveSmallIntegerField(_("Всего мужчин"))
     total_female = models.PositiveSmallIntegerField(_("Всего женщин"))
     link = models.URLField(_("Ссылка"), default="#")
@@ -119,10 +120,12 @@ class Event(models.Model):
     objects = EventQuerySet.as_manager()
 
     class Meta:
+        verbose_name = "Событие"
+        verbose_name_plural = "События"
         ordering = ["date"]
 
     def __str__(self) -> str:
-        return str(self.uuid) if self.is_close_event else str(self.id)
+        return str(self.title)
 
     @property
     def stats_men(self):

@@ -39,3 +39,7 @@ class SupportMessage(models.Model):
             raise ValidationError(
                 "Минимум одно из полей 'user' или 'event' должно быть заполнено."
             )
+
+    class Meta:
+        verbose_name = "Обращение"
+        verbose_name_plural = "Обращения"
