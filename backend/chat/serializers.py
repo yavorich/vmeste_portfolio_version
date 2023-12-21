@@ -3,6 +3,7 @@ from django.db.models import Q
 
 from api.models import Event, User
 from chat.models import Message, ReadMessage
+from core.utils import convert_file_to_base64
 
 
 class ChatListSerializer(serializers.ModelSerializer):
@@ -40,11 +41,12 @@ class ChatEventSerializer(serializers.ModelSerializer):
         ]
 
     def get_total_will_come(self, obj: Event):
-        pass
+        return obj.participants.count()
 
 
 class SenderSerializer(serializers.ModelSerializer):
     name_and_surname = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -56,6 +58,9 @@ class SenderSerializer(serializers.ModelSerializer):
 
     def get_name_and_surname(self, obj: User):
         return obj.get_full_name()
+
+    def get_avatar(self, obj: User):
+        return convert_file_to_base64(obj.avatar)
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -83,7 +88,6 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class MessageSendSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Message
         fields = [
@@ -92,6 +96,6 @@ class MessageSendSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        for key in ["sender", "event", "is_info", "is_incoming"]:
+        for key in ["sender", "chat", "is_info", "is_incoming"]:
             validated_data[key] = self.context.get(key)
         return super().create(validated_data)

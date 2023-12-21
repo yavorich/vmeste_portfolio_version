@@ -11,7 +11,7 @@ from chat.serializers import (
     MessageSerializer,
     MessageSendSerializer,
 )
-from chat.models import Message
+from chat.models import Message, Chat
 from chat.utils import send_ws_message
 
 
@@ -48,7 +48,7 @@ class MessageListView(ListAPIView):
     serializer_class = MessageSerializer
 
     def get_queryset(self):
-        return Message.objects.filter(event=self.kwargs["event_id"])
+        return Message.objects.filter(chat__event=self.kwargs["event_id"])
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -62,7 +62,7 @@ class MessageSendView(CreateAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["event"] = Event.objects.get(id=self.kwargs["event_id"])
+        context["chat"] = Chat.objects.get(event__id=self.kwargs["event_id"])
         context["sender"] = self.request.user
         context["is_info"] = False
         return context
