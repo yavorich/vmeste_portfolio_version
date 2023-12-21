@@ -5,11 +5,12 @@ from api.models import User
 
 
 # class InterestInline(admin.TabularInline):
-#     model = User.interests.through
+#     model = Category
 
 
 @admin.register(User)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
+    # inlines = [InterestInline]
     list_display = [
         "is_active",
         "id",
@@ -43,7 +44,32 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         "occupation",
         "agreement_applied_at",
     ]
-
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": [
+                    "phone_number",
+                    "email",
+                    "avatar",
+                    "first_name",
+                    "last_name",
+                    "gender",
+                    "country",
+                    "date_of_birth",
+                    "telegram",
+                    "interests",
+                    "occupation",
+                    "profile_is_completed",
+                    "email_is_confirmed",
+                    "subscription",
+                    "subscription_expires",
+                    "agreement_applied_at",
+                    "last_login",
+                ]
+            }
+        )
+    ]
     readonly_fields = []
     search_fields = ["first_name", "last_name", "phone_number", "email"]
     actions = ["block_users", "unblock_users"]

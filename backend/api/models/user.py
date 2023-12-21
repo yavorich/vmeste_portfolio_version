@@ -60,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("Телефон"), validators=[phone_number_regex], max_length=20, unique=True
     )
     confirmation_code = models.CharField(max_length=5, blank=True, null=True)
-    profile_is_completed = models.BooleanField(default=False)
+    profile_is_completed = models.BooleanField(_("Профиль заполнен"), default=False)
     first_name = models.CharField(_("Имя"), blank=True, null=True)
     last_name = models.CharField(_("Фамилия"), blank=True, null=True)
     date_of_birth = models.DateField(_("Дата рождения"), blank=True, null=True)

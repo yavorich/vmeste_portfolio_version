@@ -20,6 +20,7 @@ from api.serializers import (
 from api.permissions import StatusPermissions, MailIsConfirmed
 from api.enums import EventStatus
 from api.documents import EventDocument
+from chat.models import Chat
 
 
 class CustomFilteringFilterBackend(FilteringFilterBackend):
@@ -165,3 +166,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             response_data["unread_notify"] = unread_notify
 
         return Response(response_data)
+
+    def perform_create(self, serializer):
+        event = serializer.save()
+        Chat.objects.create(event=event)

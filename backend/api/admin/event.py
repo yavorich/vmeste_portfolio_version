@@ -1,5 +1,10 @@
 from django.contrib import admin
-from django.contrib.admin import DateFieldListFilter
+from django.contrib.admin.filters import (
+    SimpleListFilter,
+)
+from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
+from rangefilter.filters import DateRangeFilterBuilder
 
 from core.admin import ManyToManyMixin
 from api.models import Event, EventParticipant, User, EventMedia
@@ -13,9 +18,59 @@ class EventMediaInline(admin.TabularInline):
     model = EventMedia
 
 
+class EventStatusFilter(SimpleListFilter):
+    title = _("Статус")
+    parameter_name = ""
+
+    def lookups(self, request, model_admin):
+        return (
+            ("past", _("Прошедшие")),
+            ("future", _("Будущие")),
+            ("close", _("Закрытые")),
+            ("archive", _("Архивные")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "past":
+            return queryset.filter_past()
+        if self.value() == "future":
+            return queryset.filter_upcoming()
+        if self.value() == "close":
+            return queryset.filter(is_close_event=True)
+        if self.value() == "archive":
+            return queryset.filter(Q(is_draft=True) | Q(is_active=False))
+
+
 @admin.register(Event)
 class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     inlines = [EventParticipantInline, EventMediaInline]
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": [
+                    "is_active",
+                    "is_close_event",
+                    "is_draft",
+                    "title",
+                    "short_description",
+                    "description",
+                    "country",
+                    "city",
+                    "location",
+                    "date",
+                    "start_time",
+                    "end_time",
+                    "theme",
+                    "categories",
+                    "total_male",
+                    "total_female",
+                    "organizer",
+                    "did_organizer_marking",
+                ]
+            }
+        )
+    ]
     list_display = [
         "id",
         "is_active",
@@ -53,10 +108,11 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
         "organizer",
     ]
     list_filter = [
+        EventStatusFilter,
         "city",
         "theme",
         "categories__title",
-        ("date", DateFieldListFilter),
+        ("date", DateRangeFilterBuilder()),
     ]
     search_fields = [
         "title",
@@ -65,10 +121,11 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
         "location__address",
     ]
     actions = ["block_events", "unblock_events"]
+    date_hierarchy = "date"
 
     @admin.display(description="Уведомления")
     def get_notifications(self, obj):
-        return self.links_to_objects(obj.notifications.all())
+        return obj.notifications.count()
 
     @admin.display(description="Название локации")
     def location_name(self, obj):
