@@ -103,7 +103,7 @@ class Event(models.Model):
         null=True,
     )
     is_draft = models.BooleanField(_("Черновик"))
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(_("Активное"), default=True)
     total_male = models.PositiveSmallIntegerField(_("Всего мужчин"))
     total_female = models.PositiveSmallIntegerField(_("Всего женщин"))
     link = models.URLField(_("Ссылка"), default="#")
