@@ -7,3 +7,4 @@ from .country import admin
 from .city import admin
 from .theme import admin
 from .occupation import admin
+from .support import admin
