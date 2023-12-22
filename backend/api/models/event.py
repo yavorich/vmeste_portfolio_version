@@ -205,4 +205,6 @@ class Event(models.Model):
     def save(self, *args, **kwargs):
         if self.pk is not None:
             self.link = self.get_absolute_url()
+        if not self.is_active or self.is_draft:
+            self.participants.delete()
         return super().save(*args, **kwargs)

@@ -51,6 +51,9 @@ class EventPublishedSignViewSet(GenericViewSet):
         participant = obj.get_participant(user)
         user_is_organizer = user == obj.organizer
 
+        if obj.is_draft or not obj.is_active:
+            raise ValidationError("Мероприятие уже отменено или заблокировано")
+
         if participant is None and not user_is_organizer:
             raise ValidationError("Пользователь не является участником/организатором")
 
