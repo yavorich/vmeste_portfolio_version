@@ -39,9 +39,8 @@ class AuthSendCodeView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.data
         if _type == "phone":
-            try:
-                user = User.objects.get(phone_number=data["phone_number"])
-            except User.DoesNotExist:
+            user = authenticate(request, phone_number=data["phone_number"])
+            if not user:
                 subscription, created = Subscription.objects.get_or_create(
                     is_trial=True
                 )

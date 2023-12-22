@@ -7,7 +7,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import RegexValidator
+from phonenumber_field.modelfields import PhoneNumberField
 
 from api.enums import Gender
 from .country import Country
@@ -55,10 +55,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = None
-    phone_number_regex = RegexValidator(regex=r"^\+7\d{10}$")
-    phone_number = models.CharField(
-        _("Телефон"), validators=[phone_number_regex], max_length=20, unique=True
-    )
+    phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
     confirmation_code = models.CharField(max_length=5, blank=True, null=True)
     profile_is_completed = models.BooleanField(_("Профиль заполнен"), default=False)
     first_name = models.CharField(_("Имя"), blank=True, null=True)
@@ -101,7 +98,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     interests = models.ManyToManyField(
-        Category, verbose_name=_("Интересы"), related_name="users",
+        Category,
+        verbose_name=_("Интересы"),
+        related_name="users",
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
     subscription = models.ForeignKey(
