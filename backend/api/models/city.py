@@ -5,7 +5,7 @@ from .country import Country
 
 
 class City(models.Model):
-    name = models.CharField(_("Название"), max_length=255)
+    name = models.CharField(_("Название"), max_length=255, unique=True)
     country = models.ForeignKey(
         Country, related_name="cities", on_delete=models.CASCADE
     )

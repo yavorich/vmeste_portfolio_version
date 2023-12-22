@@ -12,5 +12,5 @@ from .user import User
 from .theme import Theme
 from .subscription import Subscription
 from .docs import Docs
-from .support import SupportMessage, SupportTheme
+from .support import SupportRequestMessage, SupportRequestTheme
 from .media import EventMedia

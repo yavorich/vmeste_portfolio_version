@@ -1,39 +1,46 @@
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
-from api.models import SupportTheme, SupportMessage
+from api.models import SupportRequestTheme, SupportRequestMessage
 
 
 class SupportThemeListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SupportTheme
-        fields = ["id", "theme"]
+        model = SupportRequestTheme
+        fields = ["id", "name"]
 
 
 class SupportMessageCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SupportMessage
-        fields = ["is_event", "theme", "event", "profile", "text"]
+        model = SupportRequestMessage
+        fields = ["subject", "theme", "event", "profile", "text"]
         extra_kwargs = {
-            "is_event": {"required": True},
+            "subject": {"required": True},
             "theme": {"required": True},
             "text": {"required": True},
         }
 
     def validate(self, attrs):
-        if attrs["is_event"] and not attrs.get("event"):
-            raise ValidationError("Событие, к которому относится жалоба, не указано")
-        if not attrs["is_event"] and not attrs.get("profile"):
-            raise ValidationError("Профиль, к которому относится жалоба, не указан")
-        if attrs["is_event"] and attrs.get("profile"):
-            raise ValidationError("Указание профиля в жалобе на событие не требуется")
-        if not attrs["is_event"] and attrs.get("event"):
-            raise ValidationError("Указание события в жалобе на профиль не требуется")
+        subjects = SupportRequestMessage.Subject
+        if attrs["subject"] and not attrs.get(attrs["subject"]):
+            raise ValidationError(
+                f"{attrs['subject']}, к которому относится жалоба, не указан"
+            )
+        for choice in subjects:
+            if attrs["subject"] != choice and attrs.get(choice) is not None:
+                raise ValidationError(f"Указан лишний параметр: {choice}")
+
         if attrs.get("profile") == self.context["user"]:
             raise ValidationError("Вы не можете пожаловаться на свой профиль")
+
         if event := attrs.get("event"):
             if event.organizer == self.context["user"]:
                 raise ValidationError(
                     "Вы не можете пожаловаться на событие, которое организуете"
                 )
         return super().validate(attrs)
+
+    def create(self, validated_data):
+        validated_data["author"] = self.context.get("user")
+        validated_data["status"] = SupportRequestMessage.Status.NEW
+        return super().create(validated_data)
