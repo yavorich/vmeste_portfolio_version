@@ -1,11 +1,12 @@
 from rest_framework import serializers
+from phonenumber_field.serializerfields import PhoneNumberField
 
 from api.models import User
 from api.services import generate_confirmation_code
 
 
 class PhoneAuthSendCodeSerializer(serializers.Serializer):
-    phone_number = serializers.CharField()
+    phone_number = PhoneNumberField(region="RU")
     confirmation_code = serializers.SerializerMethodField()
 
     def get_confirmation_code(self, obj):

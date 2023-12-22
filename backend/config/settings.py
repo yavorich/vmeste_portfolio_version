@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django_elasticsearch_dsl_drf",
     "channels",
     "rangefilter",
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
