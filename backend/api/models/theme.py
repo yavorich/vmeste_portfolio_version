@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Theme(models.Model):
-    title = models.CharField(_("Название"), max_length=255)
+    title = models.CharField(_("Название"), max_length=255, unique=True)
 
     class Meta:
         verbose_name = "Категория"

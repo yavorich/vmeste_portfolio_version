@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Occupation(models.Model):
-    title = models.CharField("Название", max_length=255)
+    title = models.CharField("Название", max_length=255, unique=True)
 
     class Meta:
         verbose_name = "Профессия"

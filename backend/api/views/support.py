@@ -1,17 +1,17 @@
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
-from api.models import SupportTheme, SupportMessage
+from api.models import SupportRequestTheme, SupportRequestMessage
 from api.serializers import SupportThemeListSerializer, SupportMessageCreateSerializer
 
 
 class SupportThemeListView(ListAPIView):
-    queryset = SupportTheme.objects.all()
+    queryset = SupportRequestTheme.objects.all()
     serializer_class = SupportThemeListSerializer
     permission_classes = [IsAuthenticated]
 
 
 class SupportMessageCreateView(CreateAPIView):
-    queryset = SupportMessage.objects.all()
+    queryset = SupportRequestMessage.objects.all()
     serializer_class = SupportMessageCreateSerializer
     permission_classes = [IsAuthenticated]
 
