@@ -89,7 +89,7 @@ services:
 
   elasticsearch:
     container_name: vmeste_elasticsearch
-    image: elasticsearch:8.11.1
+    image: elasticsearch:7.17.9
     restart: always
     volumes:
       - elsdata:/usr/share/elasticsearch/data
