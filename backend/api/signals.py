@@ -6,6 +6,5 @@ from api.models import EventParticipant
 
 
 @receiver(post_delete, sender=EventParticipant)
-def update_event_document(sender, **kwargs):
-    event_instance = kwargs["instance"].event
-    registry.update(event_instance)
+def update_event_document(sender, instance: EventParticipant, **kwargs):
+    registry.update(instance.event)

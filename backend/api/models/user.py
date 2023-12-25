@@ -116,6 +116,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     agreement_applied_at = models.DateTimeField(
         _("Дата принятия соглашения"), null=True
     )
+    sending_push = models.BooleanField(default=True)
 
     USERNAME_FIELD = "phone_number"
 

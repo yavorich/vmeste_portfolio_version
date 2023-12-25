@@ -9,7 +9,7 @@ def send_mail_confirmation_code(email, code):
         "subject": "VMESTE - Подтверждение электронной почты",
         "from_email": EMAIL_HOST_USER,
         "recipient_list": [email],
-        "message": code
+        "message": code,
     }
 
     return send_mail(**msg_data)

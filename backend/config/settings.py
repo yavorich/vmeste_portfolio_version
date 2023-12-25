@@ -51,12 +51,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "api",
     "chat",
+    "notifications",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
     "channels",
+    "django_celery_results",
     "rangefilter",
     "phonenumber_field",
 ]
@@ -194,6 +196,8 @@ CELERY_BROKER_URL = (
     f"{RABBITMQ['PROTOCOL']}://{RABBITMQ['USER']}:"
     f"{RABBITMQ['PASSWORD']}@{RABBITMQ['HOST']}:{RABBITMQ['PORT']}"
 )
+
+CELERY_RESULT_BACKEND = "django-db"
 
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://elasticsearch:9200"},  # add to env later
