@@ -5,7 +5,6 @@ from notifications.services import (
     generate_push_notification_body,
     get_push_notification_users_list,
 )  # , send_fcm_push
-from api.models import Event
 from notifications.models import Notification, UserNotification
 
 
@@ -16,28 +15,29 @@ def create_notifications_task(pk, type):
 
 
 @shared_task
-def send_push_notifications_task(data, groups):
-    event = Event.objects.get(pk=data["event"]) if data.get("event") else None
-    if data["type"] == Notification.Type.ADMIN:
-        body = data["body"]
+def send_push_notifications_task(pk, groups):
+    notification = Notification.objects.get(pk=pk)
+    event = getattr(notification, "event", None)
+    if notification.type == Notification.Type.ADMIN:
+        body = {group: notification.body for group in groups}
     else:
         body = {
-            group: generate_push_notification_body(data["type"], group)
+            group: generate_push_notification_body(notification.type, group)
             for group in groups
         }
     users = {
-        group: get_push_notification_users_list(data["type"], group, event)
+        group: get_push_notification_users_list(group, event)
         for group in groups
     }
-    notifications = []
+    user_notifications = []
     for group in groups:
         for user in users[group]:
-            notification = UserNotification.objects.create(
-                user=user, notification=data["id"], body=body[group]
+            user_notification = UserNotification.objects.create(
+                user=user, notification=notification, body=body[group]
             )
-            notifications.append(notification)
+            user_notifications.append(user_notification)
 
-    async_to_sync(send_push_notifications)(users, notifications)
+    async_to_sync(send_push_notifications)(users, user_notifications)
     return "Success send push notifications"
 
 

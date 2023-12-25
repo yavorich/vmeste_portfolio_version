@@ -16,7 +16,7 @@ class NotificationSerializer(ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ["id", "created_at", "event", "text"]
+        fields = ["id", "created_at", "event", "title", "body"]
 
 
 class UserNotificationListSerializer(ModelSerializer):
@@ -25,7 +25,7 @@ class UserNotificationListSerializer(ModelSerializer):
 
     class Meta:
         model = UserNotification
-        fields = ["id", "read", "created_at", "event", "text"]
+        fields = ["id", "read", "created_at", "event", "body"]
 
 
 class UserNotificationBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer):
