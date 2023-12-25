@@ -30,7 +30,7 @@ class ChatListSerializer(serializers.ModelSerializer):
         return unread_messages.count()
 
     def get_cover(self, obj: Event):
-        return convert_file_to_base64(obj.cover.file)
+        return convert_file_to_base64(obj.cover)
 
 
 class ChatEventSerializer(serializers.ModelSerializer):
@@ -49,7 +49,7 @@ class ChatEventSerializer(serializers.ModelSerializer):
         return obj.participants.count()
 
     def get_cover(self, obj: Event):
-        return convert_file_to_base64(obj.cover.file)
+        return convert_file_to_base64(obj.cover)
 
 
 class SenderSerializer(serializers.ModelSerializer):

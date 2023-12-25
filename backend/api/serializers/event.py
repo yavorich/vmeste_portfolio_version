@@ -141,7 +141,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
         ]
 
     def get_cover(self, obj: Event):
-        return convert_file_to_base64(obj.cover.file)
+        return convert_file_to_base64(obj.cover)
 
 
 class EventDocumentSerializer(EventMixin, DocumentSerializer):

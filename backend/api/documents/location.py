@@ -59,5 +59,6 @@ class LocationDocument(Document):
         if isinstance(related_instance, City):
             return related_instance.locations.all()
 
+    @staticmethod
     def prepare_cover(instance: Location):
-        return convert_file_to_base64(instance.cover.file)
+        return convert_file_to_base64(instance.cover)
