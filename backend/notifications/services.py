@@ -38,7 +38,7 @@ def generate_push_notification_body(type, group):
 
 
 def get_push_notification_users_list(group, event=None):
-    users = User.objects.filter(sending_push=True)
+    users = User.objects.filter(is_active=True, is_staff=False, sending_push=True)
     if group == PushGroup.ALL:
         return users
     if group == PushGroup.ORGANIZER:
