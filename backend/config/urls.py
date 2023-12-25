@@ -3,9 +3,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-# from api.urls import urlpatterns as api_urlpatterns
-# from chat.urls import urlpatterns as chat_urlpatterns
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(
@@ -14,6 +11,7 @@ urlpatterns = [
             [
                 path("", include("api.urls", namespace="api")),
                 path("", include("chat.urls", namespace="chat")),
+                path("", include("notifications.urls", namespace="notifications")),
             ]
         ),
     ),

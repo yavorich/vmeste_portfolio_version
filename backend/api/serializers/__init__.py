@@ -36,7 +36,6 @@ from .participants import (
     EventParticipantBulkUpdateSerializer,
     EventParticipantDeleteSerializer,
 )
-from .notifications import NotificationListSerializer, NotificationBulkUpdateSerializer
 from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
 from .occupations import OccupationSerializer
 from .media import EventMediaBulkCreateSerializer, EventMediaListSerializer
