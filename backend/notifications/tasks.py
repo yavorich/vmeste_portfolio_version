@@ -6,12 +6,12 @@ from notifications.services import (
     get_push_notification_users_list,
 )  # , send_fcm_push
 from notifications.models import Notification, UserNotification
+from api.models import Event
 
 
 @shared_task
 def create_notifications_task(pk, type):
-    kwargs = {"event": pk, "type": type}
-    return Notification.objects.create(**kwargs)
+    return Notification.objects.create(event=Event.objects.get(pk=pk), type=type)
 
 
 @shared_task
