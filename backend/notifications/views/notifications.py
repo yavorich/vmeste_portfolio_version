@@ -1,20 +1,23 @@
 from rest_framework_bulk import BulkUpdateModelMixin
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from api.models import Notification
-from api.serializers import NotificationListSerializer, NotificationBulkUpdateSerializer
+
+from notifications.models import UserNotification
+from notifications.serializers import (
+    UserNotificationListSerializer,
+    UserNotificationBulkUpdateSerializer,
+)
 
 
 class NotificationListUpdateApiView(BulkUpdateModelMixin, ListAPIView):
-    queryset = Notification.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = {
-        "GET": NotificationListSerializer,
-        "PATCH": NotificationBulkUpdateSerializer,
+        "GET": UserNotificationListSerializer,
+        "PATCH": UserNotificationBulkUpdateSerializer,
     }
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return UserNotification.objects.filter(user=self.request.user)
 
     def get_serializer_class(self):
         return self.serializer_class[self.request.method]

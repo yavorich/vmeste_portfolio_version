@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.utils.timezone import now
 from dateutil.relativedelta import relativedelta
 
-from api.models import User, Notification, EventParticipant, Event
+from api.models import User, EventParticipant, Event
 from api.serializers import CategoryTitleSerializer
 from core.utils import validate_file_size, convert_file_to_base64
 from core.serializers import CustomFileField
@@ -86,7 +86,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
         return relativedelta(now().date(), obj.date_of_birth).years
 
     def get_unread_notify(self, obj: User):
-        return Notification.objects.filter(user=obj, read=False).count()
+        return obj.notifications.filter(read=False).count()
 
     def get_stats(self, obj: User):
         participation = EventParticipant.objects.filter(user=obj)

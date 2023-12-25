@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 
-from api.models import Event, Notification
+from api.models import Event
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
 from api.permissions import MailIsConfirmed
 from api.services import get_event_object
@@ -39,8 +39,6 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     def retrieve(self, request, *args, **kwargs):
         data = super().retrieve(request, *args, **kwargs).data
         if self.request.user.is_authenticated:
-            unread_notify = Notification.objects.filter(
-                user=self.request.user, read=False
-            ).count()
+            unread_notify = self.request.user.notifications.filter(read=False).count()
             data["unread_notify"] = unread_notify
         return Response(data)

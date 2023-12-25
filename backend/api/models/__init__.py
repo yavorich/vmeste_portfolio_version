@@ -6,7 +6,6 @@ from .country import Country
 from .event import Event
 from .eventparticipant import EventParticipant
 from .location import Location
-from .notification import Notification
 from .occupation import Occupation
 from .user import User
 from .theme import Theme
