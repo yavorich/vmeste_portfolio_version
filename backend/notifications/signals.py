@@ -8,7 +8,6 @@ from api.models import Event
 from notifications.models import Notification
 from notifications.tasks import create_notifications_task, send_push_notifications_task
 from notifications.services import PushGroup
-from notifications.serializers import NotificationSerializer
 
 
 @receiver(pre_save, sender=Event)
@@ -42,7 +41,6 @@ def revoke_existing_remind_notifications(instance):
 
 @receiver(post_save, sender=Notification)
 def send_push_notifications(sender, instance, **kwargs):
-    serializer = NotificationSerializer(instance=instance)
     groups = {
         Notification.Type.ADMIN: [PushGroup.ALL],
         Notification.Type.EVENT_REC: [PushGroup.ALL],
@@ -50,4 +48,5 @@ def send_push_notifications(sender, instance, **kwargs):
         Notification.Type.EVENT_CANCELED: [PushGroup.PARTICIPANTS],
         Notification.Type.EVENT_REMIND: [PushGroup.PARTICIPANTS, PushGroup.ORGANIZER],
     }
-    send_push_notifications_task.delay(serializer.data, groups[instance.type])
+    send_push_notifications_task.delay(instance.pk, groups[instance.type])
+    # send_push_notifications_task(instance.pk, groups[instance.type]) - for debug

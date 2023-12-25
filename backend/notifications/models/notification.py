@@ -12,16 +12,17 @@ class Notification(models.Model):
         ADMIN = "ADMIN", "От администрации"
 
     type = models.CharField(_("Тип"), choices=Type.choices)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(_("Время создания"), auto_now_add=True)
     event = models.ForeignKey(
         verbose_name=_("Событие"),
         to=Event,
         on_delete=models.CASCADE,
         related_name="notifications",
+        blank=True,
         null=True,
     )
-    title = models.CharField(max_length=50, null=True)
-    body = models.TextField(max_length=500, null=True)
+    title = models.CharField(_("Заголовок"), max_length=50, null=True)
+    body = models.TextField(_("Текст"), max_length=500, null=True)
 
     class Meta:
         verbose_name = "Уведомление"
@@ -32,16 +33,25 @@ class Notification(models.Model):
             self.title = self.event.title
         return super().save()
 
+    def __str__(self) -> str:
+        return self.title
+
 
 class UserNotification(models.Model):
     notification = models.ForeignKey(
-        Notification, related_name="receivers", on_delete=models.CASCADE
+        Notification,
+        verbose_name="Уведомление",
+        related_name="receivers",
+        on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
-        User, related_name="notifications", on_delete=models.CASCADE
+        User,
+        verbose_name="Пользователь",
+        related_name="notifications",
+        on_delete=models.CASCADE,
     )
-    body = models.TextField(max_length=500)
-    read = models.BooleanField(default=False)
+    body = models.TextField(_("Текст"), max_length=500)
+    read = models.BooleanField(_("Прочитано"), default=False)
 
     @property
     def short_text(self):
@@ -50,3 +60,6 @@ class UserNotification(models.Model):
             return self.title
         else:
             return f"{self.title[:max_length-3]}..."
+
+    def __str__(self) -> str:
+        return f"{self.notification.title}: для {self.user.get_full_name()}"
