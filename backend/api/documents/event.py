@@ -141,5 +141,6 @@ class EventDocument(Document):
             },
         }
 
+    @staticmethod
     def prepare_cover(instance: Event):
-        return convert_file_to_base64(instance.cover.file)
+        return convert_file_to_base64(instance.cover)
