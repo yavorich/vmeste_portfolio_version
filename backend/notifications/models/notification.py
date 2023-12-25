@@ -28,10 +28,10 @@ class Notification(models.Model):
         verbose_name = "Уведомление"
         verbose_name_plural = "Уведомления"
 
-    def save(self):
-        if not hasattr(self, "title"):
+    def save(self, *args, **kwargs):
+        if self.title is None:
             self.title = self.event.title
-        return super().save()
+        return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.title

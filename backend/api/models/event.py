@@ -152,6 +152,10 @@ class Event(models.Model):
         )
 
     @property
+    def start_datetime(self):
+        return datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
+
+    @property
     def start_timestamp(self):
         return datetime.timestamp(
             datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
@@ -206,5 +210,5 @@ class Event(models.Model):
         if self.pk is not None:
             self.link = self.get_absolute_url()
         if not self.is_active or self.is_draft:
-            self.participants.delete()
+            self.participants.all().delete()
         return super().save(*args, **kwargs)
