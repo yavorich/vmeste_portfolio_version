@@ -12,6 +12,7 @@ from elasticsearch_dsl.analysis import token_filter
 
 from api.models import Event, Location, EventParticipant, User, Country, City, Category
 from api.enums import Gender
+from core.utils import convert_file_to_base64
 
 edge_ngram_completion_filter = token_filter(
     "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
@@ -139,3 +140,6 @@ class EventDocument(Document):
                 "total": instance.total_male + instance.total_female - total,
             },
         }
+
+    def prepare_cover(instance: Event):
+        return convert_file_to_base64(instance.cover.file)

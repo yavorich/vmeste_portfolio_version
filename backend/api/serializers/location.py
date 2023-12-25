@@ -9,6 +9,8 @@ from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
 from api.models import Location, Country, City
 from api.documents import LocationDocument
+from core.serializers import CustomFileField
+from core.utils import validate_file_size
 
 
 class CountrySerializer(ModelSerializer):
@@ -62,6 +64,7 @@ class LocationDocumentSerializer(DocumentSerializer):
 class LocationCreateSerializer(ModelSerializer):
     country = CountrySerializer()
     city = CitySerializer()
+    cover = CustomFileField(validators=[validate_file_size])
 
     class Meta:
         model = Location

@@ -8,6 +8,7 @@ from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
 from django.urls import reverse
 import uuid as _uuid
+import os
 
 from api.enums import Gender
 from .location import Location
@@ -59,13 +60,17 @@ class EventQuerySet(models.QuerySet):
         return self.filter(Q(participants__user=user) | Q(organizer=user))
 
 
+def get_upload_path(instance, filename):
+    return os.path.join("events", str(instance.pk), "cover", filename)
+
+
 class Event(models.Model):
     is_close_event = models.BooleanField(_("Закрытое мероприятие"))
     uuid = models.UUIDField(default=_uuid.uuid4, unique=True, editable=False)
     title = models.CharField(_("Название"), max_length=255)
     max_age = models.PositiveSmallIntegerField(_("Макс. возраст"))
     min_age = models.PositiveSmallIntegerField(_("Мин. возраст"))
-    cover = models.TextField(_("Обложка"))  # base64
+    cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
     short_description = models.CharField(_("Краткое описание"), max_length=80)
     description = models.TextField(_("Полное описание"), max_length=1000)
     location = models.ForeignKey(
