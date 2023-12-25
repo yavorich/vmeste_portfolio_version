@@ -11,18 +11,16 @@ from elasticsearch_dsl import analyzer
 from elasticsearch_dsl.analysis import token_filter
 
 from api.models import Location, City
+from core.utils import convert_file_to_base64
 
 edge_ngram_completion_filter = token_filter(
-    'edge_ngram_completion_filter',
-    type="edge_ngram",
-    min_gram=3,
-    max_gram=128
+    "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
 )
 
 edge_ngram_completion = analyzer(
     "edge_ngram_completion",
     tokenizer="standard",
-    filter=["lowercase", edge_ngram_completion_filter]
+    filter=["lowercase", edge_ngram_completion_filter],
 )
 
 
@@ -46,7 +44,9 @@ class LocationDocument(Document):
 
     class Django:
         model = Location
-        related_models = [City,]
+        related_models = [
+            City,
+        ]
 
     settings = {
         "number_of_shards": 1,
@@ -58,3 +58,6 @@ class LocationDocument(Document):
             return related_instance.objects.all()
         if isinstance(related_instance, City):
             return related_instance.locations.all()
+
+    def prepare_cover(instance: Location):
+        return convert_file_to_base64(instance.cover.file)

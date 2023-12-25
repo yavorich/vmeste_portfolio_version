@@ -1,14 +1,24 @@
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
-from rest_framework.serializers import ModelSerializer, DateTimeField
+from rest_framework.serializers import (
+    ModelSerializer,
+    DateTimeField,
+    SerializerMethodField,
+)
 
 from api.models import Event
 from notifications.models import Notification, UserNotification
+from core.utils import convert_file_to_base64
 
 
 class NotificationEventSerializer(ModelSerializer):
+    cover = SerializerMethodField()
+
     class Meta:
         model = Event
         fields = ["id", "title", "cover"]
+
+    def get_cover(self, obj: Event):
+        return convert_file_to_base64(obj.cover.file)
 
 
 class NotificationSerializer(ModelSerializer):
