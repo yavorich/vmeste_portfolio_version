@@ -20,7 +20,8 @@ from api.serializers import (
     ThemeSerializer,
 )
 from api.documents import EventDocument
-from core.utils import convert_file_to_base64
+from core.utils import convert_file_to_base64, validate_file_size
+from core.serializers import CustomFileField
 
 
 class EventMixin:
@@ -111,6 +112,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     am_i_registered = serializers.SerializerMethodField()
     are_there_free_places = serializers.SerializerMethodField()
     am_i_confirmed = serializers.SerializerMethodField()
+    cover = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -137,6 +139,9 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "did_organizer_marking",
             "am_i_confirmed",
         ]
+
+    def get_cover(self, obj: Event):
+        return convert_file_to_base64(obj.cover.file)
 
 
 class EventDocumentSerializer(EventMixin, DocumentSerializer):
@@ -172,6 +177,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     address = serializers.CharField(write_only=True)
     latitude = serializers.FloatField(write_only=True)
     longitude = serializers.FloatField(write_only=True)
+    cover = CustomFileField(validators=[validate_file_size])
 
     class Meta:
         model = Event

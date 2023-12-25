@@ -1,8 +1,13 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+import os
 
 from .country import Country
 from .city import City
+
+
+def get_upload_path(instance, filename):
+    return os.path.join("locations", str(instance.pk), "cover", filename)
 
 
 class Location(models.Model):
@@ -11,7 +16,7 @@ class Location(models.Model):
         RECOMMENDED = "recommended", "Рекомендовано"
         UNKNOWN = "unknown", "Неизвестно"
 
-    cover = models.TextField(_("Обложка"))  # base64
+    cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
     name = models.CharField(_("Название"), max_length=255)
     latitude = models.FloatField()
     longitude = models.FloatField()

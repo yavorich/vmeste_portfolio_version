@@ -10,6 +10,7 @@ class ChatListSerializer(serializers.ModelSerializer):
     address = serializers.CharField(source="location.address")
     location_name = serializers.CharField(source="location.name")
     unread_messages = serializers.SerializerMethodField()
+    cover = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -28,9 +29,13 @@ class ChatListSerializer(serializers.ModelSerializer):
         unread_messages = obj.messages.filter(~Q(read__user=user))
         return unread_messages.count()
 
+    def get_cover(self, obj: Event):
+        return convert_file_to_base64(obj.cover.file)
+
 
 class ChatEventSerializer(serializers.ModelSerializer):
     total_will_come = serializers.SerializerMethodField()
+    cover = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -42,6 +47,9 @@ class ChatEventSerializer(serializers.ModelSerializer):
 
     def get_total_will_come(self, obj: Event):
         return obj.participants.count()
+
+    def get_cover(self, obj: Event):
+        return convert_file_to_base64(obj.cover.file)
 
 
 class SenderSerializer(serializers.ModelSerializer):
