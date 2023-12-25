@@ -18,7 +18,7 @@ class NotificationEventSerializer(ModelSerializer):
         fields = ["id", "title", "cover"]
 
     def get_cover(self, obj: Event):
-        return convert_file_to_base64(obj.cover.file)
+        return convert_file_to_base64(obj.cover)
 
 
 class NotificationSerializer(ModelSerializer):
