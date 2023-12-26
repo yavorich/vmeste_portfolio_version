@@ -66,6 +66,8 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "categories",
                     "total_male",
                     "total_female",
+                    "min_age",
+                    "max_age",
                     "organizer",
                     "did_organizer_marking",
                 ]

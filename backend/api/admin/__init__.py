@@ -9,3 +9,4 @@ from .theme import admin
 from .occupation import admin
 from .support import admin
 from .location import admin
+from .filters import admin

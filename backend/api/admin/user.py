@@ -1,23 +1,13 @@
 from django.contrib import admin
-from django.forms import ModelForm, ModelChoiceField
 
 from core.admin import ManyToManyMixin
-from api.models import User, Category
-
-
-class InterestForm(ModelForm):
-    interests = ModelChoiceField(queryset=Category.objects.all(), label="Категория")
-
-    class Meta:
-        model = Category
-        fields = ("interests",)
+from api.models import User
 
 
 class InterestInline(admin.TabularInline):
     model = User.interests.through
-    verbose_name = "Категория"
-    verbose_name_plural = "Категории"
-    form = InterestForm
+    verbose_name = "Интерес"
+    verbose_name_plural = "Интересы"
 
 
 @admin.register(User)
@@ -68,9 +58,9 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "last_name",
                     "gender",
                     "country",
+                    "city",
                     "date_of_birth",
                     "telegram",
-                    "interests",
                     "occupation",
                     "profile_is_completed",
                     "email_is_confirmed",
