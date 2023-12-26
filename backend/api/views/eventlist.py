@@ -21,6 +21,7 @@ from api.permissions import StatusPermissions, MailIsConfirmed
 from api.enums import EventStatus
 from api.documents import EventDocument
 from chat.models import Chat
+from api.models import EventFastFilter
 
 
 class CustomFilteringFilterBackend(FilteringFilterBackend):
@@ -114,7 +115,18 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
         return qs
 
+    def apply_fast_filters(self, queryset):
+        query_params = self.request.query_params.dict()
+        if "fast_filters" in query_params:
+            fast_filters = list(map(int, query_params["fast_filters"].split(",")))
+            filter_query = EventFastFilter.objects.get_filter_query(
+                fast_filters, self.request.user
+            )
+            queryset = queryset.filter(filter_query)
+        return queryset
+
     def filter_queryset(self, queryset):
+        queryset = self.apply_fast_filters(queryset)
         queryset = super().filter_queryset(queryset)
         min_age = self.request.query_params.get("min_age")
         max_age = self.request.query_params.get("max_age")
@@ -153,10 +165,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         if status == EventStatus.PUBLISHED:
             query_params = self.request.query_params.dict()
             if "category__in" in query_params:
-                query_params["category"] = list(
-                    map(int, query_params["category__in"].split(","))
-                )
-                query_params.pop("category__in")
+                query_params["category"] = query_params.pop("category__in")
             serializer = FilterQuerySerializer(data=query_params)
             serializer.is_valid(raise_exception=True)
             response_data["filters"] = serializer.data

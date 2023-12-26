@@ -20,6 +20,7 @@ from api.serializers import (
     ThemeSerializer,
 )
 from api.documents import EventDocument
+from api.models import EventFastFilter
 from core.utils import convert_file_to_base64, validate_file_size
 from core.serializers import CustomFileField
 
@@ -243,21 +244,47 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return {"id": data["id"]}
 
 
+class EventFastFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventFastFilter
+        fields = [
+            "id",
+            "name",
+            "title",
+        ]
+
+
+class CharacterSeparatedField(serializers.ListField):
+    def __init__(self, *args, **kwargs):
+        self.separator = kwargs.pop("separator", ",")
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        data = data.split(self.separator)
+        return super().to_internal_value(data)
+
+
 class FilterQuerySerializer(Serializer):
+    fast_filters = CharacterSeparatedField(
+        child=serializers.IntegerField(), required=False
+    )
     date = serializers.DateField(required=False)
     max_age = serializers.IntegerField(required=False)
     min_age = serializers.IntegerField(required=False)
     city = serializers.IntegerField(required=False, read_only=True)
     country = serializers.IntegerField(required=False, read_only=True)
-    category = serializers.ListField(child=serializers.IntegerField(), required=False)
+    category = CharacterSeparatedField(child=serializers.IntegerField(), required=False)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if not (categories := data.get("category")):
-            return data
-        filtered_themes = Theme.objects.filter(categories__id__in=categories).distinct()
-        data["themes"] = ThemeSerializer(
-            filtered_themes, many=True, context={"categories": categories}
-        ).data
-        data.pop("category")
+        if categories := data.pop("category", None):
+            filtered_themes = Theme.objects.filter(
+                categories__id__in=categories
+            ).distinct()
+            data["themes"] = ThemeSerializer(
+                filtered_themes, many=True, context={"categories": categories}
+            ).data
+        if fast_filters := data.get("fast_filters"):
+            filters = EventFastFilter.objects.filter(id__in=fast_filters)
+            data["fast_filters"] = EventFastFilterSerializer(filters, many=True).data
         return data

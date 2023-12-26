@@ -13,3 +13,4 @@ from .subscription import Subscription
 from .docs import Docs
 from .support import SupportRequestMessage, SupportRequestTheme
 from .media import EventMedia
+from .filters import EventFastFilter
