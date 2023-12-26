@@ -39,8 +39,10 @@ class EventFastFilterQuerySet(models.QuerySet):
 
 
 class EventFastFilter(models.Model):
-    name = models.CharField(max_length=8, choices=FilterName.choices, unique=True)
-    is_active = models.BooleanField()
+    name = models.CharField(
+        "Имя", max_length=8, choices=FilterName.choices, unique=True
+    )
+    is_active = models.BooleanField("Активен")
 
     @property
     def title(self):
@@ -56,3 +58,7 @@ class EventFastFilter(models.Model):
         return groups[self.name].value
 
     objects = EventFastFilterQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "Быстрый фильтр"
+        verbose_name_plural = "Быстрые фильтры"

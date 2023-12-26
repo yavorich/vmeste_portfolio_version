@@ -16,3 +16,4 @@ from .support import SupportThemeListView, SupportMessageCreateView
 from .location import LocationListViewSet, CountryListView, CityListView
 from .interests import InterestListView, OccupationListView
 from .media import EventMediaViewSet
+from .filters import EventFastFiltersListView
