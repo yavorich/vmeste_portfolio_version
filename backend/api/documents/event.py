@@ -6,6 +6,7 @@ from django_elasticsearch_dsl.fields import (
     TextField,
     BooleanField,
     KeywordField,
+    DateField,
 )
 from elasticsearch_dsl import analyzer
 from elasticsearch_dsl.analysis import token_filter
@@ -54,8 +55,8 @@ class EventDocument(Document):
     date_and_time = TextField()
     date_and_year = TextField()
     day_and_time = TextField()
-    start_timestamp = IntegerField()
-    end_timestamp = IntegerField()
+    date = DateField()
+    start_datetime = DateField()
     organizer = ObjectField(
         properties={
             "id": IntegerField(),
