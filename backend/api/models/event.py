@@ -161,18 +161,6 @@ class Event(models.Model):
     def start_datetime(self):
         return datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
 
-    @property
-    def start_timestamp(self):
-        return datetime.timestamp(
-            datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
-        )
-
-    @property
-    def end_timestamp(self):
-        return datetime.timestamp(
-            datetime.combine(self.date, self.end_time, tzinfo=now().tzinfo)
-        )
-
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
         participants = EventParticipant.objects.filter(event=self, user__gender=gender)
