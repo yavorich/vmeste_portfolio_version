@@ -14,6 +14,7 @@ from .event import (
     EventDetailSerializer,
     EventCreateUpdateSerializer,
     FilterQuerySerializer,
+    EventFastFilterSerializer,
 )
 from .auth import (
     PhoneAuthSerializer,
