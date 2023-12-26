@@ -16,11 +16,6 @@ router.register(
     views.EventMediaViewSet,
     basename="event-media",
 )
-# router.register(
-#     r"events/(?P<event_pk>\w+)/media/(?P<media_pk>\w+)",
-#     views.EventMediaViewSet,
-#     basename="event-media",
-# )
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -36,11 +31,6 @@ urlpatterns = [
         ),
         name="event-detail",
     ),
-    # path(
-    #     "events/published/<int:id>/<str:action>/",
-    #     views.EventPublishedSignViewSet.as_view(),
-    #     name="event-sign",
-    # ),
     path("auth/send_code", views.AuthSendCodeView.as_view(), name="auth-code"),
     path("auth/", views.AuthView.as_view(), name="auth"),
     path(
@@ -92,4 +82,9 @@ urlpatterns = [
     ),
     path("interests/", views.InterestListView.as_view(), name="interest_list"),
     path("occupations/", views.OccupationListView.as_view(), name="occupation_list"),
+    path(
+        "filters/fast/",
+        views.EventFastFiltersListView.as_view(),
+        name="fast-filter-list",
+    ),
 ]
