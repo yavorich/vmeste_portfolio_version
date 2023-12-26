@@ -1,10 +1,12 @@
 from rest_framework_bulk.mixins import BulkCreateModelMixin
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.viewsets import GenericViewSet
+
 from api.permissions import MailIsConfirmed
 from api.serializers import EventMediaBulkCreateSerializer, EventMediaListSerializer
 from api.models import EventMedia
 from api.services import get_event_object
+from core.pagination import PageNumberSetPagination
 
 
 class EventMediaViewSet(
@@ -15,6 +17,7 @@ class EventMediaViewSet(
         "GET": EventMediaListSerializer,
         "POST": EventMediaBulkCreateSerializer,
     }
+    pagination_class = PageNumberSetPagination
     queryset = EventMedia.objects.all()
 
     def get_queryset(self):
