@@ -13,11 +13,13 @@ from chat.serializers import (
 )
 from chat.models import Message, Chat
 from chat.utils import send_ws_message
+from core.pagination import PageNumberSetPagination
 
 
 class ChatListView(ListAPIView):
     permission_classes = [MailIsConfirmed]
     serializer_class = ChatListSerializer
+    pagination_class = PageNumberSetPagination
 
     def get_queryset(self):
         status = self.request.query_params.get("status")
@@ -46,6 +48,7 @@ class ChatListView(ListAPIView):
 class MessageListView(ListAPIView):
     permission_classes = [MailIsConfirmed]
     serializer_class = MessageSerializer
+    pagination_class = PageNumberSetPagination
 
     def get_queryset(self):
         return Message.objects.filter(chat__event=self.kwargs["event_id"])

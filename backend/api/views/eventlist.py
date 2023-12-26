@@ -20,8 +20,9 @@ from api.serializers import (
 from api.permissions import StatusPermissions, MailIsConfirmed
 from api.enums import EventStatus
 from api.documents import EventDocument
-from chat.models import Chat
 from api.models import EventFastFilter
+from chat.models import Chat
+from core.pagination import PageNumberSetPagination
 
 
 class CustomFilteringFilterBackend(FilteringFilterBackend):
@@ -44,6 +45,7 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
 
 class EventListViewSet(CreateModelMixin, DocumentViewSet):
     document = EventDocument
+    pagination_class = PageNumberSetPagination
     serializer_class = {
         "list": EventDocumentSerializer,
         "create": EventCreateUpdateSerializer,
