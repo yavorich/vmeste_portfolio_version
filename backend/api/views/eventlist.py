@@ -92,9 +92,9 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
         # PAST включает в себя начавшиеся и прошедшие события, все др. статусы - будущие
         if status == EventStatus.PAST:
-            qs = qs.filter(Q("range", start_timestamp={"lte": now().timestamp()}))
+            qs = qs.filter(Q("range", start_datetime={"lte": now()}))
         else:
-            qs = qs.filter(Q("range", start_timestamp={"gt": now().timestamp()}))
+            qs = qs.filter(Q("range", start_datetime={"gt": now()}))
 
         # все события гл. страницы фильтруются на наличие свободных мест и открытость
         # если пользователь залогинен, фильтр также учитывает его пол
