@@ -5,5 +5,5 @@ from api.models import EventFastFilter
 
 @admin.register(EventFastFilter)
 class EventFastFilterAdmin(admin.ModelAdmin):
-    list_display = ["id", "is_active", "name", "group"]
+    list_display = ["id", "is_active", "name"]
     list_editable = ["is_active"]
