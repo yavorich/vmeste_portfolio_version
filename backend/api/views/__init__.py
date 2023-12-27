@@ -6,7 +6,7 @@ from .eventsign import EventPublishedSignViewSet
 from .auth import AuthView, AuthSendCodeView
 from .profile import ProfileUpdateViewSet, ProfileDetailViewSet
 from .token import UserTokenObtainPairView, UserTokenRefreshView
-from .docs import DocsView
+from .docs import DocsViewSet
 from .participants import (
     EventMarkingDetailView,
     EventParticipantRetrieveUpdateView,
