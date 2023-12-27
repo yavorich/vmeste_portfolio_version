@@ -48,9 +48,10 @@ class EventQuerySet(models.QuerySet):
             )
         )
 
-    def filter_past(self, hours=0, days=0):
+    def filter_past(self, hours=0, days=90):
         return self.get_start_datetime().filter(
-            start__lte=now() - timedelta(hours=hours, days=days)
+            start__lte=now() - timedelta(hours=hours),
+            start__gte=now() - timedelta(days=days)
         )
 
     def filter_upcoming(self):

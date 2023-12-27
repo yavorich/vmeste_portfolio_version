@@ -11,3 +11,13 @@ class IsEventOrganizer(BasePermission):
         except Event.DoesNotExist:
             event = Event.objects.get(uuid=view.kwargs["event_id"])
         return event.organizer == user
+
+
+class IsEventOrganizerOrParticipant(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        try:
+            event = Event.objects.get(id=view.kwargs["event_id"])
+        except Event.DoesNotExist:
+            event = Event.objects.get(uuid=view.kwargs["event_id"])
+        return event.organizer == user or event.participants.filter(user=user).exists()
