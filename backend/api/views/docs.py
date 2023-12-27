@@ -1,15 +1,40 @@
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.mixins import ListModelMixin
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 
 from api.models import Docs
 from api.serializers import DocsSerializer
 
 
-class DocsView(RetrieveAPIView):
-    permission_classes = [AllowAny]
+class DocsViewSet(ListModelMixin, GenericViewSet):
+    permission_classes = [IsAuthenticated]
     serializer_class = DocsSerializer
+
+    def get_queryset(self):
+        name = self.request.query_params.get("name")
+        return Docs.objects.filter(name=name)
 
     def get_object(self):
         name = self.request.query_params.get("name")
         return get_object_or_404(Docs, name=name)
+
+    @action(methods=["post"], detail=False)
+    def apply(self, request, pk=None):
+        user = request.user
+        obj = self.get_object()
+        if obj.name == Docs.Name.AGREEMENT:  # с rules пока ничего не делаем
+            if user.agreement_applied_at:
+                raise ValidationError("Agreement was already applied")
+            user.agreement_applied_at = now()
+            user.save()
+        return Response(f"{obj.name} applied.", status=HTTP_200_OK)
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return Response(data=response.data[0], status=HTTP_200_OK)

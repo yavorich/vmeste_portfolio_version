@@ -2,7 +2,6 @@ from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.exceptions import ValidationError
-from django.db.models import Q
 
 from api.models import Event
 from api.permissions import MailIsConfirmed, IsEventOrganizerOrParticipant

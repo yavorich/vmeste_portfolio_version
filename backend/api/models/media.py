@@ -19,7 +19,7 @@ class EventMedia(models.Model):
     file_type = models.CharField(_("Тип"), choices=FileType.choices)
     file_name = models.CharField(_("Название"))
     weight = models.FloatField(_("Вес (Кб)"))
-    duration = models.FloatField(_("Длительность"), null=True)
+    duration = models.FloatField(_("Длительность"), null=True, blank=True)
     uploaded_at = models.DateTimeField(_("Дата загрузки"), auto_now_add=True)
     author = models.ForeignKey(
         User, verbose_name=_("Автор"), related_name="media", on_delete=models.CASCADE
