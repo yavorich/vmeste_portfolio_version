@@ -91,7 +91,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return self.context["user"] == obj.sender
 
     def to_representation(self, instance: Message):
-        ReadMessage.objects.create(message=instance, user=self.context["user"])
+        ReadMessage.objects.get_or_create(message=instance, user=self.context["user"])
         return super().to_representation(instance)
 
 
