@@ -7,6 +7,7 @@ from django.utils.timezone import now, timedelta, datetime
 from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
 from django.urls import reverse
+from model_utils import FieldTracker
 import uuid as _uuid
 import os
 
@@ -112,7 +113,6 @@ class Event(models.Model):
     is_active = models.BooleanField(_("Активное"), default=True)
     total_male = models.PositiveSmallIntegerField(_("Всего мужчин"))
     total_female = models.PositiveSmallIntegerField(_("Всего женщин"))
-    link = models.URLField(_("Ссылка"), default="#")
     organizer = models.ForeignKey(
         verbose_name=_("Организатор"),
         to=User,
@@ -122,7 +122,7 @@ class Event(models.Model):
     did_organizer_marking = models.BooleanField(
         _("Организатор отметил присутствие"), default=False
     )
-
+    tracker = FieldTracker()
     objects = EventQuerySet.as_manager()
 
     class Meta:
@@ -161,6 +161,12 @@ class Event(models.Model):
     def start_datetime(self):
         return datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
 
+    @property
+    def link(self):
+        if self.is_close_event:
+            return reverse("api:event-detail", kwargs={"pk": self.uuid})
+        return reverse("api:event-detail", kwargs={"pk": self.pk})
+
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
         participants = EventParticipant.objects.filter(event=self, user__gender=gender)
@@ -194,15 +200,3 @@ class Event(models.Model):
     def is_valid_sign_time(self) -> bool:
         start = datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
         return now() <= start - timedelta(hours=3)
-
-    def get_absolute_url(self):
-        if self.is_close_event:
-            return reverse("api:event-detail", kwargs={"pk": self.uuid})
-        return reverse("api:event-detail", kwargs={"pk": self.pk})
-
-    def save(self, *args, **kwargs):
-        if self.pk is not None:
-            self.link = self.get_absolute_url()
-        if not self.is_active or self.is_draft:
-            self.participants.all().delete()
-        return super().save(*args, **kwargs)
