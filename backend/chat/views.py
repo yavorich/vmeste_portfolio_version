@@ -28,7 +28,7 @@ class ChatListView(ListAPIView):
         if status not in [EventStatus.UPCOMING, EventStatus.PAST]:
             raise ValidationError("Status query parameter is required (upcoming/past)")
 
-        queryset = Event.objects.filter_organizer_or_participant(user)
+        queryset = Event.objects.filter_organizer_or_participant(user).distinct()
         queryset = getattr(queryset, f"filter_{status}")()
         return queryset
 
@@ -68,10 +68,13 @@ class MessageSendView(CreateAPIView):
         context["chat"] = Chat.objects.get(event__id=self.kwargs["event_id"])
         context["sender"] = self.request.user
         context["is_info"] = False
+        context["is_incoming"] = False
         return context
 
     def perform_create(self, serializer: MessageSendSerializer):
-        serializer.save()
-        message = serializer.data
+        message = serializer.save()
+        message_serializer = MessageSerializer(
+            instance=message, context={"user": self.request.user}
+        )
         event_id = self.kwargs["event_id"]
-        send_ws_message(message, event_id)
+        send_ws_message(message_serializer.data, event_id)

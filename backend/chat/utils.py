@@ -12,11 +12,10 @@ async def send_ws_message(message, event_id):
 
 
 async def asend_ws_message(message: Message, event_id, _channel_layer):
-    print(message)
     await _channel_layer.group_send(
         "chat_%s" % event_id,
         {
             "type": "chat_message",
-            "message": message["text"],
+            "message": message,
         }
     )
