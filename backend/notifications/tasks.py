@@ -11,7 +11,9 @@ from api.models import Event
 
 @shared_task
 def create_notifications_task(pk, type):
-    return Notification.objects.create(event=Event.objects.get(pk=pk), type=type)
+    event = Event.objects.get(pk=pk)
+    Notification.objects.create(event=event, type=type)
+    return f"Notification of type={type} was created"
 
 
 @shared_task
@@ -25,10 +27,7 @@ def send_push_notifications_task(pk, groups):
             group: generate_push_notification_body(notification.type, group)
             for group in groups
         }
-    users = {
-        group: get_push_notification_users_list(group, event)
-        for group in groups
-    }
+    users = {group: get_push_notification_users_list(group, event) for group in groups}
     user_notifications = []
     for group in groups:
         for user in users[group]:
@@ -38,6 +37,10 @@ def send_push_notifications_task(pk, groups):
             user_notifications.append(user_notification)
 
     async_to_sync(send_push_notifications)(users, user_notifications)
+
+    if notification.type == Notification.Type.EVENT_CANCELED:
+        event.participants.all().delete()
+
     return "Success send push notifications"
 
 

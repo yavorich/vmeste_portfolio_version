@@ -198,6 +198,9 @@ CELERY_BROKER_URL = (
 )
 
 CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TRACK_STARTED = True
 
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://elasticsearch:9200"},  # add to env later
