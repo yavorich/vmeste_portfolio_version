@@ -238,8 +238,6 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        instance.link = instance.get_absolute_url()
-        instance.save()
         data = super().to_representation(instance)
         return {"id": data["id"]}
 
