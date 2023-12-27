@@ -2,9 +2,10 @@ from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.exceptions import ValidationError
+from django.db.models import Q
 
 from api.models import Event
-from api.permissions import MailIsConfirmed
+from api.permissions import MailIsConfirmed, IsEventOrganizerOrParticipant
 from api.enums import EventStatus
 from chat.serializers import (
     ChatListSerializer,
@@ -23,13 +24,13 @@ class ChatListView(ListAPIView):
 
     def get_queryset(self):
         status = self.request.query_params.get("status")
+        user = self.request.user
 
         if status not in [EventStatus.UPCOMING, EventStatus.PAST]:
             raise ValidationError("Status query parameter is required (upcoming/past)")
 
-        queryset = Event.objects.filter(participants__user=self.request.user)
-        kwargs = {"days": 90} if status == EventStatus.PAST else {}
-        queryset = getattr(queryset, f"filter_{status}")(**kwargs)
+        queryset = Event.objects.filter_organizer_or_participant(user)
+        queryset = getattr(queryset, f"filter_{status}")()
         return queryset
 
     def get_serializer_context(self):
@@ -46,7 +47,7 @@ class ChatListView(ListAPIView):
 
 
 class MessageListView(ListAPIView):
-    permission_classes = [MailIsConfirmed]
+    permission_classes = [MailIsConfirmed, IsEventOrganizerOrParticipant]
     serializer_class = MessageSerializer
     pagination_class = PageNumberSetPagination
 
@@ -60,7 +61,7 @@ class MessageListView(ListAPIView):
 
 
 class MessageSendView(CreateAPIView):
-    permission_classes = [MailIsConfirmed]
+    permission_classes = [MailIsConfirmed, IsEventOrganizerOrParticipant]
     serializer_class = MessageSendSerializer
 
     def get_serializer_context(self):

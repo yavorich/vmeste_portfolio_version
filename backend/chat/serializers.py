@@ -26,7 +26,7 @@ class ChatListSerializer(serializers.ModelSerializer):
 
     def get_unread_messages(self, obj: Event):
         user = self.context["user"]
-        unread_messages = obj.messages.filter(~Q(read__user=user))
+        unread_messages = obj.chat.messages.filter(~Q(read__user=user))
         return unread_messages.count()
 
     def get_cover(self, obj: Event):
