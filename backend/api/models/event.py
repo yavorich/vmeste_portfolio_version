@@ -144,9 +144,7 @@ class Event(models.Model):
                 "Максимальный возраст должен быть больше минимального"
             )
         if self.city.country != self.country:
-            raise ValidationError(
-                "Указанный город не соответствует указанной стране"
-            )
+            raise ValidationError("Указанный город не соответствует указанной стране")
 
     @property
     def stats_men(self):
@@ -213,5 +211,9 @@ class Event(models.Model):
         return self.total_male + self.total_female - self.get_participants().count()
 
     def is_valid_sign_time(self) -> bool:
-        start = datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
+        start = self.start_datetime
         return now() <= start - timedelta(hours=3)
+
+    def is_valid_media_time(self) -> bool:
+        start = self.start_datetime
+        return start + timedelta(days=90) >= now() >= start
