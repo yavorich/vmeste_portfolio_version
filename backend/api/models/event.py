@@ -178,8 +178,8 @@ class Event(models.Model):
     @property
     def link(self):
         if self.is_close_event:
-            return reverse("api:event-detail", kwargs={"pk": self.uuid})
-        return reverse("api:event-detail", kwargs={"pk": self.pk})
+            return reverse("api:event-detail", kwargs={"event_pk": self.uuid})
+        return reverse("api:event-detail", kwargs={"event_pk": self.pk})
 
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender

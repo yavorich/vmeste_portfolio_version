@@ -51,7 +51,7 @@ class MessageListView(ListAPIView):
     pagination_class = PageNumberSetPagination
 
     def get_queryset(self):
-        return Message.objects.filter(chat__event=self.kwargs["event_id"])
+        return Message.objects.filter(chat__event=self.kwargs["event_pk"])
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -65,7 +65,7 @@ class MessageSendView(CreateAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["chat"] = Chat.objects.get(event__id=self.kwargs["event_id"])
+        context["chat"] = Chat.objects.get(event__id=self.kwargs["event_pk"])
         context["sender"] = self.request.user
         context["is_info"] = False
         context["is_incoming"] = False
@@ -76,5 +76,5 @@ class MessageSendView(CreateAPIView):
         message_serializer = MessageSerializer(
             instance=message, context={"user": self.request.user}
         )
-        event_id = self.kwargs["event_id"]
-        send_ws_message(message_serializer.data, event_id)
+        event_pk = self.kwargs["event_pk"]
+        send_ws_message(message_serializer.data, event_pk)
