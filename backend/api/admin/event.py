@@ -71,7 +71,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "organizer",
                     "did_organizer_marking",
                 ]
-            }
+            },
         )
     ]
     list_display = [
