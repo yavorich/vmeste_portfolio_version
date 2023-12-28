@@ -4,7 +4,7 @@ from .category import Category
 from .city import City
 from .country import Country
 from .event import Event
-from .eventparticipant import EventParticipant
+from .participant import EventParticipant
 from .location import Location
 from .occupation import Occupation
 from .user import User

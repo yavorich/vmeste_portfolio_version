@@ -29,7 +29,10 @@ class EventMarkingDetailView(RetrieveAPIView):
 
         # все мероприятия, где юзер - орг, не отмечал, начались >= 2 часов назад
         events = Event.objects.filter(
-            organizer=user, did_organizer_marking=False
+            organizer=user,
+            did_organizer_marking=False,
+            is_active=True,
+            is_draft=False,
         ).filter_past(hours=2)
 
         if events.exists():

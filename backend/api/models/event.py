@@ -19,7 +19,7 @@ from .theme import Theme
 from .category import Category
 from .city import City
 from .country import Country
-from .eventparticipant import EventParticipant
+from .participant import EventParticipant
 from .user import User
 
 
@@ -189,12 +189,12 @@ class Event(models.Model):
         return f"{count}/{total}"
 
     def get_participants(self) -> BaseManager[EventParticipant]:
-        return EventParticipant.objects.filter(event=self)
+        return self.participants.all()
 
     def get_participants_by_gender(
         self, gender: Gender
     ) -> BaseManager[EventParticipant]:
-        return EventParticipant.objects.filter(event=self, user__gender=gender)
+        return self.participants.filter(user__gender=gender)
 
     def get_participant(self, user: User) -> EventParticipant | None:
         try:
