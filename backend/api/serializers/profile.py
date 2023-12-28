@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db.models import Q
 from django.utils.timezone import now
 from dateutil.relativedelta import relativedelta
+from rest_framework.exceptions import ValidationError
 
 from api.models import User, EventParticipant, Event
 from api.serializers import CategoryTitleSerializer
@@ -52,6 +53,13 @@ class ProfileUpdateSerializer(ProfilePartialUpdateSerializer):
             "gender": {"required": True},
             "email": {"required": True},
         }
+
+        def validate_date_of_birth(self, value):
+            age = relativedelta(now().date(), value).years
+            if age < 12:
+                raise ValidationError("Возраст не может быть меньше 12")
+            elif age > 100:
+                raise ValidationError("Возраст не может быть больше 100")
 
 
 class ProfileRetrieveSerializer(serializers.ModelSerializer):

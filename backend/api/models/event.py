@@ -1,15 +1,16 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, F, Value
 from django.db.models.functions import Concat, Cast
-from django.utils.translation import gettext_lazy as _
 from django.db.models.manager import BaseManager
-from django.utils.timezone import now, timedelta, datetime
 from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
 from django.urls import reverse
+from django.utils.timezone import now, timedelta, datetime
+from django.utils.translation import gettext_lazy as _
 from model_utils import FieldTracker
-import uuid as _uuid
 import os
+import uuid as _uuid
 
 from api.enums import Gender
 from .location import Location
@@ -52,7 +53,7 @@ class EventQuerySet(models.QuerySet):
     def filter_past(self, hours=0, days=90):
         return self.get_start_datetime().filter(
             start__lte=now() - timedelta(hours=hours),
-            start__gte=now() - timedelta(days=days)
+            start__gte=now() - timedelta(days=days),
         )
 
     def filter_upcoming(self):
@@ -70,8 +71,12 @@ class Event(models.Model):
     is_close_event = models.BooleanField(_("Закрытое мероприятие"))
     uuid = models.UUIDField(default=_uuid.uuid4, unique=True, editable=False)
     title = models.CharField(_("Название"), max_length=255)
-    max_age = models.PositiveSmallIntegerField(_("Макс. возраст"))
-    min_age = models.PositiveSmallIntegerField(_("Мин. возраст"))
+    max_age = models.PositiveSmallIntegerField(
+        _("Макс. возраст"), min_value=13, max_value=100
+    )
+    min_age = models.PositiveSmallIntegerField(
+        _("Мин. возраст"), min_value=12, max_value=99
+    )
     cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
     short_description = models.CharField(_("Краткое описание"), max_length=80)
     description = models.TextField(_("Полное описание"), max_length=1000)
@@ -132,6 +137,16 @@ class Event(models.Model):
 
     def __str__(self) -> str:
         return str(self.title)
+
+    def clean(self):
+        if self.min_age >= self.max_age:
+            raise ValidationError(
+                "Максимальный возраст должен быть больше минимального"
+            )
+        if self.city.country != self.country:
+            raise ValidationError(
+                "Указанный город не соответствует указанной стране"
+            )
 
     @property
     def stats_men(self):
