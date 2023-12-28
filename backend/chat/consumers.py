@@ -10,7 +10,7 @@ from api.models import Event
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.id = self.scope["url_route"]["kwargs"]["event_id"]
+        self.id = self.scope["url_route"]["kwargs"]["event_pk"]
         self.user = self.scope["user"]
 
         try:

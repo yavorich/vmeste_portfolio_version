@@ -17,7 +17,7 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     }
 
     def get_object(self):
-        return get_event_object(self.kwargs["pk"])
+        return get_event_object(self.kwargs["event_pk"])
 
     def get_permissions(self):
         permission_classes = {
