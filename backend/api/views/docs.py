@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.utils.timezone import now
 
 from api.models import Docs
@@ -18,7 +18,7 @@ class DocsViewSet(ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         name = self.request.query_params.get("name")
-        return Docs.objects.filter(name=name)
+        return get_list_or_404(Docs.objects.filter(name=name))
 
     def get_object(self):
         name = self.request.query_params.get("name")
