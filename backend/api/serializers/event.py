@@ -249,7 +249,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         start_datetime = datetime.combine(
             validated_data["date"], validated_data["start_time"], tzinfo=now().tzinfo
         )
-        if start_datetime > now() + timedelta(hours=hours):
+        if start_datetime < now() + timedelta(hours=hours):
             raise ValidationError(
                 f"Минимальное время до начала мероприятия - {hours} часов"
             )
