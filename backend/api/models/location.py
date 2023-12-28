@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinValueValidator, MaxValueValidator
 import os
 
 from .country import Country
@@ -18,8 +19,12 @@ class Location(models.Model):
 
     cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
     name = models.CharField(_("Название"), max_length=255)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    latitude = models.FloatField(
+        validators=[MinValueValidator(-90), MaxValueValidator(90)]
+    )
+    longitude = models.FloatField(
+        validators=[MinValueValidator(-180), MaxValueValidator(180)]
+    )
     address = models.CharField(_("Адрес"), max_length=255)
     country = models.ForeignKey(
         Country, related_name="locations", on_delete=models.CASCADE

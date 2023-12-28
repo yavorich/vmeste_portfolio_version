@@ -13,3 +13,5 @@ COPY . .
 
 RUN chmod +x /app/docker/backend/entrypoint.dev.sh
 RUN chmod +x /app/docker/backend/celery-entrypoint.sh
+
+ENV LC_TIME ru_RU.UTF-8
