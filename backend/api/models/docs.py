@@ -14,4 +14,7 @@ class Docs(models.Model):
 
     class Meta:
         verbose_name = "Документ"
-        verbose_name = "Документы"
+        verbose_name_plural = "Документы"
+
+    def __str__(self) -> str:
+        return self.name
