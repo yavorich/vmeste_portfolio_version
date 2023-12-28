@@ -15,6 +15,7 @@ from api.serializers import (
     SelfProfileDestroySerializer,
 )
 from api.models import User
+from api.permissions import IsMyProfile
 
 
 class ProfileUpdateViewSet(UpdateModelMixin, GenericViewSet):
@@ -49,15 +50,22 @@ class ProfileUpdateViewSet(UpdateModelMixin, GenericViewSet):
 class ProfileDetailViewSet(RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     queryset = User.objects.all()
     serializer_class = ProfileRetrieveSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.is_mine():
-            if self.action == 'retrieve':
+            if self.action == "retrieve":
                 return SelfProfileRetrieveSerializer
-            elif self.action == 'destroy':
+            elif self.action == "destroy":
                 return SelfProfileDestroySerializer
         return super().get_serializer_class()
+
+    def get_permissions(self):
+        permission_classes = {
+            "retrieve": [IsAuthenticated],
+            "destroy": [IsAuthenticated, IsMyProfile],
+        }
+        self.permission_classes = permission_classes[self.action]
+        return super(ProfileDetailViewSet, self).get_permissions()
 
     def is_mine(self):
         return self.kwargs["pk"] == self.request.user.pk
