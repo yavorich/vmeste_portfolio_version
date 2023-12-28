@@ -17,4 +17,4 @@ class Docs(models.Model):
         verbose_name_plural = "Документы"
 
     def __str__(self) -> str:
-        return self.name
+        return Docs.Name(self.name).label
