@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import Serializer, ModelSerializer
-from django.utils.timezone import now, datetime
+from django.utils.timezone import now, datetime, timedelta
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
+from rest_framework.exceptions import ValidationError
 
 from api.models import (
     Event,
@@ -61,9 +62,12 @@ class EventMixin:
         return serializer.data
 
     def get_state(self, obj: Event):
+        end_date = (
+            obj.date + timedelta(days=1) if obj.end_time <= obj.start_time else obj.date
+        )
         if now() < datetime.combine(obj.date, obj.start_time, tzinfo=now().tzinfo):
             return EventState.BEFORE
-        if now() > datetime.combine(obj.date, obj.end_time, tzinfo=now().tzinfo):
+        if now() > datetime.combine(end_date, obj.end_time, tzinfo=now().tzinfo):
             return EventState.AFTER
         return EventState.WHILE
 
@@ -208,6 +212,17 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {f: {"required": True} for f in fields}
 
+    def validate(self, attrs):
+        if attrs["min_age"] >= attrs["max_age"]:
+            raise ValidationError(
+                "Минимальный возраст должен быть меньше максимального"
+            )
+        if attrs["min_age"] < 12:
+            raise ValidationError("Минимальный возраст не может быть меньше 12")
+        if attrs["max_age"] > 100:
+            raise ValidationError("Максимальный возраст не может быть больше 100")
+        return super().validate(attrs)
+
     def get_organizer(self):
         return self.context["user"]
 
@@ -229,12 +244,24 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["organizer"] = self.context["user"]
         return validated_data
 
+    @staticmethod
+    def validate_start_datetime(validated_data, hours):
+        start_datetime = datetime.combine(
+            validated_data["date"], validated_data["start_time"], tzinfo=now().tzinfo
+        )
+        if start_datetime > now() + timedelta(hours=hours):
+            raise ValidationError(
+                f"Минимальное время до начала мероприятия - {hours} часов"
+            )
+
     def create(self, validated_data):
         validated_data = self.prepare_location(validated_data)
+        self.validate_start_datetime(validated_data, hours=6)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data)
+        self.validate_start_datetime(validated_data, hours=5)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
