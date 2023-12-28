@@ -62,8 +62,6 @@ class LocationDocumentSerializer(DocumentSerializer):
 
 
 class LocationCreateSerializer(ModelSerializer):
-    country = CountrySerializer()
-    city = CitySerializer()
     cover = CustomFileField(validators=[validate_file_size])
 
     class Meta:
@@ -87,12 +85,6 @@ class LocationCreateSerializer(ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        validated_data["country"], created = Country.objects.get_or_create(
-            name=validated_data["country"]["name"]
-        )
-        validated_data["city"], created = City.objects.get_or_create(
-            name=validated_data["city"]["name"], country=validated_data["country"]
-        )
         if Location.objects.filter(
             **{
                 k: validated_data[k]
