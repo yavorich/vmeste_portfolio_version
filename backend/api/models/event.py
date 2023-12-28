@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Q, F, Value
 from django.db.models.functions import Concat, Cast
@@ -72,10 +73,10 @@ class Event(models.Model):
     uuid = models.UUIDField(default=_uuid.uuid4, unique=True, editable=False)
     title = models.CharField(_("Название"), max_length=255)
     max_age = models.PositiveSmallIntegerField(
-        _("Макс. возраст"), min_value=13, max_value=100
+        _("Макс. возраст"), validators=[MinValueValidator(13), MaxValueValidator(100)]
     )
     min_age = models.PositiveSmallIntegerField(
-        _("Мин. возраст"), min_value=12, max_value=99
+        _("Мин. возраст"), validators=[MinValueValidator(12), MaxValueValidator(99)]
     )
     cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
     short_description = models.CharField(_("Краткое описание"), max_length=80)
