@@ -29,7 +29,7 @@ urlpatterns = [
         name="event-list",
     ),
     re_path(
-        r"^events/(?P<pk>[0-9]+|[0-9a-f-]+)/$",
+        r"^events/(?P<event_pk>[0-9]+|[0-9a-f-]+)/$",
         views.EventDetailViewSet.as_view(
             {"get": "retrieve", "patch": "partial_update"}
         ),
@@ -53,12 +53,12 @@ urlpatterns = [
     path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
     path("marking/", views.EventMarkingDetailView.as_view(), name="marking"),
     path(
-        "events/<str:event_id>/participants/",
+        "events/<str:event_pk>/participants/",
         views.EventParticipantRetrieveUpdateView.as_view(),
         name="participants-list-update",
     ),
     path(
-        "events/<str:event_id>/participants/<int:id>/",
+        "events/<str:event_pk>/participants/<int:id>/",
         views.EventParticipantDeleteView.as_view(),
         name="participant-delete",
     ),
