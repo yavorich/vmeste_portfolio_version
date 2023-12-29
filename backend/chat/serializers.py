@@ -74,6 +74,7 @@ class SenderSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     sender = SenderSerializer()
     is_mine = serializers.SerializerMethodField()
+    sent_at_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -81,7 +82,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "id",
             "sender",
             "text",
-            "sent_at",
+            "sent_at_time",
             "is_info",
             "is_incoming",
             "is_mine",
@@ -89,6 +90,9 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def get_is_mine(self, obj: Message):
         return self.context["user"] == obj.sender
+
+    def get_sent_at_time(self, obj: Message):
+        return obj.sent_at.time()
 
     def to_representation(self, instance: Message):
         ReadMessage.objects.get_or_create(message=instance, user=self.context["user"])

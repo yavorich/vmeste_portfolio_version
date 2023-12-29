@@ -2,6 +2,7 @@ from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.exceptions import ValidationError
+from itertools import groupby
 
 from api.models import Event
 from api.permissions import MailIsConfirmed, IsEventOrganizerOrParticipant
@@ -47,16 +48,38 @@ class ChatListView(ListAPIView):
 
 class MessageListView(ListAPIView):
     permission_classes = [MailIsConfirmed, IsEventOrganizerOrParticipant]
-    serializer_class = MessageSerializer
     pagination_class = PageNumberSetPagination
+    serializer_class = MessageSerializer
 
     def get_queryset(self):
-        return Message.objects.filter(chat__event=self.kwargs["event_pk"])
+        return Message.objects.filter(chat__event=self.kwargs["event_pk"]).order_by(
+            "sent_at"
+        )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["user"] = self.request.user
         return context
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        grouped_messages = []
+        for date, messages in groupby(queryset, lambda m: m.sent_at.date()):
+            messages_queryset = Message.objects.filter(id__in=[m.id for m in messages])
+            page = self.paginate_queryset(messages_queryset)
+            if page is not None:
+                serializer = self.get_serializer(
+                    page, many=True, context=self.get_serializer_context()
+                )
+                response = self.get_paginated_response(serializer.data)
+            else:
+                serializer = self.get_serializer(
+                    messages_queryset, context=self.get_serializer_context()
+                )
+                response = Response(serializer.data)
+            grouped_messages.append({"date": date, **response.data})
+
+        return Response(grouped_messages)
 
 
 class MessageSendView(CreateAPIView):
