@@ -92,7 +92,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return self.context["user"] == obj.sender
 
     def get_sent_at_time(self, obj: Message):
-        return obj.sent_at.time()
+        return obj.sent_at.time().strftime("%H:%M")
 
     def to_representation(self, instance: Message):
         ReadMessage.objects.get_or_create(message=instance, user=self.context["user"])
