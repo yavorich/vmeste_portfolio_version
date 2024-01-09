@@ -6,9 +6,11 @@ from itertools import groupby
 
 from api.models import Event
 from api.permissions import MailIsConfirmed, IsEventOrganizerOrParticipant
+from api.services import get_event_object
 from api.enums import EventStatus
 from chat.serializers import (
     ChatListSerializer,
+    ChatEventSerializer,
     MessageSerializer,
     MessageSendSerializer,
 )
@@ -63,6 +65,8 @@ class MessageListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
+        event = get_event_object(self.kwargs["event_pk"])
+        event_serializer = ChatEventSerializer(event)
         grouped_messages = []
         for date, messages in groupby(queryset, lambda m: m.sent_at.date()):
             messages_queryset = Message.objects.filter(id__in=[m.id for m in messages])
@@ -79,7 +83,7 @@ class MessageListView(ListAPIView):
                 response = Response(serializer.data)
             grouped_messages.append({"date": date, **response.data})
 
-        return Response(grouped_messages)
+        return Response({"event": event_serializer.data, "messages": grouped_messages})
 
 
 class MessageSendView(CreateAPIView):
