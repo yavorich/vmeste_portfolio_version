@@ -113,10 +113,7 @@ class EventRetrieveParticipantsSerializer(ModelSerializer):
 
     def get_amount(self, obj: Event, gender: Gender):
         total = getattr(obj, "total_" + gender)
-        will_come = obj.participants.filter(
-            user__gender=gender,
-            has_confirmed=True,
-        ).count()
+        will_come = obj.get_participants_by_gender(gender).count()
         return {"total": total, "will_come": will_come}
 
     def get_men(self, obj: Event):
