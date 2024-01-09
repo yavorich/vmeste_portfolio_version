@@ -58,11 +58,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
     confirmation_code = models.CharField(max_length=5, blank=True, null=True)
     profile_is_completed = models.BooleanField(_("Профиль заполнен"), default=False)
-    first_name = models.CharField(_("Имя"), blank=True, null=True)
-    last_name = models.CharField(_("Фамилия"), blank=True, null=True)
-    date_of_birth = models.DateField(_("Дата рождения"), blank=True, null=True)
+    first_name = models.CharField(_("Имя"), null=True)
+    last_name = models.CharField(_("Фамилия"), null=True)
+    date_of_birth = models.DateField(_("Дата рождения"), null=True)
     gender = models.CharField(
-        _("Пол"), choices=Gender.choices, max_length=6, blank=True, null=True
+        _("Пол"), choices=Gender.choices, max_length=6, null=True
     )
     avatar = models.ImageField(
         _("Аватар"), upload_to=get_upload_path, blank=True, null=True
@@ -70,7 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(_("Активен"), default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    email = models.EmailField(_("Почта"), blank=True, null=True)
+    email = models.EmailField(_("Почта"), null=True)
     email_is_confirmed = models.BooleanField(_("Почта подтверждена"), default=False)
     country = models.ForeignKey(
         Country,
