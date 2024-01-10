@@ -1,9 +1,8 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.db import IntegrityError
 
-from chat.models import ReadMessage
+from chat.models import ReadMessage, Message
 from api.models import Event
 
 
@@ -70,12 +69,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def read_message(self, data):
         try:
-            ReadMessage.objects.get_or_create(
-                user=data["user"],
-                message=data["message"],
-            )
-        except IntegrityError:
-            pass  # TODO: test
+            message = Message.objects.get(id=data["message_id"])
+        except Message.DoesNotExist:
+            return
+        ReadMessage.objects.get_or_create(
+            user=self.user,
+            message=message,
+        )
 
     @database_sync_to_async
     def get_user_groups(self):
