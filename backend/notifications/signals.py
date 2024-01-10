@@ -34,9 +34,9 @@ def create_event_notifications(sender, instance: Event, created: bool, **kwargs)
     is_active = instance.is_active and not instance.is_draft
 
     if not created:
-        was_active = instance.tracker.previous(
+        was_active = not instance.tracker.previous(
             "is_draft"
-        ) or not instance.tracker.previous("is_active")
+        ) and instance.tracker.previous("is_active")
         revoke_existing_remind_notifications(instance)
         if not is_active:
             if was_active:
