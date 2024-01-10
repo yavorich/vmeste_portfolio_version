@@ -34,35 +34,38 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
-        with open("log.txt", "a") as f:
-            f.write("\n" + "RECEIVED")
 
         if text_data_json["type"] == "read_message":
             await self.read_message(text_data_json)
 
         elif text_data_json["type"] == "chat_message":
             group_name = "chat_%s" % text_data_json["event"]["id"]
-            with open("log.txt", "a") as f:
-                f.write("\n" + group_name)
             await self.channel_layer.group_send(
                 group_name,
                 text_data_json,
             )
 
-        elif text_data_json["type"] == "group_add":
-            await self.channel_layer.group_add(
-                text_data_json["group"],
-                self.channel_name,
-            )
+        elif text_data_json["type"] == "join_chat":
+            await self.join_chat(text_data_json)
 
-        elif text_data_json["type"] == "group_discard":
-            await self.channel_layer.group_discard(
-                text_data_json["group"],
-                self.channel_name,
-            )
+        elif text_data_json["type"] == "leave_chat":
+            await self.leave_chat(text_data_json)
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
+
+    async def join_chat(self, data):
+        group_name = "chat_%s" % data["event_id"]
+        await self.channel_layer.group_add(
+            group_name,
+            self.channel_name,
+        )
+
+    async def leave_chat(self, data):
+        await self.channel_layer.group_discard(
+            data["group"],
+            self.channel_name,
+        )
 
     @database_sync_to_async
     def read_message(self, data):
