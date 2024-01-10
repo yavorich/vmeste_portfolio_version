@@ -36,12 +36,13 @@ class JWTAuthMiddlewareStack(BaseMiddleware):
 
         headers = dict(scope['headers'])
         if b'authorization' in headers:
-            token_key = headers[b'authorization'].decode()
+            token_key = headers[b'authorization'].decode().split()[-1]
             try:
                 UntypedToken(token_key)
             except (InvalidToken, TokenError):
                 return
-        return token_key
+            return token_key
+        return
 
     @staticmethod
     @database_sync_to_async
