@@ -71,16 +71,16 @@ class MessageListView(ListAPIView):
         for date, messages in groupby(queryset, lambda m: m.sent_at.date()):
             messages_queryset = Message.objects.filter(id__in=[m.id for m in messages])
             page = self.paginate_queryset(messages_queryset)
-            if page is not None:
+            if page is not None and "page" in request.query_params:
                 serializer = self.get_serializer(
                     page, many=True, context=self.get_serializer_context()
                 )
                 response = self.get_paginated_response(serializer.data)
             else:
                 serializer = self.get_serializer(
-                    messages_queryset, context=self.get_serializer_context()
+                    messages_queryset, context=self.get_serializer_context(), many=True
                 )
-                response = Response(serializer.data)
+                response = Response({"results": serializer.data})
             grouped_messages.append({"date": date, **response.data})
 
         return Response({"event": event_serializer.data, "messages": grouped_messages})
