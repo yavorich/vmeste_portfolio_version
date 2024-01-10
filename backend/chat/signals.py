@@ -30,12 +30,14 @@ def send_info_message(instance: EventParticipant, join: bool):
 @receiver(post_save, sender=EventParticipant)
 def send_join_message(sender, instance: EventParticipant, created: bool, **kwargs):
     if created:
-        add_user_to_group(instance.event)
+        print("USER JOINED")
+        # add_user_to_group(instance.event) - will be called from client
         send_info_message(instance, join=True)
 
 
 @receiver(post_delete, sender=EventParticipant)
 def send_leave_message(sender, instance: EventParticipant, **kwargs):
+    print("USER LEFT")
     remove_user_from_group(instance.event)
     send_info_message(instance, join=False)
 
