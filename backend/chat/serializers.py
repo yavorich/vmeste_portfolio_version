@@ -94,10 +94,6 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_sent_at_time(self, obj: Message):
         return obj.sent_at.time().strftime("%H:%M")
 
-    def to_representation(self, instance: Message):
-        ReadMessage.objects.get_or_create(message=instance, user=self.context["user"])
-        return super().to_representation(instance)
-
 
 class MessageSendSerializer(serializers.ModelSerializer):
     class Meta:
@@ -111,3 +107,7 @@ class MessageSendSerializer(serializers.ModelSerializer):
         for key in ["sender", "chat", "is_info", "is_incoming"]:
             validated_data[key] = self.context.get(key)
         return super().create(validated_data)
+
+    def to_representation(self, instance):
+        ReadMessage.objects.get_or_create(message=instance, user=self.context["sender"])
+        return super().to_representation(instance)
