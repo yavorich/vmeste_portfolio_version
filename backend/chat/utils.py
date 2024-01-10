@@ -27,7 +27,7 @@ async def add_user_to_group(event):
     await channel_layer.group_send(
         group_name,
         {
-            "type": "group_add",
+            "type": "join_chat",
             "group": group_name,
         }
     )
@@ -39,7 +39,7 @@ async def remove_user_from_group(event):
     await channel_layer.group_send(
         group_name,
         {
-            "type": "group_discard",
+            "type": "leave_chat",
             "group": group_name,
         }
     )
