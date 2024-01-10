@@ -34,22 +34,14 @@ class JWTAuthMiddlewareStack(BaseMiddleware):
         # Close old database connections to prevent usage of timed out connections
         # close_old_connections()
 
-        # Get the token
-        token_qs = parse_qs(scope["query_string"].decode("utf8")).get("token")
-        if token_qs is None:
-            return
-
-        token = token_qs[0]
-
-        # Try to authenticate the user
-        try:
-            # This will automatically validate the token and raise an error if token is invalid
-            UntypedToken(token)
-        except (InvalidToken, TokenError):
-            # Token is invalid
-            return
-
-        return token
+        headers = dict(scope['headers'])
+        if b'authorization' in headers:
+            token_key = headers[b'authorization'].decode()
+            try:
+                UntypedToken(token_key)
+            except (InvalidToken, TokenError):
+                return
+        return token_key
 
     @staticmethod
     @database_sync_to_async
