@@ -57,6 +57,11 @@ class EventQuerySet(models.QuerySet):
             start__gte=now() - timedelta(days=days),
         )
 
+    def filter_not_expired(self, days=90):
+        return self.get_start_datetime().filter(
+            start__gte=now() - timedelta(days=days),
+        )
+
     def filter_upcoming(self):
         return self.get_start_datetime().filter(start__gt=now())
 

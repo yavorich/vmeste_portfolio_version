@@ -2,7 +2,6 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.db import IntegrityError
-from asgiref.sync import sync_to_async
 
 from chat.models import ReadMessage
 from api.models import Event
@@ -10,48 +9,56 @@ from api.models import Event
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.id = self.scope["url_route"]["kwargs"]["event_pk"]
         self.user = self.scope["user"]
-
-        try:
-            event = await Event.objects.aget(id=self.id)
-        except Event.DoesNotExist:
-            return await self.close(code=404)
 
         if not self.user.is_authenticated:
             return await self.close(code=401)
 
-        if not (
-            self.user == await sync_to_async(getattr)(event, "organizer")
-            or await sync_to_async(event.get_participant)(self.user)
-        ):
-            return await self.close(code=403)
+        self.room_group_names = await self.get_user_groups()
 
-        self.room_group_name = "chat_%s" % self.id
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name,
-        )
+        for group_name in self.room_group_names:
+            await self.channel_layer.group_add(
+                group_name,
+                self.channel_name,
+            )
 
         await self.accept()
 
     async def disconnect(self, code):
-        if self.user.is_authenticated and hasattr(self, "room_group_name"):
-            await self.channel_layer.group_discard(
-                self.room_group_name,
-                self.channel_name,
-            )
+        if self.user.is_authenticated and hasattr(self, "room_group_names"):
+            for group_name in self.room_group_names:
+                await self.channel_layer.group_discard(
+                    group_name,
+                    self.channel_name,
+                )
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
+        with open("log.txt", "a") as f:
+            f.write("\n" + "RECEIVED")
 
         if text_data_json["type"] == "read_message":
             await self.read_message(text_data_json)
 
-        elif text_data_json["type"] == "send_message":
+        elif text_data_json["type"] == "chat_message":
+            group_name = "chat_%s" % text_data_json["event"]["id"]
+            with open("log.txt", "a") as f:
+                f.write("\n" + group_name)
             await self.channel_layer.group_send(
-                self.room_group_name,
+                group_name,
                 text_data_json,
+            )
+
+        elif text_data_json["type"] == "group_add":
+            await self.channel_layer.group_add(
+                text_data_json["group"],
+                self.channel_name,
+            )
+
+        elif text_data_json["type"] == "group_discard":
+            await self.channel_layer.group_discard(
+                text_data_json["group"],
+                self.channel_name,
             )
 
     async def chat_message(self, event):
@@ -66,3 +73,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         except IntegrityError:
             pass  # TODO: test
+
+    @database_sync_to_async
+    def get_user_groups(self):
+        events = (
+            Event.objects.filter_organizer_or_participant(self.user)
+            .distinct()
+            .filter_not_expired()
+            .filter(is_active=True, is_draft=False)
+        )
+        with open("log.txt", "w") as f:
+            f.write(
+                str(["chat_%s" % id for id in events.values_list("id")])
+                + "\n"
+                + self.channel_name
+            )
+        return ["chat_%s" % id for id in events.values_list("id")]

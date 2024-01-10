@@ -17,5 +17,29 @@ async def asend_ws_message(message: Message, event_pk, _channel_layer):
         {
             "type": "chat_message",
             "message": message,
+        },
+    )
+
+
+@async_to_sync
+async def add_user_to_group(event):
+    group_name = "chat_%s" % event.pk
+    await channel_layer.group_send(
+        group_name,
+        {
+            "type": "group_add",
+            "group": group_name,
+        }
+    )
+
+
+@async_to_sync
+async def remove_user_from_group(event):
+    group_name = "chat_%s" % event.pk
+    await channel_layer.group_send(
+        group_name,
+        {
+            "type": "group_discard",
+            "group": group_name,
         }
     )
