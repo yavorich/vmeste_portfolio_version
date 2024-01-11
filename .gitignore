@@ -164,3 +164,4 @@ certbot/
 */logs
 data/
 */media
+actions-runner/
