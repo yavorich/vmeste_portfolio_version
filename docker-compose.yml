@@ -27,7 +27,7 @@ services:
     image: postgres:14.5-alpine
     restart: always
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     env_file:
       - .env
     ports:
@@ -123,6 +123,7 @@ services:
 volumes:
   rabbitmqdata:
   elsdata:
+  pgdata:
 
 networks:
   vmeste_back_default:
