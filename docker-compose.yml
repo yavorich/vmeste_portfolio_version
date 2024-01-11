@@ -12,6 +12,7 @@ services:
       - .:/app
       - ./backend/static/:/app/backend/static/
       - ./backend/media/:/app/backend/media/
+      - /var/certbot/conf:/etc/letsencrypt/:ro
     expose:
       - 8000
     env_file:
@@ -39,8 +40,8 @@ services:
     image: nginx:latest
     volumes:
       - ./docker/nginx/conf/:/etc/nginx/conf.d/
-      - certbot_www:/var/www/certbot/:ro
-      - certbot_conf:/etc/nginx/ssl/:ro
+      - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
       - ./backend/static/:/app/backend/static/
       - ./backend/media/:/app/backend/media/
     ports:
@@ -55,8 +56,8 @@ services:
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - certbot_www:/var/www/certbot/:rw
-      - certbot_conf:/etc/letsencrypt/:rw
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
     depends_on:
       - nginx
     networks:
@@ -122,8 +123,6 @@ services:
 volumes:
   rabbitmqdata:
   elsdata:
-  certbot_www:
-  certbot_conf:
 
 networks:
   vmeste_back_default:
