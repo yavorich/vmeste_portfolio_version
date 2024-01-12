@@ -8,10 +8,10 @@ from api.models import Event, User
 class Chat(models.Model):
     event = models.OneToOneField(
         Event,
+        primary_key=True,
         verbose_name="Событие",
         related_name="chat",
         on_delete=models.CASCADE,
-        null=True,
     )
 
     class Meta:
