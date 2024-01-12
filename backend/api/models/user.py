@@ -117,6 +117,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("Дата принятия соглашения"), null=True
     )
     sending_push = models.BooleanField(default=True)
+    receive_recs = models.BooleanField(default=True)
 
     USERNAME_FIELD = "phone_number"
 

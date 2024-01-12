@@ -69,7 +69,7 @@ def revoke_existing_remind_notifications(instance):
 def send_push_notifications(sender, instance, **kwargs):
     groups = {
         Notification.Type.ADMIN: [PushGroup.ALL],
-        Notification.Type.EVENT_REC: [PushGroup.ALL],
+        Notification.Type.EVENT_REC: [PushGroup.RECS_ENABLED],
         Notification.Type.EVENT_CHANGED: [PushGroup.PARTICIPANTS],
         Notification.Type.EVENT_CANCELED: [PushGroup.PARTICIPANTS],
         Notification.Type.EVENT_REMIND: [PushGroup.PARTICIPANTS, PushGroup.ORGANIZER],
