@@ -54,7 +54,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def save_and_send_message(self, data):
         try:
-            chat = Chat.objects.get(event__id=data["message"]["chat"])
+            chat = Chat.objects.get(event__id=data["message"]["event_id"])
         except Chat.DoesNotExist:
             raise Exception("Чат с таким id не существует")
         send_serializer = MessageSendSerializer(
