@@ -2,10 +2,11 @@ from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from itertools import groupby
 
 from api.models import Event
-from api.permissions import MailIsConfirmed, IsEventOrganizerOrParticipant
+from api.permissions import IsEventOrganizerOrParticipant
 from api.services import get_event_object
 from api.enums import EventStatus
 from chat.serializers import (
@@ -20,7 +21,7 @@ from core.pagination import PageNumberSetPagination
 
 
 class ChatListView(ListAPIView):
-    permission_classes = [MailIsConfirmed]
+    permission_classes = [IsAuthenticated]
     serializer_class = ChatListSerializer
     pagination_class = PageNumberSetPagination
 
@@ -49,7 +50,7 @@ class ChatListView(ListAPIView):
 
 
 class MessageListView(ListAPIView):
-    permission_classes = [MailIsConfirmed, IsEventOrganizerOrParticipant]
+    permission_classes = [IsAuthenticated, IsEventOrganizerOrParticipant]
     pagination_class = PageNumberSetPagination
     serializer_class = MessageSerializer
 
@@ -87,12 +88,12 @@ class MessageListView(ListAPIView):
 
 
 class MessageSendView(CreateAPIView):
-    permission_classes = [MailIsConfirmed, IsEventOrganizerOrParticipant]
+    permission_classes = [IsAuthenticated, IsEventOrganizerOrParticipant]
     serializer_class = MessageSendSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["chat"] = Chat.objects.get(event__id=self.kwargs["event_pk"])
+        context["chat"] = Chat.objects.get(pk=self.kwargs["event_pk"])
         context["sender"] = self.request.user
         context["is_info"] = False
         context["is_incoming"] = False

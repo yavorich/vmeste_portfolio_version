@@ -54,7 +54,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def save_and_send_message(self, data):
         try:
-            chat = Chat.objects.get(event__id=data["message"]["event_id"])
+            chat = Chat.objects.get(pk=data["message"]["event_id"])
         except Chat.DoesNotExist:
             raise Exception("Чат с таким id не существует")
         send_serializer = MessageSendSerializer(
@@ -71,7 +71,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_serializer = MessageSerializer(
             instance=message, context={"user": self.user}
         )
-        send_ws_message(message_serializer.data, chat.event.pk)
+        send_ws_message(message_serializer.data, chat.pk)
 
     async def join_chat(self, data):
         group_name = "chat_%s" % data["event_id"]
