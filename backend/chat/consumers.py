@@ -2,7 +2,9 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-from chat.models import ReadMessage, Message
+from chat.models import ReadMessage, Message, Chat
+from chat.serializers import MessageSendSerializer, MessageSerializer
+from chat.utils import send_ws_message
 from api.models import Event
 
 
@@ -38,11 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.read_message(text_data_json)
 
         elif text_data_json["type"] == "chat_message":
-            group_name = "chat_%s" % text_data_json["event"]["id"]
-            await self.channel_layer.group_send(
-                group_name,
-                text_data_json,
-            )
+            await self.save_and_send_message(text_data_json)
 
         elif text_data_json["type"] == "join_chat":
             await self.join_chat(text_data_json)
@@ -52,6 +50,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
+
+    @database_sync_to_async
+    def save_and_send_message(self, data):
+        try:
+            chat = Chat.objects.get(event__id=data["message"]["chat"])
+        except Chat.DoesNotExist:
+            raise Exception("Чат с таким id не существует")
+        send_serializer = MessageSendSerializer(
+            data=data["message"],
+            context={
+                "chat": chat,
+                "sender": self.user,
+                "is_info": False,
+                "is_incoming": False,
+            },
+        )
+        send_serializer.is_valid(raise_exception=True)
+        message = send_serializer.save()
+        message_serializer = MessageSerializer(
+            instance=message, context={"user": self.user}
+        )
+        send_ws_message(message_serializer.data, chat.event.pk)
 
     async def join_chat(self, data):
         group_name = "chat_%s" % data["event_id"]
