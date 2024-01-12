@@ -6,4 +6,4 @@ do
 done
 
 # run a worker
-celery -A config worker --loglevel=info # --concurrency 1 -E -B
+celery -A config worker --loglevel=info --concurrency 1 -E -B

@@ -51,3 +51,11 @@ async def send_push_notifications(users, notifications):
     #     await send_fcm_push(
     #         push_token.token, notification.notification.title, notification.body
     #     )
+
+
+@shared_task
+def create_daily_event_notifications():
+    event = Event.objects.filter_has_free_places().order_by("-free_places").first()
+    type = Notification.Type.EVENT_REC
+    Notification.objects.create(event=event, type=type)
+    return f"Notification of type={type} was created"
