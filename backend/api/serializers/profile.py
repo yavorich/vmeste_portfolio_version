@@ -30,7 +30,7 @@ class ProfilePartialUpdateSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         user = self.context["user"]
         if User.objects.filter(~Q(pk=user.pk), email=value).exists():
-            return serializers.ValidationError("Такой email уже существует.")
+            raise serializers.ValidationError("Такой email уже существует.")
         if user.email != value:
             user.email_is_confirmed = False
             user.save()
