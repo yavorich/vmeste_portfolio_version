@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Q
-from django.utils.timezone import now
+from django.utils.timezone import localtime
 from dateutil.relativedelta import relativedelta
 from rest_framework.exceptions import ValidationError
 
@@ -55,7 +55,7 @@ class ProfileUpdateSerializer(ProfilePartialUpdateSerializer):
         }
 
         def validate_date_of_birth(self, value):
-            age = relativedelta(now().date(), value).years
+            age = relativedelta(localtime().date(), value).years
             if age < 12:
                 raise ValidationError("Возраст не может быть меньше 12")
             elif age > 100:
@@ -91,7 +91,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
         ]
 
     def get_age(self, obj: User):
-        return relativedelta(now().date(), obj.date_of_birth).years
+        return relativedelta(localtime().date(), obj.date_of_birth).years
 
     def get_unread_notify(self, obj: User):
         return obj.notifications.filter(read=False).count()
@@ -125,7 +125,7 @@ class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):
     def get_subscription_days(self, obj: User):
         if not obj.subscription_expires:
             return 0
-        return (obj.subscription_expires - now()).days
+        return (obj.subscription_expires - localtime()).days
 
 
 class SelfProfileDestroySerializer(serializers.ModelSerializer):

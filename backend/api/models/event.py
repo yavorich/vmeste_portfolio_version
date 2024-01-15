@@ -1,13 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import Q, F, Value
-from django.db.models.functions import Concat, Cast
+from django.db.models import Q, F
 from django.db.models.manager import BaseManager
 from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
 from django.urls import reverse
-from django.utils.timezone import now, timedelta, datetime
+from django.utils.timezone import localtime, timedelta, datetime
 from django.utils.translation import gettext_lazy as _
 from model_utils import FieldTracker
 import os
@@ -43,27 +42,19 @@ class EventQuerySet(models.QuerySet):
             return self.get_free_places_by_gender(gender).filter(free_places__gt=0)
         return self.get_free_places().filter(free_places__gt=0)
 
-    def get_start_datetime(self):
-        return self.annotate(
-            start=Cast(
-                Concat("date", Value(" "), "start_time"),
-                output_field=models.DateTimeField(),
-            )
-        )
-
     def filter_past(self, hours=0, days=90):
-        return self.get_start_datetime().filter(
-            start__lte=now() - timedelta(hours=hours),
-            start__gte=now() - timedelta(days=days),
+        return self.filter(
+            start_datetime__lte=localtime() - timedelta(hours=hours),
+            start_datetime__gte=localtime() - timedelta(days=days),
         )
 
     def filter_not_expired(self, days=90):
-        return self.get_start_datetime().filter(
-            start__gte=now() - timedelta(days=days),
+        return self.filter(
+            start_datetime__gte=localtime() - timedelta(days=days),
         )
 
     def filter_upcoming(self):
-        return self.get_start_datetime().filter(start__gt=now())
+        return self.filter(start_datetime__gt=datetime.now())
 
     def filter_organizer_or_participant(self, user: User):
         return self.filter(Q(participants__user=user) | Q(organizer=user))
@@ -96,6 +87,8 @@ class Event(models.Model):
     date = models.DateField(_("Дата"))
     start_time = models.TimeField(_("Время начала"))
     end_time = models.TimeField(_("Время завершения"))
+    start_datetime = models.DateTimeField(blank=True, null=True)
+    end_datetime = models.DateTimeField(blank=True, null=True)
     theme = models.ForeignKey(
         verbose_name=_("Категория"),
         to=Theme,
@@ -177,10 +170,6 @@ class Event(models.Model):
         )
 
     @property
-    def start_datetime(self):
-        return datetime.combine(self.date, self.start_time, tzinfo=now().tzinfo)
-
-    @property
     def link(self):
         if self.is_close_event:
             return reverse("api:event-detail", kwargs={"event_pk": self.uuid})
@@ -218,8 +207,19 @@ class Event(models.Model):
 
     def is_valid_sign_time(self) -> bool:
         start = self.start_datetime
-        return now() <= start - timedelta(hours=3)
+        return localtime() <= start - timedelta(hours=3)
 
     def is_valid_media_time(self) -> bool:
         start = self.start_datetime
-        return start + timedelta(days=90) >= now() >= start
+        return start + timedelta(days=90) >= localtime() >= start
+
+    def save(self, *args, **kwargs):
+        self.start_datetime = datetime.combine(
+            self.date, self.start_time, tzinfo=localtime().tzinfo
+        )
+        self.end_datetime = datetime.combine(
+            self.date + timedelta(days=1 if self.end_time <= self.start_time else 0),
+            self.end_time,
+            tzinfo=localtime().tzinfo,
+        )
+        return super().save(*args, **kwargs)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import Serializer, ModelSerializer
-from django.utils.timezone import now, datetime, timedelta
+from django.utils.timezone import localtime, datetime, timedelta
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -62,12 +62,9 @@ class EventMixin:
         return serializer.data
 
     def get_state(self, obj: Event):
-        end_date = (
-            obj.date + timedelta(days=1) if obj.end_time <= obj.start_time else obj.date
-        )
-        if now() < datetime.combine(obj.date, obj.start_time, tzinfo=now().tzinfo):
+        if localtime() < obj.start_datetime:
             return EventState.BEFORE
-        if now() > datetime.combine(end_date, obj.end_time, tzinfo=now().tzinfo):
+        if localtime() > obj.end_datetime:
             return EventState.AFTER
         return EventState.WHILE
 
@@ -247,9 +244,11 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_start_datetime(validated_data, hours):
         start_datetime = datetime.combine(
-            validated_data["date"], validated_data["start_time"], tzinfo=now().tzinfo
+            validated_data["date"],
+            validated_data["start_time"],
+            tzinfo=localtime().tzinfo,
         )
-        if start_datetime < now() + timedelta(hours=hours):
+        if start_datetime < localtime() + timedelta(hours=hours):
             raise ValidationError(
                 f"Минимальное время до начала мероприятия - {hours} часов"
             )
