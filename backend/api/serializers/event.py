@@ -11,7 +11,6 @@ from api.models import (
     City,
     Country,
     Theme,
-    Category,
     User,
 )
 from api.enums import EventState
@@ -24,6 +23,16 @@ from api.documents import EventDocument
 from api.models import EventFastFilter
 from core.utils import convert_file_to_base64, validate_file_size
 from core.serializers import CustomFileField
+
+
+class CharacterSeparatedField(serializers.ListField):
+    def __init__(self, *args, **kwargs):
+        self.separator = kwargs.pop("separator", ",")
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        data = data.split(self.separator)
+        return super().to_internal_value(data)
 
 
 class EventMixin:
@@ -172,9 +181,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
     city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all())
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all())
-    categories = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(), many=True
-    )
+    categories = serializers.ListField(child=serializers.IntegerField())
     location_name = serializers.CharField(write_only=True)
     address = serializers.CharField(write_only=True)
     latitude = serializers.FloatField(write_only=True)
@@ -264,8 +271,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return {"id": data["id"]}
+        return {"id": instance.id}
 
 
 class EventFastFilterSerializer(serializers.ModelSerializer):
@@ -276,16 +282,6 @@ class EventFastFilterSerializer(serializers.ModelSerializer):
             "name",
             "title",
         ]
-
-
-class CharacterSeparatedField(serializers.ListField):
-    def __init__(self, *args, **kwargs):
-        self.separator = kwargs.pop("separator", ",")
-        super().__init__(*args, **kwargs)
-
-    def to_internal_value(self, data):
-        data = data.split(self.separator)
-        return super().to_internal_value(data)
 
 
 class FilterQuerySerializer(Serializer):
