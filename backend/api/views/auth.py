@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, login
-from django.utils.timezone import now
+from django.utils.timezone import localtime
 
 from api.serializers import (
     PhoneAuthSerializer,
@@ -47,7 +47,7 @@ class AuthSendCodeView(APIView):
                 user = User.objects.create_user(
                     phone_number=data["phone_number"],
                     subscription=subscription,
-                    subscription_expires=now() + subscription.duration,
+                    subscription_expires=localtime() + subscription.duration,
                 )
         elif _type == "mail":
             user = request.user

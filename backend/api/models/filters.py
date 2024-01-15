@@ -1,7 +1,7 @@
 from enum import Enum
 from django.db import models
 from elasticsearch_dsl import Q
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import localtime, timedelta
 from operator import ior, iand
 from functools import reduce
 
@@ -20,9 +20,9 @@ class FilterGroup(str, Enum):
 class EventFastFilterQuerySet(models.QuerySet):
     def get_filter_query(self, filter_ids, user):
         filter_queries = {
-            FilterName.TODAY: Q("term", **{"date": now().date()}),
+            FilterName.TODAY: Q("term", **{"date": localtime().date()}),
             FilterName.TOMORROW: Q(
-                "term", **{"date": now().date() + timedelta(days=1)}
+                "term", **{"date": localtime().date() + timedelta(days=1)}
             ),
             FilterName.MY_CITY: Q("term", **{"city.id": user.city.id})
             if hasattr(getattr(user, "city", None), "id")

@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.timezone import timedelta, now
+from django.utils.timezone import timedelta, localtime
 from celery import states
 from celery.signals import before_task_publish
 from django_celery_results.models import TaskResult
@@ -48,7 +48,7 @@ def create_event_notifications(sender, instance: Event, created: bool, **kwargs)
 
     if is_active:
         for delta in [timedelta(days=1), timedelta(hours=4)]:
-            if instance.start_datetime - delta > now():
+            if instance.start_datetime - delta > localtime():
                 create_notifications_task.apply_async(
                     eta=instance.start_datetime - delta,
                     args=[instance.pk, Notification.Type.EVENT_REMIND],
