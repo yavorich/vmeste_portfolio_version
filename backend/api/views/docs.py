@@ -4,9 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
-from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, get_list_or_404
-from django.utils.timezone import now
+from django.utils.timezone import localtime
 
 from api.models import Docs
 from api.serializers import DocsSerializer
@@ -30,7 +29,7 @@ class DocsViewSet(ListModelMixin, GenericViewSet):
         obj = self.get_object()
         if obj.name == Docs.Name.AGREEMENT:  # с rules пока ничего не делаем
             if not user.agreement_applied_at:
-                user.agreement_applied_at = now()
+                user.agreement_applied_at = localtime()
                 user.save()
         return Response(f"{obj.name} applied.", status=HTTP_200_OK)
 

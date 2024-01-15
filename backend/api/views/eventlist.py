@@ -9,7 +9,7 @@ from django_elasticsearch_dsl_drf.filter_backends import (
 )
 from elasticsearch_dsl import Q
 from rest_framework.exceptions import ValidationError
-from django.utils.timezone import now
+from django.utils.timezone import localtime
 from django_elasticsearch_dsl.search import Search
 
 from api.serializers import (
@@ -95,9 +95,9 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
         # PAST включает в себя начавшиеся и прошедшие события, все др. статусы - будущие
         if status == EventStatus.PAST:
-            qs = qs.filter(Q("range", start_datetime={"lte": now()}))
+            qs = qs.filter(Q("range", start_datetime={"lte": localtime()}))
         else:
-            qs = qs.filter(Q("range", start_datetime={"gt": now()}))
+            qs = qs.filter(Q("range", start_datetime={"gt": localtime()}))
 
         # все события гл. страницы фильтруются на наличие свободных мест и открытость
         # если пользователь залогинен, фильтр также учитывает его пол
