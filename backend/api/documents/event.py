@@ -7,13 +7,13 @@ from django_elasticsearch_dsl.fields import (
     BooleanField,
     KeywordField,
     DateField,
+    FileField,
 )
 from elasticsearch_dsl import analyzer
 from elasticsearch_dsl.analysis import token_filter
 
 from api.models import Event, Location, EventParticipant, User, Country, City, Category
 from api.enums import Gender
-from core.utils import convert_file_to_base64
 
 edge_ngram_completion_filter = token_filter(
     "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
@@ -36,7 +36,7 @@ class EventDocument(Document):
     title = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     max_age = IntegerField()
     min_age = IntegerField()
-    cover = TextField()
+    cover = FileField()
     short_description = TextField(
         fields={"raw": KeywordField()}, analyzer=edge_ngram_completion
     )
@@ -141,7 +141,3 @@ class EventDocument(Document):
                 "total": instance.total_male + instance.total_female - total,
             },
         }
-
-    @staticmethod
-    def prepare_cover(instance: Event):
-        return convert_file_to_base64(instance.cover)
