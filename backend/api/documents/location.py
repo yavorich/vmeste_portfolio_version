@@ -5,13 +5,13 @@ from django_elasticsearch_dsl.fields import (
     GeoPointField,
     ObjectField,
     KeywordField,
+    FileField,
 )
 from django_elasticsearch_dsl.registries import registry
 from elasticsearch_dsl import analyzer
 from elasticsearch_dsl.analysis import token_filter
 
 from api.models import Location, City
-from core.utils import convert_file_to_base64
 
 edge_ngram_completion_filter = token_filter(
     "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
@@ -27,7 +27,7 @@ edge_ngram_completion = analyzer(
 @registry.register_document
 class LocationDocument(Document):
     id = IntegerField()
-    cover = TextField()
+    cover = FileField()
     name = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     coords = GeoPointField(attr="coords_field_indexing")
     address = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
@@ -58,7 +58,3 @@ class LocationDocument(Document):
             return related_instance.objects.all()
         if isinstance(related_instance, City):
             return related_instance.locations.all()
-
-    @staticmethod
-    def prepare_cover(instance: Location):
-        return convert_file_to_base64(instance.cover)

@@ -3,14 +3,12 @@ from django.db.models import Q
 
 from api.models import Event, User
 from chat.models import Message, ReadMessage
-from core.utils import convert_file_to_base64
 
 
 class ChatListSerializer(serializers.ModelSerializer):
     address = serializers.CharField(source="location.address")
     location_name = serializers.CharField(source="location.name")
     unread_messages = serializers.SerializerMethodField()
-    cover = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -29,13 +27,9 @@ class ChatListSerializer(serializers.ModelSerializer):
         unread_messages = obj.chat.messages.filter(~Q(read__user=user))
         return unread_messages.count()
 
-    def get_cover(self, obj: Event):
-        return convert_file_to_base64(obj.cover)
-
 
 class ChatEventSerializer(serializers.ModelSerializer):
     total_will_come = serializers.SerializerMethodField()
-    cover = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -48,13 +42,9 @@ class ChatEventSerializer(serializers.ModelSerializer):
     def get_total_will_come(self, obj: Event):
         return obj.participants.count()
 
-    def get_cover(self, obj: Event):
-        return convert_file_to_base64(obj.cover)
-
 
 class SenderSerializer(serializers.ModelSerializer):
     name_and_surname = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -66,9 +56,6 @@ class SenderSerializer(serializers.ModelSerializer):
 
     def get_name_and_surname(self, obj: User):
         return obj.get_full_name()
-
-    def get_avatar(self, obj: User):
-        return convert_file_to_base64(obj.avatar)
 
 
 class MessageSerializer(serializers.ModelSerializer):
