@@ -1,4 +1,4 @@
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
@@ -21,7 +21,7 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
 
     def get_permissions(self):
         permission_classes = {
-            "retrieve": [IsAuthenticated],
+            "retrieve": [AllowAny],
             "partial_update": [MailIsConfirmed, IsEventOrganizer],
         }
         self.permission_classes = permission_classes[self.action]
