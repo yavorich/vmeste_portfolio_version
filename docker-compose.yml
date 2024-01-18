@@ -11,7 +11,7 @@ services:
     volumes:
       - .:/app
       - static:/app/backend/static/
-      - nedia:/app/backend/media/
+      - media:/app/backend/media/
       - /var/certbot/conf:/etc/letsencrypt/:ro
     expose:
       - 8000
