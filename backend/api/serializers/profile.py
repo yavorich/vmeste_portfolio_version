@@ -7,10 +7,14 @@ from rest_framework.exceptions import ValidationError
 from api.models import User, EventParticipant, Event
 from api.serializers import CategoryTitleSerializer
 from core.utils import validate_file_size
+from core.serializers import CharacterSeparatedField
 
 
 class ProfilePartialUpdateSerializer(serializers.ModelSerializer):
     avatar = serializers.FileField(validators=[validate_file_size])
+    interests = CharacterSeparatedField(
+        child=serializers.IntegerField(), write_only=True
+    )
 
     class Meta:
         model = User
@@ -34,6 +38,9 @@ class ProfilePartialUpdateSerializer(serializers.ModelSerializer):
             user.email_is_confirmed = False
             user.save()
         return value
+
+    def to_representation(self, instance):
+        return {"id": instance.id}
 
 
 class ProfileUpdateSerializer(ProfilePartialUpdateSerializer):
