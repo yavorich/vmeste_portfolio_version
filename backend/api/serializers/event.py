@@ -84,6 +84,8 @@ class EventMixin:
 
 
 class EventParticipantSerializer(ModelSerializer):
+    avatar = serializers.FileField(source="user.avatar")
+
     class Meta:
         model = EventParticipant
         fields = ["avatar"]
