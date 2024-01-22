@@ -73,7 +73,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
     age = serializers.SerializerMethodField()
     country = serializers.CharField(source="country.name", allow_null=True)
     city = serializers.CharField(source="city.name", allow_null=True)
-    occupation = serializers.CharField(source="occupation.name", allow_null=True)
+    occupation = serializers.CharField(source="occupation.title", allow_null=True)
     interests = CategoryTitleSerializer(many=True)
     stats = serializers.SerializerMethodField()
 
