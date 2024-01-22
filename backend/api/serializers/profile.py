@@ -106,9 +106,15 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
         organized = Event.objects.filter(
             organizer=obj, is_draft=False, is_active=True
         ).count()
-        signed = participation.filter().count()
+        signed = participation.count()
         visited = participation.filter(has_confirmed=True).count()
-        return {"organized": organized, "signed": signed, "visited": visited}
+        skipped = signed - visited
+        return {
+            "organized": organized,
+            "signed": signed,
+            "visited": visited,
+            "skipped": skipped,
+        }
 
 
 class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):
