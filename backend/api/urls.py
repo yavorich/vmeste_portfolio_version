@@ -39,14 +39,19 @@ urlpatterns = [
     path("auth/", views.AuthView.as_view(), name="auth"),
     path(
         "profile/",
-        views.ProfileUpdateViewSet.as_view(
-            {"put": "update", "patch": "partial_update"}
+        views.SelfProfileViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
         ),
         name="my-profile",
     ),
     path(
         "profile/<int:pk>/",
-        views.ProfileDetailViewSet.as_view({"get": "retrieve", "delete": "destroy"}),
+        views.AlienProfileView.as_view(),
         name="user-profile",
     ),
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),

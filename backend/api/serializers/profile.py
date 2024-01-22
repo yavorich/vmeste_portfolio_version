@@ -10,7 +10,7 @@ from core.utils import validate_file_size
 from core.serializers import CharacterSeparatedField
 
 
-class ProfilePartialUpdateSerializer(serializers.ModelSerializer):
+class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
     avatar = serializers.FileField(validators=[validate_file_size])
     interests = CharacterSeparatedField(
         child=serializers.IntegerField(), write_only=True
@@ -43,9 +43,9 @@ class ProfilePartialUpdateSerializer(serializers.ModelSerializer):
         return {"id": instance.id}
 
 
-class ProfileUpdateSerializer(ProfilePartialUpdateSerializer):
-    class Meta(ProfilePartialUpdateSerializer.Meta):
-        fields = ProfilePartialUpdateSerializer.Meta.fields + [
+class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
+    class Meta(SelfProfilePartialUpdateSerializer.Meta):
+        fields = SelfProfilePartialUpdateSerializer.Meta.fields + [
             "first_name",
             "last_name",
             "date_of_birth",

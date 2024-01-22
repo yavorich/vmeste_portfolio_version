@@ -23,8 +23,8 @@ from .auth import (
     EmailAuthSerializer,
 )
 from .profile import (
-    ProfileUpdateSerializer,
-    ProfilePartialUpdateSerializer,
+    SelfProfileUpdateSerializer,
+    SelfProfilePartialUpdateSerializer,
     ProfileRetrieveSerializer,
     SelfProfileDestroySerializer,
     SelfProfileRetrieveSerializer,

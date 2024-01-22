@@ -4,25 +4,29 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
 from api.serializers import (
-    ProfileUpdateSerializer,
-    ProfilePartialUpdateSerializer,
+    SelfProfileUpdateSerializer,
+    SelfProfilePartialUpdateSerializer,
     ProfileRetrieveSerializer,
     SelfProfileRetrieveSerializer,
     SelfProfileDestroySerializer,
 )
 from api.models import User
-from api.permissions import IsMyProfile
 
 
-class ProfileUpdateViewSet(UpdateModelMixin, GenericViewSet):
+class SelfProfileViewSet(
+    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet
+):
     queryset = User.objects.all()
     serializer_class = {
-        "update": ProfileUpdateSerializer,
-        "partial_update": ProfilePartialUpdateSerializer,
+        "retrieve": SelfProfileRetrieveSerializer,
+        "update": SelfProfileUpdateSerializer,
+        "partial_update": SelfProfilePartialUpdateSerializer,
+        "destroy": SelfProfileDestroySerializer,
     }
     permission_classes = [IsAuthenticated]
 
@@ -47,28 +51,10 @@ class ProfileUpdateViewSet(UpdateModelMixin, GenericViewSet):
         return result
 
 
-class ProfileDetailViewSet(RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
+class AlienProfileView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = ProfileRetrieveSerializer
-
-    def get_serializer_class(self):
-        if self.is_mine():
-            if self.action == "retrieve":
-                return SelfProfileRetrieveSerializer
-            elif self.action == "destroy":
-                return SelfProfileDestroySerializer
-        return super().get_serializer_class()
-
-    def get_permissions(self):
-        permission_classes = {
-            "retrieve": [IsAuthenticated],
-            "destroy": [IsAuthenticated, IsMyProfile],
-        }
-        self.permission_classes = permission_classes[self.action]
-        return super(ProfileDetailViewSet, self).get_permissions()
-
-    def is_mine(self):
-        return self.kwargs["pk"] == self.request.user.pk
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
