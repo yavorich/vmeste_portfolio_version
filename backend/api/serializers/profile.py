@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Q
-from django.utils.timezone import localtime
+from django.utils.timezone import localtime, timedelta
 from dateutil.relativedelta import relativedelta
 from rest_framework.exceptions import ValidationError
 
@@ -106,9 +106,13 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
         organized = Event.objects.filter(
             organizer=obj, is_draft=False, is_active=True
         ).count()
+        past_events = Event.objects.filter(
+            start_datetime__gte=localtime() - timedelta(hours=2)
+        )
+        past_participation = participation.filter(event__in=past_events)
         signed = participation.count()
-        visited = participation.filter(has_confirmed=True).count()
-        skipped = signed - visited
+        visited = past_participation.filter(has_confirmed=True).count()
+        skipped = past_participation.count() - visited
         return {
             "organized": organized,
             "signed": signed,
