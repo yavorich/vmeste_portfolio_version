@@ -11,6 +11,6 @@ from .user import User
 from .theme import Theme
 from .subscription import Subscription
 from .docs import Docs
-from .support import SupportRequestMessage, SupportRequestTheme
+from .support import SupportRequestMessage, SupportRequestTheme, SupportRequestType
 from .media import EventMedia
 from .filters import EventFastFilter
