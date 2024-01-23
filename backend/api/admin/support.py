@@ -1,17 +1,27 @@
 from django.contrib import admin
 
-from api.models import SupportRequestTheme, SupportRequestMessage
+from api.models import SupportRequestTheme, SupportRequestMessage, SupportRequestType
 
 
 class SupportMessageInline(admin.TabularInline):
     model = SupportRequestMessage
-    fields = ["author", "status", "subject", "get_subject", "theme", "text"]
+    fields = [
+        "author",
+        "status",
+        "theme",
+        "get_subject",
+        "text",
+    ]
     readonly_fields = ("get_subject",)
     classes = ["collapse"]
 
-    @admin.display(description="Объект жалобы")
+    @admin.display(description="Объект обращения")
     def get_subject(self, obj):
-        return getattr(obj, obj.subject)
+        if obj.event:
+            return obj.event
+        if obj.profile:
+            return obj.profile
+        return None
 
 
 @admin.register(SupportRequestTheme)
@@ -19,6 +29,7 @@ class SupportThemeAdmin(admin.ModelAdmin):
     inlines = [SupportMessageInline]
     list_display = [
         "name",
+        "type",
         "requests_count",
     ]
 
@@ -33,18 +44,30 @@ class SupportMessageAdmin(admin.ModelAdmin):
         "id",
         "author",
         "status",
-        "subject",
+        "get_type",
+        "get_theme",
         "get_subject",
-        "theme",
         "text",
     ]
-    list_editable = ["status", "theme"]
+    list_editable = ["status",]
     list_filter = [
         "status",
-        "subject",
+        "theme__type",
         "theme__name",
     ]
 
-    @admin.display(description="Объект жалобы")
+    @admin.display(description="Тема")
+    def get_theme(self, obj):
+        return obj.theme.name
+
+    @admin.display(description="Тип обращения")
+    def get_type(self, obj):
+        return SupportRequestType(obj.theme.type).label
+
+    @admin.display(description="Объект обращения")
     def get_subject(self, obj):
-        return getattr(obj, obj.subject)
+        if obj.event:
+            return obj.event
+        if obj.profile:
+            return obj.profile
+        return None
