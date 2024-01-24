@@ -59,7 +59,6 @@ class EventParticipantUserSerializer(ModelSerializer):
 
 
 class EventOrganizerUserSerializer(ModelSerializer):
-    avatar = serializers.FileField(source="user.avatar")
     name_and_surname = serializers.SerializerMethodField()
     in_men = serializers.SerializerMethodField()
 
