@@ -142,6 +142,7 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
     am_i_organizer = serializers.SerializerMethodField()
     stats_men = serializers.CharField(source="participants.stats.men")
     stats_women = serializers.CharField(source="participants.stats.women")
+    cover = serializers.SerializerMethodField()
 
     class Meta:
         document = EventDocument
@@ -158,6 +159,10 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
             "date_and_time",
             "am_i_organizer",
         ]
+
+    def get_cover(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.cover) if obj.cover else None
 
 
 class EventCreateUpdateSerializer(serializers.ModelSerializer):

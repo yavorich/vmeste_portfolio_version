@@ -5,6 +5,7 @@ from rest_framework.serializers import (
     IntegerField,
     ValidationError,
     FileField,
+    SerializerMethodField,
 )
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
@@ -47,6 +48,7 @@ class LocationSerializer(ModelSerializer):
 class LocationDocumentSerializer(DocumentSerializer):
     latitude = FloatField(source="coords.lat")
     longitude = FloatField(source="coords.lon")
+    cover = SerializerMethodField()
 
     class Meta:
         document = LocationDocument
@@ -59,6 +61,10 @@ class LocationDocumentSerializer(DocumentSerializer):
             "address",
             "discount",
         ]
+
+    def get_cover(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.cover) if obj.cover else None
 
 
 class LocationCreateSerializer(ModelSerializer):
