@@ -9,6 +9,7 @@ class EventParticipant(models.Model):
     )
     user = models.ForeignKey(User, related_name="events", on_delete=models.CASCADE)
     has_confirmed = models.BooleanField(default=False)
+    is_organizer = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Участник события"

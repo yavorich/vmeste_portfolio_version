@@ -68,7 +68,6 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "total_female",
                     "min_age",
                     "max_age",
-                    "organizer",
                     "did_organizer_marking",
                 ]
             },
@@ -93,7 +92,6 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
         "short_description",
         "min_age",
         "max_age",
-        "organizer",
         "will_come",
     ]
     list_editable = [
@@ -108,7 +106,6 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
         "short_description",
         "min_age",
         "max_age",
-        "organizer",
     ]
     list_filter = [
         EventStatusFilter,

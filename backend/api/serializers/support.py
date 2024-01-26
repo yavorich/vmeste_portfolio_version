@@ -31,7 +31,7 @@ class SupportMessageCreateSerializer(serializers.ModelSerializer):
                 raise ValidationError(
                     "Должен быть указан ровно один из параметров: 'event', 'profile'"
                 )
-            if event and event.organizer == user:
+            if event and event.participants.get(is_organizer=True).user == user:
                 raise ValidationError(
                     "Вы не можете пожаловаться на организуемое вами событие"
                 )

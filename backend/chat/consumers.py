@@ -100,7 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_user_groups(self):
         events = (
-            Event.objects.filter_organizer_or_participant(self.user)
+            Event.objects.filter_participant(self.user)
             .distinct()
             .filter_not_expired()
             .filter(is_active=True, is_draft=False)

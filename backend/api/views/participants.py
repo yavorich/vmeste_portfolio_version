@@ -9,10 +9,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied, ParseError
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.utils.timezone import localtime, timedelta
 
 from api.permissions import (
     IsEventOrganizer,
-    IsEventOrganizerOrParticipant,
+    IsEventParticipant,
 )
 from api.serializers import (
     EventMarkingSerializer,
@@ -31,26 +33,17 @@ class EventMarkingDetailView(RetrieveAPIView):
     def get_object(self):
         user = self.request.user
 
-        # все мероприятия, где юзер - орг, не отмечал, начались >= 2 часов назад
-        events = Event.objects.filter(
-            organizer=user,
-            did_organizer_marking=False,
-            is_active=True,
-            is_draft=False,
-        ).filter_past(hours=2)
-
-        if events.exists():
-            return events.first()
-
-        # все мероприятия, где юзер - участник, не отмечался, начались >= 2 часов назад
-        events = (
-            Event.objects.select_related("participants")
-            .filter(participants__user=user, participants__has_confirmed=False)
-            .filter_past(hours=2)
+        # все мероприятия, где юзер - участник и не отмечался
+        # или юзер - орг и не отмечал
+        # начались >= 2 часов назад
+        participance = EventParticipant.objects.filter(
+            Q(is_organizer=True, event__did_organizer_marking=False)
+            | Q(has_confirmed=False),
+            user=user,
+            event__start_datetime__lte=localtime() - timedelta(hours=2),
         )
-
-        if events.exists():
-            return events.first()
+        if participance.exists():
+            return participance.first().event
 
         return None
 
@@ -74,7 +67,7 @@ class EventParticipantRetrieveUpdateView(
         "GET": EventRetrieveParticipantsSerializer,
         "PATCH": EventParticipantBulkUpdateSerializer,
     }
-    permission_classes = [IsEventOrganizerOrParticipant]
+    permission_classes = [IsEventParticipant]
 
     def get_object(self):
         return get_event_object(self.kwargs["event_pk"])
@@ -88,7 +81,7 @@ class EventParticipantRetrieveUpdateView(
     def get_permissions(self):
         permission_classes = {
             "GET": [AllowAny],
-            "PATCH": [IsEventOrganizerOrParticipant],
+            "PATCH": [IsEventParticipant],
         }
         self.permission_classes = permission_classes[self.request.method]
         return super(EventParticipantRetrieveUpdateView, self).get_permissions()

@@ -21,7 +21,6 @@ class EventPublishedSignViewSet(GenericViewSet):
         user = request.user
         obj = self.get_object()
         participant = obj.get_participant(user)
-        user_is_organizer = user == obj.organizer
 
         if obj.is_draft:
             raise ValidationError("Событие ещё не опубликовано")
@@ -29,7 +28,7 @@ class EventPublishedSignViewSet(GenericViewSet):
         if not obj.is_active:
             raise ValidationError("Событие удалено или заблокировано")
 
-        if participant is not None or user_is_organizer:
+        if participant is not None:
             raise ValidationError("Пользователь уже записан или является организатором")
 
         if obj.get_free_places(user.gender) == 0:
@@ -49,15 +48,14 @@ class EventPublishedSignViewSet(GenericViewSet):
         user = request.user
         obj = self.get_object()
         participant = obj.get_participant(user)
-        user_is_organizer = user == obj.organizer
 
         if obj.is_draft or not obj.is_active:
             raise ValidationError("Мероприятие уже отменено или заблокировано")
 
-        if participant is None and not user_is_organizer:
+        if participant is None:
             raise ValidationError("Пользователь не является участником/организатором")
 
-        if user_is_organizer:
+        if participant.is_organizer:
             if not obj.is_valid_sign_time():
                 raise ValidationError("Нельзя отменить: до начала менее 3 часов")
 

@@ -4,7 +4,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.permissions import (
     MailIsConfirmed,
-    IsEventOrganizerOrParticipant,
+    IsEventParticipant,
     IsMediaTimeValid,
 )
 from api.serializers import EventMediaBulkCreateSerializer, EventMediaListSerializer
@@ -18,7 +18,7 @@ class EventMediaViewSet(
 ):
     permission_classes = [
         MailIsConfirmed,
-        IsEventOrganizerOrParticipant,
+        IsEventParticipant,
         IsMediaTimeValid,
     ]
     serializer_class = {
