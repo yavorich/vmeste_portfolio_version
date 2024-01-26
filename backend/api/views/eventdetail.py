@@ -1,15 +1,16 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import RetrieveModelMixin
 
 from api.models import Event
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
 from api.permissions import MailIsConfirmed, IsEventOrganizer
 from api.services import get_event_object
+from core.views import FileModelMixin
 
 
-class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class EventDetailViewSet(RetrieveModelMixin, FileModelMixin, GenericViewSet):
     queryset = Event.objects.all()
     serializer_class = {
         "retrieve": EventDetailSerializer,
