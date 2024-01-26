@@ -5,12 +5,12 @@ from rest_framework.mixins import (
 from rest_framework_bulk.mixins import BulkUpdateModelMixin
 from rest_framework.generics import GenericAPIView, DestroyAPIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied, ParseError
 from django.shortcuts import get_object_or_404
 
 from api.permissions import (
-    MailIsConfirmed,
     IsEventOrganizer,
     IsEventOrganizerOrParticipant,
 )
@@ -26,7 +26,7 @@ from api.services import get_event_object
 
 class EventMarkingDetailView(RetrieveAPIView):
     serializer_class = EventMarkingSerializer
-    permission_classes = [MailIsConfirmed]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         user = self.request.user
@@ -84,6 +84,14 @@ class EventParticipantRetrieveUpdateView(
 
     def get_serializer_class(self):
         return self.serializer_class[self.request.method]
+
+    def get_permissions(self):
+        permission_classes = {
+            "GET": [IsAuthenticated],
+            "PATCH": [IsEventOrganizerOrParticipant],
+        }
+        self.permission_classes = permission_classes[self.request.method]
+        return super(EventParticipantRetrieveUpdateView, self).get_permissions()
 
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
