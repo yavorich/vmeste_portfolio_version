@@ -40,8 +40,8 @@ services:
     image: nginx:latest
     volumes:
       - ./docker/nginx/conf/:/etc/nginx/conf.d/
-      - ./certbot/www/:/var/www/certbot/:ro
-      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - certbot_www:/var/www/certbot/:ro
+      - certbot_conf:/etc/nginx/ssl/:ro
       - static:/app/backend/static/
       - media:/app/backend/media/
     ports:
@@ -56,8 +56,8 @@ services:
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - ./certbot/www/:/var/www/certbot/:rw
-      - ./certbot/conf/:/etc/letsencrypt/:rw
+      - certbot_www:/var/www/certbot/:rw
+      - certbot_conf:/etc/letsencrypt/:rw
     depends_on:
       - nginx
     networks:
@@ -126,6 +126,8 @@ volumes:
   pgdata:
   static:
   media:
+  certbot_www:
+  certbot_conf:
 
 networks:
   vmeste_back_default:
