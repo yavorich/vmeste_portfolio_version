@@ -9,7 +9,11 @@ from rest_framework import status
 from rest_framework.exceptions import PermissionDenied, ParseError
 from django.shortcuts import get_object_or_404
 
-from api.permissions import MailIsConfirmed, IsEventOrganizer
+from api.permissions import (
+    MailIsConfirmed,
+    IsEventOrganizer,
+    IsEventOrganizerOrParticipant,
+)
 from api.serializers import (
     EventMarkingSerializer,
     EventRetrieveParticipantsSerializer,
@@ -70,6 +74,7 @@ class EventParticipantRetrieveUpdateView(
         "GET": EventRetrieveParticipantsSerializer,
         "PATCH": EventParticipantBulkUpdateSerializer,
     }
+    permission_classes = [IsEventOrganizerOrParticipant]
 
     def get_object(self):
         return get_event_object(self.kwargs["event_pk"])
@@ -79,14 +84,6 @@ class EventParticipantRetrieveUpdateView(
 
     def get_serializer_class(self):
         return self.serializer_class[self.request.method]
-
-    def get_permissions(self):
-        permission_classes = {
-            "GET": [IsEventOrganizer],
-            "PATCH": [MailIsConfirmed],
-        }
-        self.permission_classes = permission_classes[self.request.method]
-        return super(EventParticipantRetrieveUpdateView, self).get_permissions()
 
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
