@@ -10,17 +10,17 @@ class IsEventOrganizer(BasePermission):
             event = Event.objects.get(id=view.kwargs["event_pk"])
         except Event.DoesNotExist:
             event = Event.objects.get(uuid=view.kwargs["event_pk"])
-        return event.organizer == user
+        return event.participants.get(is_organizer=True).user == user
 
 
-class IsEventOrganizerOrParticipant(BasePermission):
+class IsEventParticipant(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         try:
             event = Event.objects.get(id=view.kwargs["event_pk"])
         except Event.DoesNotExist:
             event = Event.objects.get(uuid=view.kwargs["event_pk"])
-        return event.organizer == user or event.participants.filter(user=user).exists()
+        return event.participants.filter(user=user).exists()
 
 
 class IsMediaTimeValid(BasePermission):

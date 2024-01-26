@@ -20,7 +20,7 @@ from api.serializers import (
 from api.permissions import StatusPermissions, MailIsConfirmed
 from api.enums import EventStatus
 from api.documents import EventDocument
-from api.models import EventFastFilter
+from api.models import EventFastFilter, EventParticipant
 from chat.models import Chat
 from core.pagination import PageNumberSetPagination
 from core.views import FileModelMixin
@@ -86,10 +86,7 @@ class EventListViewSet(FileModelMixin, DocumentViewSet):
 
         # "Мои встречи": пользователь является участником/организатором
         if status in [EventStatus.UPCOMING, EventStatus.PAST, EventStatus.DRAFT]:
-            qs = qs.filter(
-                Q("term", **{"participants.user.id": user.id})
-                | Q("term", **{"organizer.id": user.id})
-            )
+            qs = qs.filter(Q("term", **{"participants.user.id": user.id}))
 
         # все события опубликованы, если статус не DRAFT
         qs = qs.filter(Q("term", is_draft=status == EventStatus.DRAFT))
@@ -152,12 +149,7 @@ class EventListViewSet(FileModelMixin, DocumentViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        status = self.request.query_params.get("status")
-        is_auth = self.request.user.is_authenticated
-
-        if status != EventStatus.POPULAR and is_auth:
-            context["user"] = self.request.user
-
+        context["user"] = self.request.user
         return context
 
     def list(self, request, *args, **kwargs):
@@ -182,3 +174,6 @@ class EventListViewSet(FileModelMixin, DocumentViewSet):
     def perform_create(self, serializer):
         event = serializer.save()
         Chat.objects.create(event=event)
+        EventParticipant.objects.create(
+            event=event, user=self.request.user, is_organizer=True, has_confirmed=True
+        )

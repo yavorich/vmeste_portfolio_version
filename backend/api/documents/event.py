@@ -121,11 +121,11 @@ class EventDocument(Document):
         if isinstance(related_instance, (Country, City, Category, Location)):
             return related_instance.events.all()
         if isinstance(related_instance, User):
-            return Event.objects.filter_organizer_or_participant(related_instance)
+            return Event.objects.filter_participant(related_instance)
 
     @staticmethod
     def prepare_participants(instance: Event):
-        participants = instance.get_participants()
+        participants = instance.participants.all()
         male = participants.filter(user__gender=Gender.MALE).count()
         female = participants.filter(user__gender=Gender.FEMALE).count()
         total = male + female
@@ -141,3 +141,8 @@ class EventDocument(Document):
                 "total": instance.total_male + instance.total_female - total,
             },
         }
+
+    @staticmethod
+    def prepare_organizer(instance: Event):
+        organizer = instance.organizer
+        return {"id": getattr(organizer, "id", None)}
