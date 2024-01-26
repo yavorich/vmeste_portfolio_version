@@ -110,12 +110,16 @@ class EventRetrieveParticipantsSerializer(ModelSerializer):
 
     def get_men(self, obj: Event):
         men = obj.get_participants_by_gender(Gender.MALE)
-        serializer = EventParticipantUserSerializer(men, many=True)
+        serializer = EventParticipantUserSerializer(
+            men, many=True, context=self.context
+        )
         return serializer.data
 
     def get_women(self, obj: Event):
         women = obj.get_participants_by_gender(Gender.FEMALE)
-        serializer = EventParticipantUserSerializer(women, many=True)
+        serializer = EventParticipantUserSerializer(
+            women, many=True, context=self.context
+        )
         return serializer.data
 
     def get_event(self, obj: Event):
