@@ -7,7 +7,7 @@ from rest_framework.generics import GenericAPIView, DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied, ParseError
+from rest_framework.exceptions import PermissionDenied, ParseError, ValidationError
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils.timezone import localtime, timedelta
@@ -78,6 +78,13 @@ class EventParticipantRetrieveUpdateView(
     def get_serializer_class(self):
         return self.serializer_class[self.request.method]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        event = self.get_object()
+        if self.request.method == "PATCH":
+            context["participants"] = event.participants.all()
+        return context
+
     def get_permissions(self):
         permission_classes = {
             "GET": [AllowAny],
@@ -108,4 +115,8 @@ class EventParticipantDeleteView(DestroyAPIView):
     permission_classes = [IsEventOrganizer]
 
     def get_object(self):
-        return get_object_or_404(EventParticipant, id=self.kwargs["id"])
+        event = get_event_object(self.kwargs["event_pk"])
+        participant = get_object_or_404(event.participants.all(), id=self.kwargs["id"])
+        if participant.user == self.request.user:
+            raise ValidationError("Event organizer cannot be deleted")
+        return participant
