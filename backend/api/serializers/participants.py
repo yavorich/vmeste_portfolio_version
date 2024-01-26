@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
+from rest_framework.exceptions import ValidationError
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
 from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
@@ -150,6 +151,10 @@ class EventParticipantBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer)
         ]
 
     def update(self, instance, validated_data):
+        if instance not in self.context["participants"]:
+            raise ValidationError(
+                f"Invalid id={instance.id}: is not a participant of given event"
+            )
         validated_data["has_confirmed"] = True
         return super().update(instance, validated_data)
 
