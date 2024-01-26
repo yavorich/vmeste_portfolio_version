@@ -5,7 +5,7 @@ from rest_framework.mixins import (
 from rest_framework_bulk.mixins import BulkUpdateModelMixin
 from rest_framework.generics import GenericAPIView, DestroyAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied, ParseError
 from django.shortcuts import get_object_or_404
@@ -87,7 +87,7 @@ class EventParticipantRetrieveUpdateView(
 
     def get_permissions(self):
         permission_classes = {
-            "GET": [IsAuthenticated],
+            "GET": [AllowAny],
             "PATCH": [IsEventOrganizerOrParticipant],
         }
         self.permission_classes = permission_classes[self.request.method]
