@@ -4,7 +4,7 @@ from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMi
 from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
 
-from api.models import Event, EventParticipant, User
+from api.models import Event, EventParticipant
 from api.serializers import LocationSerializer
 from api.enums import Gender
 
@@ -43,7 +43,6 @@ class EventTitleSerializer(ModelSerializer):
 class EventParticipantUserSerializer(ModelSerializer):
     avatar = serializers.FileField(source="user.avatar")
     name_and_surname = serializers.SerializerMethodField()
-    user_confirmed = serializers.BooleanField(source="has_confirmed")
 
     class Meta:
         model = EventParticipant
@@ -51,31 +50,32 @@ class EventParticipantUserSerializer(ModelSerializer):
             "id",
             "name_and_surname",
             "avatar",
-            "user_confirmed",
+            "has_confirmed",
+            "is_organizer",
         ]
 
     def get_name_and_surname(self, obj: EventParticipant):
         return obj.user.get_full_name()
 
 
-class EventOrganizerUserSerializer(ModelSerializer):
-    name_and_surname = serializers.SerializerMethodField()
-    in_men = serializers.SerializerMethodField()
+# class EventOrganizerUserSerializer(ModelSerializer):
+#     name_and_surname = serializers.SerializerMethodField()
+#     in_men = serializers.SerializerMethodField()
 
-    class Meta:
-        model = User
-        fields = [
-            "id",
-            "name_and_surname",
-            "avatar",
-            "in_men",
-        ]
+#     class Meta:
+#         model = User
+#         fields = [
+#             "id",
+#             "name_and_surname",
+#             "avatar",
+#             "in_men",
+#         ]
 
-    def get_name_and_surname(self, obj: User):
-        return obj.get_full_name()
+#     def get_name_and_surname(self, obj: User):
+#         return obj.get_full_name()
 
-    def get_in_men(self, obj: User):
-        return obj.gender == Gender.MALE
+#     def get_in_men(self, obj: User):
+#         return obj.gender == Gender.MALE
 
 
 class EventRetrieveParticipantsSerializer(ModelSerializer):
@@ -84,7 +84,7 @@ class EventRetrieveParticipantsSerializer(ModelSerializer):
     amount_women = serializers.SerializerMethodField()
     men = serializers.SerializerMethodField()
     women = serializers.SerializerMethodField()
-    organizer = EventOrganizerUserSerializer()
+    organizer = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -105,20 +105,27 @@ class EventRetrieveParticipantsSerializer(ModelSerializer):
 
     def get_amount(self, obj: Event, gender: Gender):
         total = getattr(obj, "total_" + gender)
-        will_come = obj.get_participants_by_gender(gender).count()
+        will_come = obj.participants.filter(user__gender=gender).count()
         return {"total": total, "will_come": will_come}
 
     def get_men(self, obj: Event):
-        men = obj.get_participants_by_gender(Gender.MALE)
+        men = obj.participants.filter(user__gender=Gender.MALE)
         serializer = EventParticipantUserSerializer(
             men, many=True, context=self.context
         )
         return serializer.data
 
     def get_women(self, obj: Event):
-        women = obj.get_participants_by_gender(Gender.FEMALE)
+        women = obj.participants.filter(user__gender=Gender.FEMALE)
         serializer = EventParticipantUserSerializer(
             women, many=True, context=self.context
+        )
+        return serializer.data
+
+    def get_organizer(self, obj: Event):
+        organizer = obj.participants.get(is_organizer=True)
+        serializer = EventParticipantUserSerializer(
+            organizer, many=False, context=self.context
         )
         return serializer.data
 

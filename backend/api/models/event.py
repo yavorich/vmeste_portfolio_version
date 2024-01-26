@@ -56,8 +56,8 @@ class EventQuerySet(models.QuerySet):
     def filter_upcoming(self):
         return self.filter(start_datetime__gt=datetime.now())
 
-    def filter_organizer_or_participant(self, user: User):
-        return self.filter(Q(participants__user=user) | Q(organizer=user))
+    def filter_participant(self, user: User):
+        return self.filter(participants__user=user)
 
 
 def get_upload_path(instance, filename):
@@ -117,12 +117,6 @@ class Event(models.Model):
     is_active = models.BooleanField(_("Активное"), default=True)
     total_male = models.PositiveSmallIntegerField(_("Всего мужчин"))
     total_female = models.PositiveSmallIntegerField(_("Всего женщин"))
-    organizer = models.ForeignKey(
-        verbose_name=_("Организатор"),
-        to=User,
-        related_name="organized_events",
-        on_delete=models.CASCADE,
-    )
     did_organizer_marking = models.BooleanField(
         _("Организатор отметил присутствие"), default=False
     )
@@ -175,6 +169,13 @@ class Event(models.Model):
             return reverse("api:event-detail", kwargs={"event_pk": self.uuid})
         return reverse("api:event-detail", kwargs={"event_pk": self.pk})
 
+    @property
+    def organizer(self):
+        try:
+            return self.participants.get(is_organizer=True).user
+        except EventParticipant.DoesNotExist:
+            return None
+
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
         participants = EventParticipant.objects.filter(event=self, user__gender=gender)
@@ -190,11 +191,17 @@ class Event(models.Model):
     ) -> BaseManager[EventParticipant]:
         return self.participants.filter(user__gender=gender)
 
-    def get_participant(self, user: User) -> EventParticipant | None:
+    def get_participant(self, user: User) -> EventParticipant:
         try:
-            return EventParticipant.objects.get(event=self, user=user)
+            return self.participants.get(user=user)
         except EventParticipant.DoesNotExist:
             return None
+
+    # def get_organizer(self) -> EventParticipant:
+    #     try:
+    #         return self.participants.get(is_organizer=True).user
+    #     except EventParticipant.DoesNotExist:
+    #         return None
 
     def get_free_places(self, gender: Gender | None = None) -> bool:
         if gender:

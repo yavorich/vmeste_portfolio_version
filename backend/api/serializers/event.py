@@ -33,31 +33,31 @@ class EventMixin:
         }
 
     def get_am_i_organizer(self, obj: Event):
-        user = self.context.get("user")
-        if user is not None:
-            return self.context.get("user").id == obj.organizer.id
+        return self.context.get("user").id == obj.organizer.id
 
     def get_am_i_registered(self, obj: Event):
         user = self.context.get("user")
-        if user is not None:
-            return obj.get_participant(user=user) is not None
+        participant = obj.get_participant(user=user)
+        return participant is not None
 
     def get_am_i_confirmed(self, obj: Event):
         user = self.context.get("user")
-        if user is not None:
-            participant = obj.get_participant(user=user)
-            if participant is not None:
-                return participant.has_confirmed
-        return False
+        participant = obj.get_participant(user=user)
+        return getattr(participant, "has_confirmed", False)
 
     def get_are_there_free_places(self, obj: Event):
         user = self.context.get("user")
-        if user is not None:
-            return obj.get_free_places(gender=user.gender) > 0
+        return obj.get_free_places(gender=user.gender) > 0
 
     def get_participants(self, obj: Event):
-        participants = obj.get_participants()
-        serializer = EventParticipantSerializer(participants, many=True)
+        participants = obj.participants.all()
+        serializer = EventParticipantSerializer(
+            participants, many=True, context=self.context
+        )
+        return serializer.data
+
+    def get_organizer(self, obj: Event):
+        serializer = EventOrganizerSerializer(obj.organizer, context=self.context)
         return serializer.data
 
     def get_state(self, obj: Event):
@@ -76,7 +76,7 @@ class EventMixin:
             "are_there_free_places",
             "did_organizer_marking",
         ]
-        if not self.context.get("user"):
+        if not self.context.get("user").is_authenticated:
             for field in auth_only_fields:
                 if field in data:
                     data.pop(field)
@@ -105,7 +105,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     category_name = CategoryTitleSerializer(source="categories", many=True)
     state = serializers.SerializerMethodField()
     participants = serializers.SerializerMethodField()
-    organizer = EventOrganizerSerializer()
+    organizer = serializers.SerializerMethodField()
     am_i_organizer = serializers.SerializerMethodField()
     am_i_registered = serializers.SerializerMethodField()
     are_there_free_places = serializers.SerializerMethodField()
@@ -233,7 +233,6 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         )
 
         validated_data["location"] = location
-        validated_data["organizer"] = self.context["user"]
         return validated_data
 
     @staticmethod

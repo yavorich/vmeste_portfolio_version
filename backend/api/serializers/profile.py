@@ -102,9 +102,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
 
     def get_stats(self, obj: User):
         participation = EventParticipant.objects.filter(user=obj)
-        organized = Event.objects.filter(
-            organizer=obj, is_draft=False, is_active=True
-        ).count()
+        organized = participation.filter(is_organizer=True).count()
         past_events = Event.objects.filter(
             start_datetime__gte=localtime() - timedelta(hours=2)
         )

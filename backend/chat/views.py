@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from itertools import groupby
 
 from api.models import Event
-from api.permissions import IsEventOrganizerOrParticipant
+from api.permissions import IsEventParticipant
 from api.services import get_event_object
 from api.enums import EventStatus
 from chat.serializers import (
@@ -32,7 +32,7 @@ class ChatListView(ListAPIView):
         if status not in [EventStatus.UPCOMING, EventStatus.PAST]:
             raise ValidationError("Status query parameter is required (upcoming/past)")
 
-        queryset = Event.objects.filter_organizer_or_participant(user).distinct()
+        queryset = Event.objects.filter_participant(user).distinct()
         queryset = getattr(queryset, f"filter_{status}")()
         return queryset
 
@@ -50,7 +50,7 @@ class ChatListView(ListAPIView):
 
 
 class MessageListView(ListAPIView):
-    permission_classes = [IsAuthenticated, IsEventOrganizerOrParticipant]
+    permission_classes = [IsAuthenticated, IsEventParticipant]
     pagination_class = PageNumberSetPagination
     serializer_class = MessageSerializer
 
@@ -88,7 +88,7 @@ class MessageListView(ListAPIView):
 
 
 class MessageSendView(CreateAPIView):
-    permission_classes = [IsAuthenticated, IsEventOrganizerOrParticipant]
+    permission_classes = [IsAuthenticated, IsEventParticipant]
     serializer_class = MessageSendSerializer
 
     def get_serializer_context(self):

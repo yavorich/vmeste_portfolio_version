@@ -46,9 +46,10 @@ def get_push_notification_users_list(group, event=None):
     if group == PushGroup.RECS_ENABLED:
         return users.filter(receive_recs=True)
     if group == PushGroup.ORGANIZER:
-        return [event.organizer] if event.organizer.sending_push else []
+        organizer = event.get_organizer()
+        return [organizer] if organizer.sending_push else []
     if group == PushGroup.PARTICIPANTS:
-        return users.filter(events__in=event.participants.all())
+        return users.filter(events__event=event)
 
 
 async def send_fcm_push(token, title, body):
