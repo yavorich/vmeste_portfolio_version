@@ -1,6 +1,6 @@
 import six
 import operator
-
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
 from django_elasticsearch_dsl_drf.filter_backends import (
@@ -23,7 +23,6 @@ from api.documents import EventDocument
 from api.models import EventFastFilter, EventParticipant
 from chat.models import Chat
 from core.pagination import PageNumberSetPagination
-from core.views import FileModelMixin
 
 
 class CustomFilteringFilterBackend(FilteringFilterBackend):
@@ -44,7 +43,7 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
         return queryset
 
 
-class EventListViewSet(FileModelMixin, DocumentViewSet):
+class EventListViewSet(CreateModelMixin, DocumentViewSet):
     document = EventDocument
     pagination_class = PageNumberSetPagination
     serializer_class = {

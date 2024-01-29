@@ -1,6 +1,7 @@
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import (
     RetrieveModelMixin,
+    UpdateModelMixin,
     DestroyModelMixin,
 )
 from rest_framework.generics import RetrieveAPIView
@@ -15,11 +16,10 @@ from api.serializers import (
     SelfProfileDestroySerializer,
 )
 from api.models import User
-from core.views import FileModelMixin
 
 
 class SelfProfileViewSet(
-    RetrieveModelMixin, FileModelMixin, DestroyModelMixin, GenericViewSet
+    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet
 ):
     queryset = User.objects.all()
     serializer_class = {
