@@ -33,8 +33,8 @@ from .token import UserTokenObtainPairSerializer, UserTokenRefreshSerializer
 from .docs import DocsSerializer
 from .participants import (
     EventMarkingSerializer,
-    EventRetrieveParticipantsSerializer,
-    EventParticipantBulkUpdateSerializer,
+    EventParticipantsListSerializer,
+    EventParticipantBulkSerializer,
     EventParticipantDeleteSerializer,
 )
 from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
