@@ -9,8 +9,7 @@ from .token import UserTokenObtainPairView, UserTokenRefreshView
 from .docs import DocsViewSet
 from .participants import (
     EventMarkingDetailView,
-    EventParticipantRetrieveUpdateView,
-    EventParticipantDeleteView,
+    EventParticipantView,
 )
 from .support import SupportThemeListView, SupportMessageCreateView
 from .location import LocationListViewSet, CountryListView, CityListView

@@ -59,13 +59,8 @@ urlpatterns = [
     path("marking/", views.EventMarkingDetailView.as_view(), name="marking"),
     path(
         "events/<str:event_pk>/participants/",
-        views.EventParticipantRetrieveUpdateView.as_view(),
+        views.EventParticipantView.as_view(),
         name="participants-list-update",
-    ),
-    path(
-        "events/<str:event_pk>/participants/<int:id>/",
-        views.EventParticipantDeleteView.as_view(),
-        name="participant-delete",
     ),
     path(
         "support/themes/",

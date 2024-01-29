@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from rest_framework.exceptions import ValidationError
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
+
 from django.template.defaultfilters import date as _date
 from django.template.defaultfilters import time as _time
 
@@ -61,27 +61,7 @@ class EventParticipantUserSerializer(ModelSerializer):
         return obj.user.get_full_name()
 
 
-# class EventOrganizerUserSerializer(ModelSerializer):
-#     name_and_surname = serializers.SerializerMethodField()
-#     in_men = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = User
-#         fields = [
-#             "id",
-#             "name_and_surname",
-#             "avatar",
-#             "in_men",
-#         ]
-
-#     def get_name_and_surname(self, obj: User):
-#         return obj.get_full_name()
-
-#     def get_in_men(self, obj: User):
-#         return obj.gender == Gender.MALE
-
-
-class EventRetrieveParticipantsSerializer(ModelSerializer):
+class EventParticipantsListSerializer(ModelSerializer):
     event = serializers.SerializerMethodField()
     amount_men = serializers.SerializerMethodField()
     amount_women = serializers.SerializerMethodField()
@@ -144,7 +124,7 @@ class EventParticipantBulkListSerializer(BulkListSerializer):
         return True
 
 
-class EventParticipantBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer):
+class EventParticipantBulkSerializer(BulkSerializerMixin, ModelSerializer):
     class Meta:
         model = EventParticipant
         list_serializer_class = EventParticipantBulkListSerializer
@@ -153,10 +133,6 @@ class EventParticipantBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer)
         ]
 
     def update(self, instance, validated_data):
-        if instance not in self.context["participants"]:
-            raise ValidationError(
-                f"Invalid id={instance.id}: is not a participant of given event"
-            )
         validated_data["has_confirmed"] = True
         return super().update(instance, validated_data)
 
