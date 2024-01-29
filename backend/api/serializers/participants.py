@@ -42,6 +42,7 @@ class EventTitleSerializer(ModelSerializer):
 
 
 class EventParticipantUserSerializer(ModelSerializer):
+    profile_id = serializers.IntegerField(source="user.id")
     avatar = serializers.FileField(source="user.avatar")
     name_and_surname = serializers.SerializerMethodField()
 
@@ -49,6 +50,7 @@ class EventParticipantUserSerializer(ModelSerializer):
         model = EventParticipant
         fields = [
             "id",
+            "profile_id",
             "name_and_surname",
             "avatar",
             "has_confirmed",
