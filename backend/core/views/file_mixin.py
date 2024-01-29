@@ -8,11 +8,8 @@ class FileModelMixin(CreateModelMixin, UpdateModelMixin):
     @staticmethod
     def get_form_data(request):
         data = request.data.dict()
-        try:
-            text_data = json.loads(data["text"])
-        except json.decoder.JSONDecodeError:
-            text_data = data["text"]
-        return {"file": data["file"], "text": text_data}
+        text_data = json.loads(data["text"])
+        return {"file": data["file"], **text_data}
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=self.get_form_data(request))
