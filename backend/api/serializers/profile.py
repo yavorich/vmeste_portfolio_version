@@ -7,11 +7,12 @@ from rest_framework.exceptions import ValidationError
 from api.models import User, EventParticipant, Event
 from api.serializers import CategoryTitleSerializer
 from core.utils import validate_file_size
+from core.serializers import CharacterSeparatedField
 
 
 class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(validators=[validate_file_size], source="avatar")
-    interests = serializers.ListField(
+    avatar = serializers.FileField(validators=[validate_file_size])
+    interests = CharacterSeparatedField(
         child=serializers.IntegerField(), write_only=True
     )
 
@@ -19,7 +20,7 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id",
-            "file",
+            "avatar",
             "country",
             "city",
             "email",
