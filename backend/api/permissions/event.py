@@ -28,7 +28,7 @@ class IsEventParticipant(BasePermission):
 
 
 class IsMediaTimeValid(BasePermission):
-    message = "Срок актуальности медиафайла истёк."
+    message = "Срок актуальности медиафайлов события истёк."
 
     def has_permission(self, request, view):
         try:

@@ -9,6 +9,7 @@ from django_elasticsearch_dsl_drf.filter_backends import (
 )
 from elasticsearch_dsl import Q
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from django.utils.timezone import localtime
 from django_elasticsearch_dsl.search import Search
 
@@ -17,7 +18,7 @@ from api.serializers import (
     EventCreateUpdateSerializer,
     FilterQuerySerializer,
 )
-from api.permissions import StatusPermissions, MailIsConfirmed
+from api.permissions import StatusPermissions
 from api.enums import EventStatus
 from api.documents import EventDocument
 from api.models import EventFastFilter, EventParticipant
@@ -138,7 +139,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
     def get_permissions(self):
         permission_classes = {
             "list": [StatusPermissions],
-            "create": [MailIsConfirmed],
+            "create": [IsAuthenticated],
         }
         self.permission_classes = permission_classes[self.action]
         return super(EventListViewSet, self).get_permissions()
