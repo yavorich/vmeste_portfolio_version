@@ -3,7 +3,6 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.viewsets import GenericViewSet
 
 from api.permissions import (
-    MailIsConfirmed,
     IsEventParticipant,
     IsMediaTimeValid,
 )
@@ -17,7 +16,6 @@ class EventMediaViewSet(
     BulkCreateModelMixin, RetrieveAPIView, ListAPIView, GenericViewSet
 ):
     permission_classes = [
-        MailIsConfirmed,
         IsEventParticipant,
         IsMediaTimeValid,
     ]

@@ -12,7 +12,6 @@ from rest_framework.exceptions import ParseError, ValidationError
 import json
 
 from api.documents import LocationDocument
-from api.permissions import MailIsConfirmed
 from api.serializers import (
     LocationDocumentSerializer,
     LocationCreateSerializer,
@@ -28,7 +27,7 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
         "list": LocationDocumentSerializer,
         "create": LocationCreateSerializer,
     }
-    permission_classes = [MailIsConfirmed]
+    permission_classes = [AllowAny]
 
     filter_backends = [
         GeoSpatialOrderingFilterBackend,

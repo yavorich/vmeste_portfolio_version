@@ -5,7 +5,7 @@ from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 
 from api.models import Event
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
-from api.permissions import MailIsConfirmed, IsEventOrganizer
+from api.permissions import IsEventOrganizer
 from api.services import get_event_object
 
 
@@ -22,7 +22,7 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     def get_permissions(self):
         permission_classes = {
             "retrieve": [AllowAny],
-            "partial_update": [MailIsConfirmed, IsEventOrganizer],
+            "partial_update": [IsEventOrganizer],
         }
         self.permission_classes = permission_classes[self.action]
         return super(EventDetailViewSet, self).get_permissions()
