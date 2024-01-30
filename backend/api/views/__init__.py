@@ -13,6 +13,6 @@ from .participants import (
 )
 from .support import SupportThemeListView, SupportMessageCreateView
 from .location import LocationListViewSet, CountryListView, CityListView
-from .interests import InterestListView, OccupationListView
+from .categories import CategoryListView, OccupationListView, ThemeListView
 from .media import EventMediaViewSet
 from .filters import EventFastFiltersListView

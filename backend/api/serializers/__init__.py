@@ -1,7 +1,7 @@
 # flake8: noqa: F401
 
 from .category import CategorySerializer, CategoryTitleSerializer
-from .theme import ThemeSerializer
+from .theme import ThemeCategoriesSerializer, ThemeSerializer
 from .location import (
     LocationSerializer,
     LocationDocumentSerializer,

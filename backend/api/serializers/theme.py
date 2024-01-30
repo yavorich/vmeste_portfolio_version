@@ -4,7 +4,7 @@ from api.models import Theme
 from .category import CategorySerializer
 
 
-class ThemeSerializer(ModelSerializer):
+class ThemeCategoriesSerializer(ModelSerializer):
     categories = SerializerMethodField()
 
     class Meta:
@@ -16,3 +16,9 @@ class ThemeSerializer(ModelSerializer):
         if categories:
             return CategorySerializer(categories, many=True).data
         return None
+
+
+class ThemeSerializer(ModelSerializer):
+    class Meta:
+        model = Theme
+        fields = ["id", "title"]

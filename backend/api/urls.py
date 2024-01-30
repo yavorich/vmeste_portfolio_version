@@ -83,7 +83,9 @@ urlpatterns = [
         views.CityListView.as_view(),
         name="city-list",
     ),
-    path("interests/", views.InterestListView.as_view(), name="interest_list"),
+    path("interests/", views.CategoryListView.as_view(), name="interest_list"),
+    path("categories/", views.ThemeListView.as_view(), name="categories_list"),
+    path("subcategories/", views.CategoryListView.as_view(), name="subcategories_list"),
     path("occupations/", views.OccupationListView.as_view(), name="occupation_list"),
     path(
         "filters/fast/",
