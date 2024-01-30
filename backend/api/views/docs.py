@@ -27,10 +27,11 @@ class DocsViewSet(ListModelMixin, GenericViewSet):
     def apply(self, request, pk=None):
         user = request.user
         obj = self.get_object()
-        if obj.name == Docs.Name.AGREEMENT:  # с rules пока ничего не делаем
-            if not user.agreement_applied_at:
-                user.agreement_applied_at = localtime()
-                user.save()
+        if obj.name == Docs.Name.AGREEMENT and not user.agreement_applied_at:
+            user.agreement_applied_at = localtime()
+        if obj.name == Docs.Name.RULES:
+            user.event_rules_applied = True
+        user.save()
         return Response(f"{obj.name} applied.", status=HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
