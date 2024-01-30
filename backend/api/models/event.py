@@ -90,14 +90,14 @@ class Event(models.Model):
     start_datetime = models.DateTimeField(blank=True, null=True)
     end_datetime = models.DateTimeField(blank=True, null=True)
     theme = models.ForeignKey(
-        verbose_name=_("Категория"),
+        verbose_name=_("Тема"),
         to=Theme,
         related_name="events",
         on_delete=models.SET_NULL,
         null=True,
     )
     categories = models.ManyToManyField(
-        verbose_name=_("Подкатегория"), to=Category, related_name="events"
+        verbose_name=_("Категории"), to=Category, related_name="events"
     )
     country = models.ForeignKey(
         verbose_name=_("Страна"),
@@ -196,12 +196,6 @@ class Event(models.Model):
             return self.participants.get(user=user)
         except EventParticipant.DoesNotExist:
             return None
-
-    # def get_organizer(self) -> EventParticipant:
-    #     try:
-    #         return self.participants.get(is_organizer=True).user
-    #     except EventParticipant.DoesNotExist:
-    #         return None
 
     def get_free_places(self, gender: Gender | None = None) -> bool:
         if gender:

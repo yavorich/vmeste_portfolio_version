@@ -22,7 +22,8 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
             "email",
             "telegram",
             "occupation",
-            "interests",
+            "theme",
+            "categories",
             "about_me",
         ]
 
@@ -67,7 +68,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
     country = serializers.CharField(source="country.name", allow_null=True)
     city = serializers.CharField(source="city.name", allow_null=True)
     occupation = serializers.CharField(source="occupation.title", allow_null=True)
-    interests = CategoryTitleSerializer(many=True)
+    categories = CategoryTitleSerializer(many=True)
     stats = serializers.SerializerMethodField()
 
     class Meta:
@@ -83,7 +84,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
             "occupation",
             "first_name",
             "last_name",
-            "interests",
+            "categories",
             "about_me",
             "stats",
         ]

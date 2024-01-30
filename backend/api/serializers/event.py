@@ -224,9 +224,6 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             raise ValidationError("Максимальный возраст не может быть больше 100")
         return super().validate(attrs)
 
-    def get_organizer(self):
-        return self.context["user"]
-
     def prepare_location(self, validated_data):
         location, created = Location.objects.get_or_create(
             country=validated_data["country"],

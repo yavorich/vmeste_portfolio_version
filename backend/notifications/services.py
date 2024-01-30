@@ -46,7 +46,7 @@ def get_push_notification_users_list(group, event=None):
     if group == PushGroup.RECS_ENABLED:
         return users.filter(receive_recs=True)
     if group == PushGroup.ORGANIZER:
-        organizer = event.get_organizer()
+        organizer = event.organizer
         return [organizer] if organizer.sending_push else []
     if group == PushGroup.PARTICIPANTS:
         return users.filter(events__event=event)
