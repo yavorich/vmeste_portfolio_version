@@ -156,6 +156,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         response = super().list(request, *args, **kwargs)
         response_data = {"events": response.data}
         status = request.query_params.get("status", None)
+        user = request.user
 
         if status == EventStatus.PUBLISHED:
             query_params = self.request.query_params.dict()
@@ -165,9 +166,10 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             serializer.is_valid(raise_exception=True)
             response_data["filters"] = serializer.data
 
-        if self.request.user.is_authenticated:
-            unread_notify = self.request.user.notifications.filter(read=False).count()
+        if user.is_authenticated:
+            unread_notify = user.notifications.filter(read=False).count()
             response_data["unread_notify"] = unread_notify
+            response_data["event_rules_applied"] = user.event_rules_applied
 
         return Response(response_data)
 

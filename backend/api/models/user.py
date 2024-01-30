@@ -116,6 +116,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     agreement_applied_at = models.DateTimeField(
         _("Дата принятия соглашения"), null=True
     )
+    event_rules_applied = models.BooleanField(default=False)
     sending_push = models.BooleanField(default=True)
     receive_recs = models.BooleanField(default=True)
 
