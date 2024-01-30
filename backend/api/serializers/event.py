@@ -104,7 +104,7 @@ class EventParticipantSerializer(ModelSerializer):
 class EventOrganizerSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name"]
+        fields = ["id", "first_name", "last_name", "avatar"]
 
 
 class EventDetailSerializer(EventMixin, ModelSerializer):
