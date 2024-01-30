@@ -4,6 +4,8 @@ from api.models import Event
 
 
 class IsEventOrganizer(BasePermission):
+    message = "Пользователь не является организатором мероприятия."
+
     def has_permission(self, request, view):
         user = request.user
         try:
@@ -14,6 +16,8 @@ class IsEventOrganizer(BasePermission):
 
 
 class IsEventParticipant(BasePermission):
+    message = "Пользователь не является участником мероприятия"
+
     def has_permission(self, request, view):
         user = request.user
         try:
@@ -24,6 +28,8 @@ class IsEventParticipant(BasePermission):
 
 
 class IsMediaTimeValid(BasePermission):
+    message = "Срок актуальности медиафайла истёк."
+
     def has_permission(self, request, view):
         try:
             event = Event.objects.get(id=view.kwargs["event_pk"])
