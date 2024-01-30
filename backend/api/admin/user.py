@@ -5,7 +5,7 @@ from api.models import User
 
 
 class InterestInline(admin.TabularInline):
-    model = User.interests.through
+    model = User.categories.through
     verbose_name = "Интерес"
     verbose_name_plural = "Интересы"
 
@@ -78,7 +78,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
 
     @admin.display(description="Интересы")
     def get_interests(self, obj):
-        return self.links_to_objects(obj.interests.all())
+        return self.links_to_objects(obj.categories.all())
 
     @admin.action(description="Заблокировать")
     def block_users(self, request, queryset):

@@ -16,7 +16,9 @@ class CategoryListView(ListAPIView):
     filter_backends = [SearchFilter]
     search_fields = ["title"]
 
-    queryset = Category.objects.all()
+    def get_queryset(self):
+        queryset = Category.objects.filter(theme=self.kwargs["pk"])
+        return queryset
 
 
 class OccupationListView(ListAPIView):

@@ -13,6 +13,7 @@ from api.enums import Gender
 from .country import Country
 from .city import City
 from .category import Category
+from .theme import Theme
 from .occupation import Occupation
 from .subscription import Subscription
 
@@ -97,9 +98,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
-    interests = models.ManyToManyField(
+    theme = models.ForeignKey(
+        Theme,
+        verbose_name=_("Тема"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    categories = models.ManyToManyField(
         Category,
-        verbose_name=_("Интересы"),
+        verbose_name=_("Категории"),
         related_name="users",
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
@@ -129,9 +138,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
-
-    def get_interests(self) -> list[str]:
-        return "\n".join([str(i) for i in self.interests.all()])
 
     class Meta:
         verbose_name = "Пользователь"
