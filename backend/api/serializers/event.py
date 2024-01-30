@@ -17,7 +17,7 @@ from api.enums import EventState
 from api.serializers import (
     LocationSerializer,
     CategoryTitleSerializer,
-    ThemeSerializer,
+    ThemeCategoriesSerializer,
 )
 from api.documents import EventDocument
 from api.models import EventFastFilter
@@ -297,7 +297,7 @@ class FilterQuerySerializer(Serializer):
             filtered_themes = Theme.objects.filter(
                 categories__id__in=categories
             ).distinct()
-            data["themes"] = ThemeSerializer(
+            data["themes"] = ThemeCategoriesSerializer(
                 filtered_themes, many=True, context={"categories": categories}
             ).data
         if fast_filters := data.get("fast_filters"):
