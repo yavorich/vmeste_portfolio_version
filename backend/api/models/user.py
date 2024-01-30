@@ -13,6 +13,7 @@ from api.enums import Gender
 from .country import Country
 from .city import City
 from .category import Category
+from .theme import Theme
 from .occupation import Occupation
 from .subscription import Subscription
 
@@ -58,11 +59,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
     confirmation_code = models.CharField(max_length=5, blank=True, null=True)
     profile_is_completed = models.BooleanField(_("Профиль заполнен"), default=False)
-    first_name = models.CharField(_("Имя"), null=True)
-    last_name = models.CharField(_("Фамилия"), null=True)
-    date_of_birth = models.DateField(_("Дата рождения"), null=True)
+    first_name = models.CharField(_("Имя"), blank=True, null=True)
+    last_name = models.CharField(_("Фамилия"), blank=True, null=True)
+    date_of_birth = models.DateField(_("Дата рождения"), blank=True, null=True)
     gender = models.CharField(
-        _("Пол"), choices=Gender.choices, max_length=6, null=True
+        _("Пол"), choices=Gender.choices, max_length=6, blank=True, null=True
     )
     avatar = models.ImageField(
         _("Аватар"), upload_to=get_upload_path, blank=True, null=True
@@ -70,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(_("Активен"), default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    email = models.EmailField(_("Почта"), null=True)
+    email = models.EmailField(_("Почта"), blank=True, null=True)
     email_is_confirmed = models.BooleanField(_("Почта подтверждена"), default=False)
     country = models.ForeignKey(
         Country,
@@ -97,9 +98,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
-    interests = models.ManyToManyField(
+    theme = models.ForeignKey(
+        Theme,
+        verbose_name=_("Тема"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    categories = models.ManyToManyField(
         Category,
-        verbose_name=_("Интересы"),
+        verbose_name=_("Категории"),
         related_name="users",
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
@@ -129,9 +138,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
-
-    def get_interests(self) -> list[str]:
-        return "\n".join([str(i) for i in self.interests.all()])
 
     class Meta:
         verbose_name = "Пользователь"
