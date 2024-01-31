@@ -5,6 +5,7 @@ from channels.db import database_sync_to_async
 from chat.models import ReadMessage, Message, Chat
 from chat.serializers import MessageSendSerializer, MessageSerializer
 from chat.utils import send_ws_message
+from notifications.models import UserNotification
 from api.models import Event
 
 
@@ -35,17 +36,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
+        _type = text_data_json["type"]
 
-        if text_data_json["type"] == "read_message":
+        if _type == "read_message":
             await self.read_message(text_data_json)
 
-        elif text_data_json["type"] == "chat_message":
+        elif _type == "read_notification":
+            await self.read_notification(text_data_json)
+
+        elif _type == "chat_message":
             await self.save_and_send_message(text_data_json)
 
-        elif text_data_json["type"] == "join_chat":
+        elif _type == "join_chat":
             await self.join_chat(text_data_json)
 
-        elif text_data_json["type"] == "leave_chat":
+        elif _type == "leave_chat":
             await self.leave_chat(text_data_json)
 
     async def chat_message(self, event):
@@ -96,6 +101,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user=self.user,
             message=message,
         )
+
+    @database_sync_to_async
+    def read_notification(self, data):
+        try:
+            notification = UserNotification.objects.get(id=data["notification_id"])
+        except UserNotification.DoesNotExist:
+            return
+        notification.read = True
+        notification.save()
 
     @database_sync_to_async
     def get_user_groups(self):
