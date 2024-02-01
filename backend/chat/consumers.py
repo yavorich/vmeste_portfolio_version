@@ -58,7 +58,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         headers = dict(self.scope["headers"])
         if b"host" in headers:
             host = headers[b"host"].decode()
-            avatar = f"http://{host}/api/v1{event['message']['sender']['avatar']}"
+            avatar = f"http://{host}{event['message']['sender']['avatar']}"
             event["message"]["sender"]["avatar"] = avatar
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
