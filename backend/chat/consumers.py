@@ -54,7 +54,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.leave_chat(text_data_json)
 
     async def chat_message(self, event):
+        event["message"]["is_mine"] = await self.is_mine(event)
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
+
+    @database_sync_to_async
+    def is_mine(self, data):
+        return self.user.id == data["message"]["sender"]["id"]
 
     @database_sync_to_async
     def save_and_send_message(self, data):
