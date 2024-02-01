@@ -67,7 +67,7 @@ class MessageListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         event = get_event_object(self.kwargs["event_pk"])
-        event_serializer = ChatEventSerializer(event)
+        event_serializer = ChatEventSerializer(event, context={"request": request})
         grouped_messages = []
         for date, messages in groupby(queryset, lambda m: m.sent_at.date()):
             messages_queryset = Message.objects.filter(id__in=[m.id for m in messages])
