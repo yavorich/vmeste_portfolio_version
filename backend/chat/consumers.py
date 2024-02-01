@@ -55,6 +55,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         event["message"]["is_mine"] = await self.is_mine(event)
+        headers = dict(self.scope["headers"])
+        if b"host" in headers:
+            host = headers[b"host"].decode()
+            avatar = f"http://{host}/api/v1{event['message']['sender']['avatar']}"
+            event["message"]["sender"]["avatar"] = avatar
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
