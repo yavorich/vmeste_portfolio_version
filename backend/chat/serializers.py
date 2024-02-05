@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 from django.db.models import Q
 
 from api.models import Event, User
@@ -44,8 +45,31 @@ class ChatEventSerializer(serializers.ModelSerializer):
         return obj.participants.count()
 
 
+class CustomFileField(serializers.FileField):
+    def to_representation(self, value):
+        if not value:
+            return None
+
+        use_url = getattr(self, 'use_url', api_settings.UPLOADED_FILES_USE_URL)
+        if use_url:
+            try:
+                url = value.url
+            except AttributeError:
+                return None
+            request = self.context.get('request', None)
+            if request is not None:
+                return request.build_absolute_uri(url)
+            headers = self.context.get('headers', None)
+            if headers is not None and b"host" in headers:
+                host = headers[b"host"].decode()
+                return f"http://{host}{url}"
+            return url
+
+        return value.name
+
+
 class SenderSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
+    avatar = CustomFileField()
     name_and_surname = serializers.SerializerMethodField()
 
     class Meta:
@@ -58,15 +82,6 @@ class SenderSerializer(serializers.ModelSerializer):
 
     def get_name_and_surname(self, obj: User):
         return obj.get_full_name()
-
-    def get_avatar(self, obj: User):
-        headers = self.context["headers"]
-        url = obj.avatar.url
-        if b"host" in headers:
-            host = headers[b"host"].decode()
-            avatar = f"http://{host}{obj.avatar.url}"
-            return avatar
-        return url
 
 
 class MessageSerializer(serializers.ModelSerializer):
