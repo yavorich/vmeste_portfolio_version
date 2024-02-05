@@ -34,6 +34,7 @@ class ChatEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
+            "id",
             "total_will_come",
             "title",
             "cover",
