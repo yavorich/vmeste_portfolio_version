@@ -55,11 +55,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         event["message"]["is_mine"] = await self.is_mine(event)
-        headers = dict(self.scope["headers"])
-        if b"host" in headers:
-            host = headers[b"host"].decode()
-            avatar = f"http://{host}{event['message']['sender']['avatar']}"
-            event["message"]["sender"]["avatar"] = avatar
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
@@ -83,9 +78,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         send_serializer.is_valid(raise_exception=True)
         message = send_serializer.save()
+
+        headers = dict(self.scope["headers"])
         message_serializer = MessageSerializer(
-            instance=message, context={"user": self.user}
+            instance=message, context={"user": self.user, "headers": headers}
         )
+
         send_ws_message(message_serializer.data, chat.pk)
 
     async def join_chat(self, data):
