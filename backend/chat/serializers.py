@@ -44,6 +44,7 @@ class ChatEventSerializer(serializers.ModelSerializer):
 
 
 class SenderSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
     name_and_surname = serializers.SerializerMethodField()
 
     class Meta:
@@ -56,6 +57,15 @@ class SenderSerializer(serializers.ModelSerializer):
 
     def get_name_and_surname(self, obj: User):
         return obj.get_full_name()
+
+    def get_avatar(self, obj: User):
+        headers = self.context["headers"]
+        url = obj.avatar.url
+        if b"host" in headers:
+            host = headers[b"host"].decode()
+            avatar = f"http://{host}{obj.avatar.url}"
+            return avatar
+        return url
 
 
 class MessageSerializer(serializers.ModelSerializer):
