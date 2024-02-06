@@ -191,7 +191,7 @@ class Event(models.Model):
     ) -> BaseManager[EventParticipant]:
         return self.participants.filter(user__gender=gender)
 
-    def get_participant(self, user: User) -> EventParticipant:
+    def get_participant(self, user: User) -> EventParticipant | None:
         try:
             return self.participants.get(user=user)
         except EventParticipant.DoesNotExist:

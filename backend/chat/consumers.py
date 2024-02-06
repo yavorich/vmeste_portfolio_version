@@ -47,6 +47,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif _type == "chat_message":
             await self.save_and_send_message(text_data_json)
 
+        elif _type == "chat_notifications":
+            await self.chat_notifications(text_data_json)
+
         elif _type == "join_chat":
             await self.join_chat(text_data_json)
 
@@ -54,12 +57,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.leave_chat(text_data_json)
 
     async def chat_message(self, event):
-        event["message"]["is_mine"] = await self.is_mine(event)
+        await self.add_user_info(event)
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
-    def is_mine(self, data):
-        return self.user.id == data["message"]["sender"]["id"]
+    def add_user_info(self, data):
+        is_mine = self.user.id == data["message"]["sender"]["id"]
+        data["message"]["is_mine"] = is_mine
+
+        chat = Chat.objects.get(pk=data["message"]["chat"])
+        participant = chat.event.get_participant(user=self.user)
+        data["message"]["send_notification"] = participant.chat_notifications
 
     @database_sync_to_async
     def save_and_send_message(self, data):
@@ -67,6 +75,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat = Chat.objects.get(pk=data["message"]["event_id"])
         except Chat.DoesNotExist:
             raise Exception("Чат с таким id не существует")
+
+        if not chat.event.get_participant(user=self.user):
+            raise Exception("Пользователь не является участником чата")
+
         send_serializer = MessageSendSerializer(
             data=data["message"],
             context={
@@ -120,6 +132,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         notification.save()
 
     @database_sync_to_async
+    def chat_notifications(self, data):
+        try:
+            chat = Chat.objects.get(pk=data["chat_id"])
+        except Chat.DoesNotExist:
+            raise Exception("Чат с таким id не существует")
+
+        participant = chat.event.get_participant(user=self.user)
+        if not participant:
+            raise Exception("Пользователь не является участником чата")
+
+        participant.chat_notifications = data["enabled"]
+        participant.save()
+
+    @database_sync_to_async
     def get_user_groups(self):
         events = (
             Event.objects.filter_participant(self.user)
@@ -127,10 +153,4 @@ class ChatConsumer(AsyncWebsocketConsumer):
             .filter_not_expired()
             .filter(is_active=True, is_draft=False)
         )
-        with open("log.txt", "w") as f:
-            f.write(
-                str(["chat_%s" % id for id in events.values_list("id")])
-                + "\n"
-                + self.channel_name
-            )
         return ["chat_%s" % id for id in events.values_list("id")]
