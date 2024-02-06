@@ -74,10 +74,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             chat = Chat.objects.get(pk=data["message"]["event_id"])
         except Chat.DoesNotExist:
-            raise Exception("Чат с таким id не существует")
+            return
 
         if not chat.event.get_participant(user=self.user):
-            raise Exception("Пользователь не является участником чата")
+            return
 
         send_serializer = MessageSendSerializer(
             data=data["message"],
@@ -136,11 +136,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             chat = Chat.objects.get(pk=data["chat_id"])
         except Chat.DoesNotExist:
-            raise Exception("Чат с таким id не существует")
+            return
 
         participant = chat.event.get_participant(user=self.user)
         if not participant:
-            raise Exception("Пользователь не является участником чата")
+            return
 
         participant.chat_notifications = data["enabled"]
         participant.save()
