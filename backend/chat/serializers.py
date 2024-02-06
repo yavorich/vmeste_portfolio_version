@@ -10,6 +10,7 @@ class ChatListSerializer(serializers.ModelSerializer):
     address = serializers.CharField(source="location.address")
     location_name = serializers.CharField(source="location.name")
     unread_messages = serializers.SerializerMethodField()
+    am_i_organizer = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -21,12 +22,17 @@ class ChatListSerializer(serializers.ModelSerializer):
             "address",
             "location_name",
             "unread_messages",
+            "am_i_organizer",
         ]
 
     def get_unread_messages(self, obj: Event):
         user = self.context["user"]
         unread_messages = obj.chat.messages.filter(~Q(read__user=user))
         return unread_messages.count()
+
+    def get_am_i_organizer(self, obj: Event):
+        organizer = obj.participants.get(is_organizer=True).user
+        return organizer == self.context["user"]
 
 
 class ChatEventSerializer(serializers.ModelSerializer):
