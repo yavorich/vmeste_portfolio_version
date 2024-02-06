@@ -57,17 +57,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.leave_chat(text_data_json)
 
     async def chat_message(self, event):
-        await self.add_user_info(event)
+        event = await self.add_user_info(event)
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
     def add_user_info(self, data):
         is_mine = self.user.id == data["message"]["sender"]["id"]
+
+        # TODO: сделать чтобы работало без этого
+        with open("log.txt", "w") as f:
+            f.close()
+
         data["message"]["is_mine"] = is_mine
 
         chat = Chat.objects.get(pk=data["message"]["chat"])
         participant = chat.event.get_participant(user=self.user)
         data["message"]["send_notification"] = participant.chat_notifications
+        return data
 
     @database_sync_to_async
     def save_and_send_message(self, data):
