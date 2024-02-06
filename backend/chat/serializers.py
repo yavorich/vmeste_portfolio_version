@@ -31,6 +31,7 @@ class ChatListSerializer(serializers.ModelSerializer):
 
 class ChatEventSerializer(serializers.ModelSerializer):
     total_will_come = serializers.SerializerMethodField()
+    am_i_organizer = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -39,10 +40,15 @@ class ChatEventSerializer(serializers.ModelSerializer):
             "total_will_come",
             "title",
             "cover",
+            "am_i_organizer",
         ]
 
     def get_total_will_come(self, obj: Event):
         return obj.participants.count()
+
+    def get_am_i_organizer(self, obj: Event):
+        organizer = obj.participants.get(is_organizer=True).user
+        return organizer == self.context["request"].user
 
 
 class CustomFileField(serializers.FileField):
@@ -50,16 +56,16 @@ class CustomFileField(serializers.FileField):
         if not value:
             return None
 
-        use_url = getattr(self, 'use_url', api_settings.UPLOADED_FILES_USE_URL)
+        use_url = getattr(self, "use_url", api_settings.UPLOADED_FILES_USE_URL)
         if use_url:
             try:
                 url = value.url
             except AttributeError:
                 return None
-            request = self.context.get('request', None)
+            request = self.context.get("request", None)
             if request is not None:
                 return request.build_absolute_uri(url)
-            headers = self.context.get('headers', None)
+            headers = self.context.get("headers", None)
             if headers is not None and b"host" in headers:
                 host = headers[b"host"].decode()
                 return f"http://{host}{url}"
