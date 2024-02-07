@@ -15,3 +15,4 @@ class EventParticipant(models.Model):
     class Meta:
         verbose_name = "Участник события"
         verbose_name_plural = "Участники события"
+        unique_together = ("event", "user")

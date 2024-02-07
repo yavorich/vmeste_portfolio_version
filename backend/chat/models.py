@@ -56,3 +56,6 @@ class Message(models.Model):
 class ReadMessage(models.Model):
     message = models.ForeignKey(Message, related_name="read", on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name="read", on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("message", "user")
