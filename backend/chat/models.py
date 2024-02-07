@@ -1,7 +1,6 @@
 from django.db import models
-
-
 from django.utils.translation import gettext_lazy as _
+
 from api.models import Event, User
 
 
@@ -45,6 +44,13 @@ class Message(models.Model):
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
         get_latest_by = "sent_at"
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        ReadMessage.objects.get_or_create(message=self, user=self.sender)
+
+    def is_read_by(self, user):
+        return ReadMessage.objects.filter(message=self, user=user).exists()
 
 
 class ReadMessage(models.Model):

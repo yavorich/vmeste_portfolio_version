@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.db import transaction
 
 from chat.models import ReadMessage, Message, Chat
 from chat.serializers import MessageSendSerializer, MessageSerializer
@@ -62,18 +63,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def add_user_info(self, data):
-        is_mine = self.user.id == data["message"]["sender"]["id"]
+        # TODO: попробовать без этого
+        with transaction.atomic():
+            is_mine = self.user.id == data["message"]["sender"]["id"]
 
-        # TODO: сделать чтобы работало без этого
-        with open("log.txt", "w") as f:
-            f.close()
+            data["message"]["is_mine"] = is_mine
 
-        data["message"]["is_mine"] = is_mine
-
-        chat = Chat.objects.get(pk=data["message"]["chat"])
-        participant = chat.event.get_participant(user=self.user)
-        data["message"]["send_notification"] = participant.chat_notifications
-        return data
+            chat = Chat.objects.get(pk=data["message"]["chat"])
+            participant = chat.event.get_participant(user=self.user)
+            data["message"]["send_notification"] = participant.chat_notifications
+            return data
 
     @database_sync_to_async
     def save_and_send_message(self, data):
@@ -96,6 +95,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         send_serializer.is_valid(raise_exception=True)
         message = send_serializer.save()
+        ReadMessage.objects.get_or_create(message=message, user=message.sender)
 
         headers = dict(self.scope["headers"])
         message_serializer = MessageSerializer(
