@@ -62,7 +62,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         "city": "city.id",
         "category": {
             "field": "categories.id",
-            "lookups": ["in"],
+            "default_lookup": "in",
         },
         "date": "date",
     }
