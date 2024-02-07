@@ -3,7 +3,7 @@ from rest_framework.settings import api_settings
 from django.db.models import Q
 
 from api.models import Event, User
-from chat.models import Message, ReadMessage
+from chat.models import Message
 
 
 class ChatListSerializer(serializers.ModelSerializer):
@@ -133,7 +133,3 @@ class MessageSendSerializer(serializers.ModelSerializer):
         for key in ["sender", "chat", "is_info", "is_incoming"]:
             validated_data[key] = self.context.get(key)
         return super().create(validated_data)
-
-    def to_representation(self, instance):
-        ReadMessage.objects.get_or_create(message=instance, user=self.context["sender"])
-        return super().to_representation(instance)
