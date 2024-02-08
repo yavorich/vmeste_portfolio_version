@@ -66,7 +66,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("Пол"), choices=Gender.choices, max_length=6, blank=True, null=True
     )
     avatar = models.ImageField(
-        _("Аватар"), upload_to=get_upload_path, blank=True, null=True
+        _("Аватар"), upload_to=get_upload_path, default="defaults/avatar.png"
     )
     is_active = models.BooleanField(_("Активен"), default=True)
     is_staff = models.BooleanField(default=False)

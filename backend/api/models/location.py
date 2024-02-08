@@ -17,7 +17,9 @@ class Location(models.Model):
         RECOMMENDED = "recommended", "Рекомендовано"
         UNKNOWN = "unknown", "Неизвестно"
 
-    cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
+    cover = models.ImageField(
+        _("Обложка"), upload_to=get_upload_path, default="defaults/cover.jpg"
+    )
     name = models.CharField(_("Название"), max_length=255)
     latitude = models.FloatField(
         validators=[MinValueValidator(-90), MaxValueValidator(90)]

@@ -74,7 +74,9 @@ class Event(models.Model):
     min_age = models.PositiveSmallIntegerField(
         _("Мин. возраст"), validators=[MinValueValidator(12), MaxValueValidator(99)]
     )
-    cover = models.ImageField(_("Обложка"), upload_to=get_upload_path)
+    cover = models.ImageField(
+        _("Обложка"), upload_to=get_upload_path, default="defaults/cover.jpg"
+    )
     short_description = models.CharField(_("Краткое описание"), max_length=80)
     description = models.TextField(_("Полное описание"), max_length=1000)
     location = models.ForeignKey(
