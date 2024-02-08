@@ -134,10 +134,12 @@ class Event(models.Model):
     def clean(self):
         if self.min_age >= self.max_age:
             raise ValidationError(
-                "Максимальный возраст должен быть больше минимального"
+                {"error": "Максимальный возраст должен быть больше минимального"}
             )
         if self.city.country != self.country:
-            raise ValidationError("Указанный город не соответствует указанной стране")
+            raise ValidationError(
+                {"error": "Указанный город не соответствует указанной стране"}
+            )
 
     @property
     def stats_men(self):

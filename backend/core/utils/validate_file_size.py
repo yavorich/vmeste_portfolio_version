@@ -7,4 +7,4 @@ def validate_file_size(file):
         return
     max_size = 50 * 1024 * 1024
     if file.size > max_size:
-        raise ValidationError("Размер файла не должен превышать 50 МБ.")
+        raise ValidationError({"error": "Размер файла не должен превышать 50 МБ."})

@@ -23,7 +23,7 @@ class EmailAuthSendCodeSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if self.context["user"].email != value:
-            raise serializers.ValidationError("Неправильная почта")
+            raise serializers.ValidationError({"error": "Неправильная почта"})
         return value
 
     def get_confirmation_code(self, obj):
@@ -36,7 +36,7 @@ class PhoneAuthSerializer(serializers.Serializer):
 
     def validate_phone_number(self, value):
         if not User.objects.filter(phone_number=value).exists():
-            raise serializers.ValidationError("Неверный номер телефона")
+            raise serializers.ValidationError({"error": "Неверный номер телефона"})
         return value
 
 
@@ -46,5 +46,5 @@ class EmailAuthSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if self.context["user"].email != value:
-            raise serializers.ValidationError("Неправильная почта")
+            raise serializers.ValidationError({"error": "Неправильная почта"})
         return value

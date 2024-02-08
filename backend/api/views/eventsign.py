@@ -23,19 +23,23 @@ class EventPublishedSignViewSet(GenericViewSet):
         participant = obj.get_participant(user)
 
         if obj.is_draft:
-            raise ValidationError("Событие ещё не опубликовано")
+            raise ValidationError({"error": "Событие ещё не опубликовано"})
 
         if not obj.is_active:
-            raise ValidationError("Событие удалено или заблокировано")
+            raise ValidationError({"error": "Событие удалено или заблокировано"})
 
         if participant is not None:
-            raise ValidationError("Пользователь уже записан или является организатором")
+            raise ValidationError(
+                {"error": "Пользователь уже записан или является организатором"}
+            )
 
         if obj.get_free_places(user.gender) == 0:
-            raise ValidationError("На данное мероприятие не осталось свободных мест")
+            raise ValidationError(
+                {"error": "На данное мероприятие не осталось свободных мест"}
+            )
 
         if not obj.is_valid_sign_time():
-            raise ValidationError("Время записи на мероприятие истекло")
+            raise ValidationError({"error": "Время записи на мероприятие истекло"})
 
         EventParticipant.objects.create(event=obj, user=self.request.user)
         return Response(
@@ -50,14 +54,23 @@ class EventPublishedSignViewSet(GenericViewSet):
         participant = obj.get_participant(user)
 
         if obj.is_draft or not obj.is_active:
-            raise ValidationError("Мероприятие уже отменено или заблокировано")
+            raise ValidationError(
+                {"error": "Мероприятие уже отменено или заблокировано"}
+            )
 
         if participant is None:
-            raise ValidationError("Пользователь не является участником/организатором")
+            raise ValidationError(
+                {"error": "Пользователь не является участником/организатором"}
+            )
 
         if participant.is_organizer:
             if not obj.is_valid_sign_time():
-                raise ValidationError("Нельзя отменить: до начала менее 3 часов")
+                raise ValidationError(
+                    {
+                        "error": "Нельзя отменить: до начала события осталось"
+                        + "менее 3 часов"
+                    }
+                )
 
             obj.is_draft = True
             obj.save()

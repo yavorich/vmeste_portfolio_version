@@ -216,12 +216,16 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs["min_age"] >= attrs["max_age"]:
             raise ValidationError(
-                "Минимальный возраст должен быть меньше максимального"
+                {"error": "Минимальный возраст должен быть меньше максимального"}
             )
         if attrs["min_age"] < 12:
-            raise ValidationError("Минимальный возраст не может быть меньше 12")
+            raise ValidationError(
+                {"error": "Минимальный возраст не может быть меньше 12"}
+            )
         if attrs["max_age"] > 100:
-            raise ValidationError("Максимальный возраст не может быть больше 100")
+            raise ValidationError(
+                {"error": "Максимальный возраст не может быть больше 100"}
+            )
         return super().validate(attrs)
 
     def prepare_location(self, validated_data):
@@ -250,7 +254,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         )
         if start_datetime < localtime() + timedelta(hours=hours):
             raise ValidationError(
-                f"Минимальное время до начала мероприятия - {hours} часов"
+                {"error": f"Минимальное время до начала мероприятия - {hours} часов"}
             )
 
     def create(self, validated_data):
