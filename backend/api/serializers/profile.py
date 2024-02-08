@@ -30,7 +30,7 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         user = self.context["user"]
         if User.objects.filter(~Q(pk=user.pk), email=value).exists():
-            raise serializers.ValidationError("Такой email уже существует.")
+            raise serializers.ValidationError({"error": "Такой email уже существует."})
         if user.email != value:
             user.email_is_confirmed = False
             user.save()
@@ -57,9 +57,9 @@ class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
         def validate_date_of_birth(self, value):
             age = relativedelta(localtime().date(), value).years
             if age < 12:
-                raise ValidationError("Возраст не может быть меньше 12")
-            elif age > 100:
-                raise ValidationError("Возраст не может быть больше 100")
+                raise ValidationError({"error": "Возраст не может быть меньше 12"})
+            elif age > 99:
+                raise ValidationError({"error": "Возраст не может быть больше 99"})
 
 
 class ProfileRetrieveSerializer(serializers.ModelSerializer):

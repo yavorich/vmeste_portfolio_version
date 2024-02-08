@@ -87,7 +87,7 @@ class LocationCreateSerializer(ModelSerializer):
         lat = attrs["latitude"]
         lon = attrs["longitude"]
         if not (-90 < lat < 90) or not (-180 < lon < 180):
-            raise ValidationError("Неверные координаты")
+            raise ValidationError({"error": "Неверные координаты"})
         return super().validate(attrs)
 
     def create(self, validated_data):
@@ -98,7 +98,7 @@ class LocationCreateSerializer(ModelSerializer):
                 if k not in ["latitude", "longitude"]
             }
         ).exists():
-            raise ValidationError("Такая локация уже существует")
+            raise ValidationError({"error": "Такая локация уже существует"})
 
         validated_data["status"] = Location.Status.RECOMMENDED
         return super().create(validated_data)

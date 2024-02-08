@@ -72,7 +72,7 @@ class EventParticipantView(
         queryset = queryset.filter(id__in=ids)
 
         if queryset.filter(is_organizer=True).exists():
-            raise ValidationError("Event organizer cannot be deleted")
+            raise ValidationError({"error": "Event organizer cannot be deleted"})
 
         return super().filter_queryset(queryset)
 
