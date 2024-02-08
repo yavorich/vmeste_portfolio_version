@@ -68,7 +68,7 @@ class EventPublishedSignViewSet(GenericViewSet):
                 raise ValidationError(
                     {
                         "error": "Нельзя отменить: до начала события осталось"
-                        + "менее 3 часов"
+                        + " менее 3 часов"
                     }
                 )
 
