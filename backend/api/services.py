@@ -23,7 +23,7 @@ def get_event_object(id):
         if event.is_close_event:
             raise PermissionDenied("Закрытые события доступны только по uuid")
         if not event.is_active:
-            raise ValidationError("Событие заблокировано администрацией")
+            raise ValidationError({"error": "Событие заблокировано администрацией"})
         return event
 
     return get_object_or_404(Event, uuid=id)
