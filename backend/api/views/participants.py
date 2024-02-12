@@ -66,10 +66,11 @@ class EventParticipantView(
         event = self.get_object()
         return event.participants.all()
 
+    def get_request_data(self):
+        return [{"id": e} for e in self.request.data["id"]]
+
     def filter_queryset(self, queryset):
-        data = self.request.data
-        ids = [e["id"] for e in data]
-        queryset = queryset.filter(id__in=ids)
+        queryset = queryset.filter(id__in=self.request.data["id"])
 
         if queryset.filter(is_organizer=True).exists():
             raise ValidationError({"error": "Event organizer cannot be deleted"})
@@ -94,6 +95,20 @@ class EventParticipantView(
         else:
             self.permission_classes = [IsEventOrganizer]
         return super(EventParticipantView, self).get_permissions()
+
+    def bulk_update(self, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+
+        # restrict the update to the filtered queryset
+        serializer = self.get_serializer(
+            self.filter_queryset(self.get_queryset()),
+            data=self.get_request_data(),
+            many=True,
+            partial=partial,
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_bulk_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
