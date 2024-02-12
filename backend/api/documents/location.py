@@ -28,9 +28,9 @@ edge_ngram_completion = analyzer(
 class LocationDocument(Document):
     id = IntegerField()
     cover = FileField()
-    name = TextField(fields={"raw": KeywordField()})
+    name = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     coords = GeoPointField(attr="coords_field_indexing")
-    address = TextField(fields={"raw": KeywordField()})
+    address = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     discount = IntegerField()
     city = ObjectField(
         properties={
