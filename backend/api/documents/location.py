@@ -14,7 +14,7 @@ from elasticsearch_dsl.analysis import token_filter
 from api.models import Location, City
 
 edge_ngram_completion_filter = token_filter(
-    "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
+    "edge_ngram_completion_filter", type="edge_ngram", min_gram=1, max_gram=128
 )
 
 edge_ngram_completion = analyzer(
@@ -28,9 +28,9 @@ edge_ngram_completion = analyzer(
 class LocationDocument(Document):
     id = IntegerField()
     cover = FileField()
-    name = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
+    name = TextField(fields={"raw": KeywordField()})
     coords = GeoPointField(attr="coords_field_indexing")
-    address = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
+    address = TextField(fields={"raw": KeywordField()})
     discount = IntegerField()
     city = ObjectField(
         properties={
