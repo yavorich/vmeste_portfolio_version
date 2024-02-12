@@ -16,7 +16,7 @@ from api.models import Event, Location, EventParticipant, User, Country, City, C
 from api.enums import Gender
 
 edge_ngram_completion_filter = token_filter(
-    "edge_ngram_completion_filter", type="edge_ngram", min_gram=3, max_gram=128
+    "edge_ngram_completion_filter", type="edge_ngram", min_gram=1, max_gram=128
 )
 
 edge_ngram_completion = analyzer(
