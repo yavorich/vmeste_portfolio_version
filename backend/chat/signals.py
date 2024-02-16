@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, pre_delete, post_delete
 
 from api.models import Event, EventParticipant
 from chat.models import Message
@@ -35,7 +35,7 @@ def send_join_message(sender, instance: EventParticipant, created: bool, **kwarg
         send_info_message(instance, join=True)
 
 
-@receiver(post_delete, sender=EventParticipant)
+@receiver(pre_delete, sender=EventParticipant)
 def send_leave_message(sender, instance: EventParticipant, **kwargs):
     print("USER LEFT")
     remove_user_from_group(instance.event)

@@ -22,7 +22,6 @@ from api.permissions import StatusPermissions
 from api.enums import EventStatus
 from api.documents import EventDocument
 from api.models import EventFastFilter, EventParticipant
-from chat.models import Chat
 from core.pagination import PageNumberSetPagination
 
 
@@ -175,7 +174,6 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     def perform_create(self, serializer):
         event = serializer.save()
-        Chat.objects.create(event=event)
         EventParticipant.objects.create(
             event=event, user=self.request.user, is_organizer=True, has_confirmed=True
         )
