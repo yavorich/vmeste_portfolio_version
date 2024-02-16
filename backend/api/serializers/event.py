@@ -42,20 +42,29 @@ class EventMixin:
         }
 
     def get_am_i_organizer(self, obj: Event):
-        return self.context.get("user").id == obj.organizer.id
+        user = self.context.get("user")
+        if not user.is_authenticated:
+            return False
+        return user.id == obj.organizer.id
 
     def get_am_i_registered(self, obj: Event):
         user = self.context.get("user")
+        if not user.is_authenticated:
+            return False
         participant = obj.get_participant(user=user)
         return participant is not None
 
     def get_am_i_confirmed(self, obj: Event):
         user = self.context.get("user")
+        if not user.is_authenticated:
+            return False
         participant = obj.get_participant(user=user)
         return getattr(participant, "has_confirmed", False)
 
     def get_are_there_free_places(self, obj: Event):
         user = self.context.get("user")
+        if not user.is_authenticated:
+            return False
         return obj.get_free_places(gender=user.gender) > 0
 
     def get_participants(self, obj: Event):
