@@ -110,6 +110,11 @@ class EventParticipantView(
         self.perform_bulk_update(serializer)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def confirm_marking(self):
+        event = self.get_object()
+        event.did_organizer_marking = True
+        event.save()
+
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -121,3 +126,12 @@ class EventParticipantView(
         filtered = self.filter_queryset(qs)
         self.perform_bulk_destroy(filtered)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        self.confirm_marking()
+
+    def perform_bulk_destroy(self, objects):
+        for obj in objects:
+            self.perform_destroy(obj)
+        self.confirm_marking()
