@@ -32,8 +32,7 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        if self.request.user.is_authenticated:
-            context["user"] = self.request.user
+        context["user"] = self.request.user
         return context
 
     def retrieve(self, request, *args, **kwargs):
