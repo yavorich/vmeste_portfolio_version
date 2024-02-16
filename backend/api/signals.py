@@ -1,14 +1,21 @@
-from django.db.models.signals import post_delete, pre_save
+from django.db.models.signals import post_delete, pre_save, post_save, pre_delete
 from django.dispatch import receiver
 from django_elasticsearch_dsl.registries import registry
 
 from api.models import EventParticipant, Event, User, Location
+from chat.models import Chat
 from core.utils import delete_file, delete_file_on_update
 
 
 @receiver(post_delete, sender=EventParticipant)
 def update_event_document(sender, instance: EventParticipant, **kwargs):
     registry.update(instance.event)
+
+
+@receiver(post_delete, sender=EventParticipant)
+def delete_organized_events(sender, instance: EventParticipant, **kwargs):
+    if instance.is_organizer:
+        instance.event.delete()
 
 
 @receiver(post_delete, sender=Event)
@@ -39,3 +46,14 @@ def delete_user_avatar(sender, instance: User, **kwargs):
 @receiver(pre_save, sender=User)
 def update_user_avatar(sender, instance, **kwargs):
     delete_file_on_update(sender, instance, "avatar", **kwargs)
+
+
+@receiver(pre_delete, sender=User)
+def delete_related_objects(sender, instance: User, **kwargs):
+    instance.events.all().delete()
+
+
+@receiver(post_save, sender=Event)
+def create_event_chat(sender, instance: Event, created, **kwargs):
+    if created:
+        Chat.objects.create(event=instance)
