@@ -6,6 +6,7 @@ from rest_framework.mixins import (
 )
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
 from api.serializers import (
@@ -62,4 +63,6 @@ class AlienProfileView(RetrieveAPIView):
         return context
 
     def get_object(self):
-        return get_object_or_404(User, pk=self.kwargs["pk"])
+        user = get_object_or_404(User, pk=self.kwargs["pk"])
+        if not user.is_active:
+            raise ValidationError({"error": "Пользователь заблокирован"})
