@@ -119,6 +119,7 @@ class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):
 
     class Meta(ProfileRetrieveSerializer.Meta):
         fields = ProfileRetrieveSerializer.Meta.fields + [
+            "date_of_birth",
             "email",
             "phone_number",
             "telegram",
