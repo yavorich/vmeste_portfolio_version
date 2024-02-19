@@ -6,3 +6,4 @@ from .notifications import (
     NotificationEventSerializer,
     NotificationSerializer,
 )
+from .pushtoken import PushTokenSerializer
