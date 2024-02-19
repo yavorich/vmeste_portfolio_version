@@ -37,7 +37,7 @@ class Message(models.Model):
     )
     text = models.CharField(_("Текст"), max_length=300)
     sent_at = models.DateTimeField(_("Время отправки"), auto_now_add=True)
-    is_info = models.BooleanField()
+    is_info = models.BooleanField(default=False)
     is_incoming = models.BooleanField(null=True)
 
     class Meta:
