@@ -49,7 +49,7 @@ def update_user_avatar(sender, instance, **kwargs):
 
 
 @receiver(pre_delete, sender=User)
-def delete_related_objects(sender, instance: User, **kwargs):
+def delete_user_events(sender, instance: User, **kwargs):
     instance.events.all().delete()
 
 
@@ -57,3 +57,9 @@ def delete_related_objects(sender, instance: User, **kwargs):
 def create_event_chat(sender, instance: Event, created, **kwargs):
     if created:
         Chat.objects.create(event=instance)
+
+
+@receiver(post_save, sender=User)
+def delete_blocked_user_events(sender, instance: User, **kwargs):
+    if not instance.is_active:
+        instance.events.all().delete()
