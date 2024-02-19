@@ -4,8 +4,9 @@ from asgiref.sync import async_to_sync
 from notifications.services import (
     generate_push_notification_body,
     get_push_notification_users_list,
-)  # , send_fcm_push
-from notifications.models import Notification, UserNotification
+    send_fcm_push,
+)
+from notifications.models import Notification, UserNotification, PushToken
 from api.models import Event
 
 
@@ -45,12 +46,11 @@ def send_push_notifications_task(pk, groups):
 
 
 async def send_push_notifications(users, notifications):
-    pass
-    # async for user, notification in zip(users, notifications):
-    #     push_token = PushToken.objects.filter(user=user)
-    #     await send_fcm_push(
-    #         push_token.token, notification.notification.title, notification.body
-    #     )
+    async for user, notification in zip(users, notifications):
+        push_token = PushToken.objects.filter(user=user)
+        await send_fcm_push(
+            push_token.token, notification.notification.title, notification.body
+        )
 
 
 @shared_task

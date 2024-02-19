@@ -10,4 +10,5 @@ urlpatterns = [
         views.NotificationListUpdateApiView.as_view(),
         name="notifications-list-update",
     ),
+    path('push_token/', views.PushTokenView.as_view(), name='push_token'),
 ]
