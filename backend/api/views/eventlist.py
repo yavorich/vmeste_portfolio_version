@@ -75,7 +75,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     def get_queryset(self):
         qs: Search = super().get_queryset()
-        qs = qs.filter(Q("term", is_active=True)).sort("date")
+        qs = qs.filter(Q("term", is_active=True))
         user = self.request.user
         status = self.request.query_params.get("status")
 
@@ -110,7 +110,11 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
                 & Q("term", is_close_event=False)
             )
 
-        # POPULAR события сортируются по кол-ву свободных мест в сумме
+        # PUBLISHED события сортируются по возрастанию даты
+        if status == EventStatus.PUBLISHED:
+            qs = qs.sort("date")
+
+        # POPULAR события сортируются по убыванию кол-ва свободных мест
         if status == EventStatus.POPULAR:
             qs = qs.sort("-participants.free_places.total")
 
@@ -153,7 +157,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         context["user"] = self.request.user
         return context
 
-    def _list(self, request, queryset):
+    def _list_queryset(self, request, queryset):
         page = self.paginate_queryset(queryset)
         if page is not None and "page" in request.query_params:
             serializer = self.get_serializer(
@@ -167,7 +171,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             response = Response({"results": serializer.data})
         return response
 
-    def list(self, request, *args, **kwargs):
+    def _list_published(self, request):
         queryset: Search = self.filter_queryset(self.get_queryset())
 
         # Разделение на ближайшие и более поздние
@@ -180,28 +184,34 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         for date, events in groupby(soon, lambda e: e.date):
             ids = [e.id for e in events]
             events_queryset = queryset.filter("terms", id=ids)
-            response = self._list(request, events_queryset)
+            response = self._list_queryset(request, events_queryset)
             grouped_events.append({"date": humanize_date(date), **response.data})
 
         # Добавление более поздних событий
-        response = self._list(request, later)
+        response = self._list_queryset(request, later)
         grouped_events.append({"date": "Позже", **response.data})
 
         response_data = {"events": grouped_events}
 
-        status = request.query_params.get("status", None)
-        user = request.user
-
         # Добавление информации о фильтрах
+        query_params = self.request.query_params.dict()
+        if "category__in" in query_params:
+            query_params["category"] = query_params.pop("category__in")
+        serializer = FilterQuerySerializer(data=query_params)
+        serializer.is_valid(raise_exception=True)
+        response_data["filters"] = serializer.data
+        return response_data
+
+    def list(self, request, *args, **kwargs):
+        status = request.query_params.get("status", None)
         if status == EventStatus.PUBLISHED:
-            query_params = self.request.query_params.dict()
-            if "category__in" in query_params:
-                query_params["category"] = query_params.pop("category__in")
-            serializer = FilterQuerySerializer(data=query_params)
-            serializer.is_valid(raise_exception=True)
-            response_data["filters"] = serializer.data
+            response_data = self._list_published(request)
+        else:
+            response = super().list(request, *args, **kwargs)
+            response_data = {"events": response.data}
 
         # Добавление прочих данных для аутентифицированных пользователей
+        user = request.user
         if user.is_authenticated:
             unread_notify = user.notifications.filter(read=False).count()
             response_data["unread_notify"] = unread_notify
