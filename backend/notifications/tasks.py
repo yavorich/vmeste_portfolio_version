@@ -46,11 +46,12 @@ def send_push_notifications_task(pk, groups):
 
 
 async def send_push_notifications(users, notifications):
-    async for user, notification in zip(users, notifications):
-        push_token = PushToken.objects.filter(user=user)
-        await send_fcm_push(
-            push_token.token, notification.notification.title, notification.body
-        )
+    pass
+    # async for user, notification in zip(users, notifications):
+    #     push_token = PushToken.objects.filter(user=user)
+    #     await send_fcm_push(
+    #         push_token.token, notification.notification.title, notification.body
+    #     )
 
 
 @shared_task
