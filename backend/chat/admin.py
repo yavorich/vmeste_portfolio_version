@@ -56,4 +56,7 @@ class ChatModel(admin.ModelAdmin):
 
     @admin.display(description="Время последнего сообщения")
     def last_message_time(self, obj):
-        return obj.messages.latest().sent_at
+        messages = obj.messages.filter(is_info=False)
+        if messages.exists():
+            return messages.latest().sent_at
+        return None
