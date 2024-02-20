@@ -129,7 +129,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
 
     @admin.display(description="Название локации")
     def location_name(self, obj):
-        return obj.location.name
+        return getattr(obj.location, "name", None)
 
     @admin.display(description="Мужчины")
     def get_stats_men(self, obj):
@@ -141,7 +141,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
 
     @admin.display(description="Адрес")
     def location_address(self, obj):
-        return obj.location.address
+        return getattr(obj.location, "address", None)
 
     @admin.display(description="Пойдут")
     def will_come(self, obj):
