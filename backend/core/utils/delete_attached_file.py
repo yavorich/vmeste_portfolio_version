@@ -5,6 +5,8 @@ def delete_file(instance, file_field_name):
     file_field = getattr(instance, file_field_name)
     if file_field:
         file_path = file_field.path
+        if "defaults" in file_path:
+            return
         try:
             file_field.delete(save=False)
             file_directory = os.path.dirname(file_path)
@@ -29,5 +31,5 @@ def delete_file_on_update(sender, instance, file_field_name, **kwargs):
     except sender.DoesNotExist:
         return
 
-    if old_file_name != file_name:
+    if old_file_name != file_name and "defaults" in old_file_name:
         old_file_field.delete(save=False)
