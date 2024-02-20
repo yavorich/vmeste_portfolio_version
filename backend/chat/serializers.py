@@ -7,8 +7,8 @@ from chat.models import Message
 
 
 class ChatListSerializer(serializers.ModelSerializer):
-    address = serializers.CharField(source="location.address")
-    location_name = serializers.CharField(source="location.name")
+    address = serializers.CharField(source="location.address", allow_null=True)
+    location_name = serializers.CharField(source="location.name", allow_null=True)
     unread_messages = serializers.SerializerMethodField()
     am_i_organizer = serializers.SerializerMethodField()
 
