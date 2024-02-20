@@ -119,7 +119,7 @@ class EventOrganizerSerializer(ModelSerializer):
 class EventDetailSerializer(EventMixin, ModelSerializer):
     location = LocationSerializer()
     date = serializers.SerializerMethodField()
-    theme_name = serializers.CharField(source="theme.title")
+    theme_name = serializers.CharField(source="theme.title", allow_null=True)
     category_name = CategoryTitleSerializer(source="categories", many=True)
     state = serializers.SerializerMethodField()
     participants = serializers.SerializerMethodField()
