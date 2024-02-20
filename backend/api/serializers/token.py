@@ -15,4 +15,6 @@ class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class UserTokenRefreshSerializer(TokenRefreshSerializer):
-    pass
+    def validate(self, attrs):
+        refresh = self.token_class(attrs["refresh"])
+        return {"access": str(refresh.access_token), "refresh": str(refresh)}
