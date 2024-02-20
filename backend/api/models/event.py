@@ -138,7 +138,7 @@ class Event(models.Model):
             raise ValidationError(
                 {"error": "Максимальный возраст должен быть больше минимального"}
             )
-        if self.city.country != self.country:
+        if self.city and self.country and self.city.country != self.country:
             raise ValidationError(
                 {"error": "Указанный город не соответствует указанной стране"}
             )
