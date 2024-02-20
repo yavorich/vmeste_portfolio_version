@@ -26,6 +26,7 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
             "categories",
             "about_me",
         ]
+        extra_kwargs = {f: {"required": False} for f in fields}
 
     def validate_email(self, value):
         user = self.context["user"]
