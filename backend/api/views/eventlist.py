@@ -1,5 +1,6 @@
 import six
 import operator
+from itertools import groupby
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
@@ -10,7 +11,7 @@ from django_elasticsearch_dsl_drf.filter_backends import (
 from elasticsearch_dsl import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from django.utils.timezone import localtime
+from django.utils.timezone import localtime, timedelta
 from django_elasticsearch_dsl.search import Search
 
 from api.serializers import (
@@ -23,6 +24,7 @@ from api.enums import EventStatus
 from api.documents import EventDocument
 from api.models import EventFastFilter, EventParticipant
 from core.pagination import PageNumberSetPagination
+from core.utils import humanize_date
 
 
 class CustomFilteringFilterBackend(FilteringFilterBackend):
@@ -73,7 +75,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     def get_queryset(self):
         qs: Search = super().get_queryset()
-        qs = qs.filter(Q("term", is_active=True))
+        qs = qs.filter(Q("term", is_active=True)).sort("date")
         user = self.request.user
         status = self.request.query_params.get("status")
 
@@ -151,12 +153,46 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         context["user"] = self.request.user
         return context
 
+    def _list(self, request, queryset):
+        page = self.paginate_queryset(queryset)
+        if page is not None and "page" in request.query_params:
+            serializer = self.get_serializer(
+                page, many=True, context=self.get_serializer_context()
+            )
+            response = self.get_paginated_response(serializer.data)
+        else:
+            serializer = self.get_serializer(
+                queryset, many=True, context=self.get_serializer_context()
+            )
+            response = Response({"results": serializer.data})
+        return response
+
     def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        response_data = {"events": response.data}
+        queryset: Search = self.filter_queryset(self.get_queryset())
+
+        # Разделение на ближайшие и более поздние
+        next_week = localtime().date() + timedelta(days=7)
+        soon = queryset.filter(Q("range", date={"lt": next_week}))
+        later = queryset.filter(Q("range", date={"gte": next_week}))
+
+        # Группировка ближайших событий по дням
+        grouped_events = []
+        for date, events in groupby(soon, lambda e: e.date):
+            ids = [e.id for e in events]
+            events_queryset = queryset.filter("terms", id=ids)
+            response = self._list(request, events_queryset)
+            grouped_events.append({"date": humanize_date(date), **response.data})
+
+        # Добавление более поздних событий
+        response = self._list(request, later)
+        grouped_events.append({"date": "Позже", **response.data})
+
+        response_data = {"events": grouped_events}
+
         status = request.query_params.get("status", None)
         user = request.user
 
+        # Добавление информации о фильтрах
         if status == EventStatus.PUBLISHED:
             query_params = self.request.query_params.dict()
             if "category__in" in query_params:
@@ -165,6 +201,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             serializer.is_valid(raise_exception=True)
             response_data["filters"] = serializer.data
 
+        # Добавление прочих данных для аутентифицированных пользователей
         if user.is_authenticated:
             unread_notify = user.notifications.filter(read=False).count()
             response_data["unread_notify"] = unread_notify
@@ -174,6 +211,8 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     def perform_create(self, serializer):
         event = serializer.save()
+
+        # Создание организатора
         EventParticipant.objects.create(
             event=event, user=self.request.user, is_organizer=True, has_confirmed=True
         )
