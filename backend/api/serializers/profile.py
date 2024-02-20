@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from rest_framework.exceptions import ValidationError
 
 from api.models import User, EventParticipant, Event
-from api.serializers import CategoryTitleSerializer
+from api.serializers import CategoryTitleSerializer, CitySerializer, CountrySerializer
 from core.utils import validate_file_size
 
 
@@ -65,8 +65,8 @@ class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
 class ProfileRetrieveSerializer(serializers.ModelSerializer):
     unread_notify = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
-    country = serializers.CharField(source="country.name", allow_null=True)
-    city = serializers.CharField(source="city.name", allow_null=True)
+    country = CountrySerializer(allow_null=True)
+    city = CitySerializer(allow_null=True)
     occupation = serializers.CharField(source="occupation.title", allow_null=True)
     categories = CategoryTitleSerializer(many=True)
     stats = serializers.SerializerMethodField()
