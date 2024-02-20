@@ -58,11 +58,13 @@ class SupportMessageAdmin(admin.ModelAdmin):
 
     @admin.display(description="Тема")
     def get_theme(self, obj):
-        return obj.theme.name
+        return getattr(obj.theme, "name")
 
     @admin.display(description="Тип обращения")
     def get_type(self, obj):
-        return SupportRequestType(obj.theme.type).label
+        if obj.theme.type:
+            return SupportRequestType(obj.theme.type).label
+        return None
 
     @admin.display(description="Объект обращения")
     def get_subject(self, obj):
