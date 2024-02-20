@@ -40,7 +40,7 @@ def send_push_notifications_task(pk, groups):
     async_to_sync(send_push_notifications)(users, user_notifications)
 
     if notification.type == Notification.Type.EVENT_CANCELED:
-        event.participants.all().delete()
+        event.participants.filter(is_organizer=False).delete()
 
     return "Success send push notifications"
 
