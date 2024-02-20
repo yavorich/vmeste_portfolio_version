@@ -79,7 +79,7 @@ class MessageListView(ListAPIView):
                 response = self.get_paginated_response(serializer.data)
             else:
                 serializer = self.get_serializer(
-                    messages_queryset, context=self.get_serializer_context(), many=True
+                    messages_queryset, many=True, context=self.get_serializer_context()
                 )
                 response = Response({"results": serializer.data})
             grouped_messages.append({"date": date, **response.data})
