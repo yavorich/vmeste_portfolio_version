@@ -47,7 +47,6 @@ class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
             "gender",
         ]
         extra_kwargs = {
-            "avatar": {"required": True},
             "first_name": {"required": True},
             "last_name": {"required": True},
             "date_of_birth": {"required": True},
