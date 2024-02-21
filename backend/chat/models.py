@@ -44,6 +44,7 @@ class Message(models.Model):
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
         get_latest_by = "sent_at"
+        ordering = ["sent_at"]
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
