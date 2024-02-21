@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from rest_framework.exceptions import ValidationError
 
 from api.models import User, EventParticipant, Event
-from api.serializers import CategoryTitleSerializer, CitySerializer, CountrySerializer
+from api.serializers import CategorySerializer, CitySerializer, CountrySerializer
 from core.utils import validate_file_size
 
 
@@ -68,7 +68,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
     country = CountrySerializer(allow_null=True)
     city = CitySerializer(allow_null=True)
     occupation = serializers.CharField(source="occupation.title", allow_null=True)
-    categories = CategoryTitleSerializer(many=True)
+    categories = CategorySerializer(many=True)
     stats = serializers.SerializerMethodField()
 
     class Meta:
