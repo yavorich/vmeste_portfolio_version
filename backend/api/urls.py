@@ -89,16 +89,10 @@ urlpatterns = [
         views.CategoryListView.as_view(),
         name="subcategories_list",
     ),
-    path("interests/", views.ThemeListView.as_view(), name="interests_list"),
     path(
-        "interests/<int:pk>/sub/",
-        views.CategoryListView.as_view(),
-        name="subinterests_list",
-    ),
-    path(
-        "subcategories/",
-        views.AllCategoriesListView.as_view(),
-        name="all_subcategories",
+        "interests/",
+        views.InterestListView.as_view(),
+        name="interests_list",
     ),
     path("occupations/", views.OccupationListView.as_view(), name="occupation_list"),
     path(
