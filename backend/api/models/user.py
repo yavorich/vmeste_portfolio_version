@@ -110,6 +110,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Category,
         verbose_name=_("Категории"),
         related_name="users",
+        blank=True,
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
     subscription = models.ForeignKey(
