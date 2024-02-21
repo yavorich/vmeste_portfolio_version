@@ -17,7 +17,7 @@ from .categories import (
     CategoryListView,
     OccupationListView,
     ThemeListView,
-    AllCategoriesListView,
+    InterestListView,
 )
 from .media import EventMediaViewSet
 from .filters import EventFastFiltersListView
