@@ -66,3 +66,4 @@ class AlienProfileView(RetrieveAPIView):
         user = get_object_or_404(User, pk=self.kwargs["pk"])
         if not user.is_active:
             raise ValidationError({"error": "Пользователь заблокирован"})
+        return user
