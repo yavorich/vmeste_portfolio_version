@@ -21,6 +21,12 @@ class CategoryListView(ListAPIView):
         return queryset
 
 
+class AllCategoriesListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+
 class OccupationListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = OccupationSerializer

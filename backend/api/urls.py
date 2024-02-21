@@ -95,6 +95,11 @@ urlpatterns = [
         views.CategoryListView.as_view(),
         name="subinterests_list",
     ),
+    path(
+        "subcategories/",
+        views.AllCategoriesListView.as_view(),
+        name="all_subcategories",
+    ),
     path("occupations/", views.OccupationListView.as_view(), name="occupation_list"),
     path(
         "filters/fast/",
