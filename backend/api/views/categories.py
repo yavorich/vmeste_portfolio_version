@@ -21,7 +21,7 @@ class CategoryListView(ListAPIView):
         return queryset
 
 
-class AllCategoriesListView(ListAPIView):
+class InterestListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
