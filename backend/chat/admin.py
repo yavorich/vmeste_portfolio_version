@@ -42,6 +42,7 @@ class ChatMessagesInline(admin.TabularInline):
 class ChatModel(admin.ModelAdmin):
     inlines = [ChatMessagesInline]
     list_display = [
+        "event_id",
         "event",
         "messages_count",
         "last_message_time",
@@ -49,6 +50,10 @@ class ChatModel(admin.ModelAdmin):
     list_filter = [
         ChatStatusFilter,
     ]
+
+    @admin.display(description="ID")
+    def event_id(self, obj):
+        return obj.event.id
 
     @admin.display(description="Кол-во сообщений")
     def messages_count(self, obj):

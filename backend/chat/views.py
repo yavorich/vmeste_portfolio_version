@@ -1,3 +1,4 @@
+from django.utils.timezone import localtime
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
@@ -69,7 +70,9 @@ class MessageListView(ListAPIView):
         event = get_event_object(self.kwargs["event_pk"])
         event_serializer = ChatEventSerializer(event, context={"request": request})
         grouped_messages = []
-        for date, messages in groupby(queryset, lambda m: m.sent_at.date()):
+        for date, messages in groupby(
+            queryset, lambda m: m.sent_at.astimezone(tz=localtime().tzinfo).date()
+        ):
             messages_queryset = Message.objects.filter(id__in=[m.id for m in messages])
             page = self.paginate_queryset(messages_queryset)
             if page is not None and "page" in request.query_params:

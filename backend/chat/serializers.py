@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.settings import api_settings
 from django.db.models import Q
+from django.utils.timezone import localtime
 
 from api.models import Event, User
 from chat.models import Message
@@ -118,7 +119,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return self.context["user"] == obj.sender
 
     def get_sent_at_time(self, obj: Message):
-        return obj.sent_at.time().strftime("%H:%M")
+        return obj.sent_at.astimezone(tz=localtime().tzinfo).strftime("%H:%M")
 
 
 class MessageSendSerializer(serializers.ModelSerializer):
