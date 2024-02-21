@@ -5,7 +5,7 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
@@ -55,7 +55,7 @@ class SelfProfileViewSet(
 class AlienProfileView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = ProfileRetrieveSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
