@@ -1,7 +1,7 @@
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from django.shortcuts import get_object_or_404, get_list_or_404
@@ -12,7 +12,7 @@ from api.serializers import DocsSerializer
 
 
 class DocsViewSet(ListModelMixin, GenericViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = DocsSerializer
 
     def get_queryset(self):
