@@ -39,6 +39,7 @@ class EventMixin:
         return {
             "date_and_year": obj.date_and_year,
             "day_and_time": obj.day_and_time,
+            "date": obj.date,
         }
 
     def get_am_i_organizer(self, obj: Event):
@@ -118,7 +119,8 @@ class EventOrganizerSerializer(ModelSerializer):
 
 class EventDetailSerializer(EventMixin, ModelSerializer):
     location = LocationSerializer()
-    date = serializers.SerializerMethodField()
+    start_time = serializers.SerializerMethodField()
+    end_time = serializers.SerializerMethodField()
     theme_name = serializers.CharField(source="theme.title", allow_null=True)
     category_name = CategoryTitleSerializer(source="categories", many=True)
     state = serializers.SerializerMethodField()
@@ -140,10 +142,17 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "title",
             "cover",
             "description",
+            "short_description",
             "location",
+            "total_male",
+            "total_female",
             "stats_men",
             "stats_women",
+            "date_and_year",
+            "day_and_time",
             "date",
+            "start_time",
+            "end_time",
             "theme_name",
             "category_name",
             "state",
@@ -154,6 +163,12 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "did_organizer_marking",
             "am_i_confirmed",
         ]
+
+    def get_start_time(self, obj: Event):
+        return obj.start_time.replace(tzinfo=localtime().tzinfo)
+
+    def get_end_time(self, obj: Event):
+        return obj.end_time.replace(tzinfo=localtime().tzinfo)
 
 
 class EventDocumentSerializer(EventMixin, DocumentSerializer):
