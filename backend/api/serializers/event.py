@@ -16,7 +16,8 @@ from api.models import (
 from api.enums import EventState
 from api.serializers import (
     LocationSerializer,
-    CategoryTitleSerializer,
+    CategorySerializer,
+    ThemeSerializer,
     ThemeCategoriesSerializer,
 )
 from api.documents import EventDocument
@@ -121,8 +122,8 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     location = LocationSerializer()
     start_time = serializers.SerializerMethodField()
     end_time = serializers.SerializerMethodField()
-    theme_name = serializers.CharField(source="theme.title", allow_null=True)
-    category_name = CategoryTitleSerializer(source="categories", many=True)
+    theme = ThemeSerializer(allow_null=True)
+    categories = CategorySerializer(many=True)
     state = serializers.SerializerMethodField()
     participants = serializers.SerializerMethodField()
     organizer = serializers.SerializerMethodField()
@@ -153,8 +154,8 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "date",
             "start_time",
             "end_time",
-            "theme_name",
-            "category_name",
+            "theme",
+            "categories",
             "state",
             "organizer",
             "am_i_organizer",
