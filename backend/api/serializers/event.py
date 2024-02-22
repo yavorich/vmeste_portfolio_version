@@ -120,8 +120,8 @@ class EventOrganizerSerializer(ModelSerializer):
 
 class EventDetailSerializer(EventMixin, ModelSerializer):
     location = LocationSerializer()
-    start_time = serializers.SerializerMethodField()
-    end_time = serializers.SerializerMethodField()
+    start_datetime = serializers.SerializerMethodField()
+    end_datetime = serializers.SerializerMethodField()
     theme = ThemeSerializer(allow_null=True)
     categories = CategorySerializer(many=True)
     state = serializers.SerializerMethodField()
@@ -152,8 +152,8 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "date_and_year",
             "day_and_time",
             "date",
-            "start_time",
-            "end_time",
+            "start_datetime",
+            "end_datetime",
             "theme",
             "categories",
             "state",
@@ -165,11 +165,11 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "am_i_confirmed",
         ]
 
-    def get_start_time(self, obj: Event):
-        return obj.start_time.replace(tzinfo=localtime().tzinfo)
+    def get_start_datetime(self, obj: Event):
+        return obj.start_datetime.astimezone(localtime().tzinfo)
 
-    def get_end_time(self, obj: Event):
-        return obj.end_time.replace(tzinfo=localtime().tzinfo)
+    def get_end_datetime(self, obj: Event):
+        return obj.end_datetime.astimezone(localtime().tzinfo)
 
 
 class EventDocumentSerializer(EventMixin, DocumentSerializer):
@@ -238,43 +238,41 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {f: {"required": True} for f in fields}
 
-    def validate(self, attrs):
-        if attrs["min_age"] >= attrs["max_age"]:
-            raise ValidationError(
-                {"error": "Минимальный возраст должен быть меньше максимального"}
-            )
-        if attrs["min_age"] < 12:
-            raise ValidationError(
-                {"error": "Минимальный возраст не может быть меньше 12"}
-            )
-        if attrs["max_age"] > 100:
-            raise ValidationError(
-                {"error": "Максимальный возраст не может быть больше 100"}
-            )
-        return super().validate(attrs)
+    @staticmethod
+    def get_value(key, validated_data: dict, instance: Event | None = None):
+        return validated_data.get(key, getattr(instance, key, None))
 
-    def prepare_location(self, validated_data):
+    @staticmethod
+    def pop_value(key, validated_data: dict, instance: Event | None = None):
+        return validated_data.pop(key, getattr(instance, key, None))
+
+    def prepare_location(self, validated_data: dict, instance: Event | None = None):
         location, created = Location.objects.get_or_create(
-            country=validated_data["country"],
-            city=validated_data["city"],
-            name=validated_data.pop("location_name"),
-            address=validated_data.pop("address"),
+            country=self.get_value("country", validated_data, instance),
+            city=self.get_value("city", validated_data, instance),
+            name=validated_data.pop(
+                "location_name", getattr(instance.location, "name", None)
+            ),
+            address=self.pop_value("address", validated_data, instance.location),
             defaults={
-                "latitude": validated_data.pop("latitude"),
-                "longitude": validated_data.pop("longitude"),
+                "latitude": self.pop_value(
+                    "latitude", validated_data, instance.location
+                ),
+                "longitude": self.pop_value(
+                    "longitude", validated_data, instance.location
+                ),
                 "status": Location.Status.UNKNOWN,
-                "cover": validated_data["cover"],
+                "cover": self.get_value("cover", validated_data, instance),
             },
         )
 
         validated_data["location"] = location
         return validated_data
 
-    @staticmethod
-    def validate_start_datetime(validated_data, hours):
+    def validate_start_datetime(self, validated_data, hours, instance=None):
         start_datetime = datetime.combine(
-            validated_data["date"],
-            validated_data["start_time"],
+            self.get_value("date", validated_data, instance),
+            self.get_value("start_time", validated_data, instance),
             tzinfo=localtime().tzinfo,
         )
         if start_datetime < localtime() + timedelta(hours=hours):
@@ -282,14 +280,32 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 {"error": f"Минимальное время до начала мероприятия - {hours} часов"}
             )
 
+    def validate_age(self, validated_data, instance=None):
+        min_age = self.get_value("min_age", validated_data, instance)
+        max_age = self.get_value("max_age", validated_data, instance)
+        if min_age >= max_age:
+            raise ValidationError(
+                {"error": "Минимальный возраст должен быть меньше максимального"}
+            )
+        if min_age < 12:
+            raise ValidationError(
+                {"error": "Минимальный возраст не может быть меньше 12"}
+            )
+        if max_age > 100:
+            raise ValidationError(
+                {"error": "Максимальный возраст не может быть больше 100"}
+            )
+
     def create(self, validated_data):
         validated_data = self.prepare_location(validated_data)
         self.validate_start_datetime(validated_data, hours=6)
+        self.validate_age(validated_data)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        validated_data = self.prepare_location(validated_data)
-        self.validate_start_datetime(validated_data, hours=5)
+        validated_data = self.prepare_location(validated_data, instance=instance)
+        self.validate_start_datetime(validated_data, hours=3, instance=instance)
+        self.validate_age(validated_data, instance=instance)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
