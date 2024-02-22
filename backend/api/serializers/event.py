@@ -208,7 +208,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     address = serializers.CharField(write_only=True)
     latitude = serializers.FloatField(write_only=True)
     longitude = serializers.FloatField(write_only=True)
-    cover = serializers.FileField(validators=[validate_file_size])
+    cover = serializers.FileField(validators=[validate_file_size], read_only=False)
 
     class Meta:
         model = Event
@@ -237,6 +237,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "is_draft",
         ]
         extra_kwargs = {f: {"required": True} for f in fields}
+        extra_kwargs["cover"].update({"read_only": False})
 
     @staticmethod
     def get_value(key, validated_data: dict, instance: Event | None = None):
@@ -247,19 +248,20 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return validated_data.pop(key, getattr(instance, key, None))
 
     def prepare_location(self, validated_data: dict, instance: Event | None = None):
+        current_location = getattr(instance, "location", None)
         location, created = Location.objects.get_or_create(
             country=self.get_value("country", validated_data, instance),
             city=self.get_value("city", validated_data, instance),
             name=validated_data.pop(
-                "location_name", getattr(instance.location, "name", None)
+                "location_name", getattr(current_location, "name", None)
             ),
-            address=self.pop_value("address", validated_data, instance.location),
+            address=self.pop_value("address", validated_data, current_location),
             defaults={
                 "latitude": self.pop_value(
-                    "latitude", validated_data, instance.location
+                    "latitude", validated_data, current_location
                 ),
                 "longitude": self.pop_value(
-                    "longitude", validated_data, instance.location
+                    "longitude", validated_data, current_location
                 ),
                 "status": Location.Status.UNKNOWN,
                 "cover": self.get_value("cover", validated_data, instance),
