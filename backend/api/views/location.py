@@ -30,19 +30,16 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
     permission_classes = [AllowAny]
 
     filter_backends = [
+        CompoundSearchFilterBackend,
         GeoSpatialOrderingFilterBackend,
         FilteringFilterBackend,
-        CompoundSearchFilterBackend,
     ]
 
     filter_fields = {
         "city_id": "city.id",
     }
 
-    search_fields = {
-        "name": {"fuzziness": "AUTO"},
-        "address": {"fuzziness": "AUTO"},
-    }
+    search_fields = ("name", "address")
 
     geo_spatial_ordering_fields = {
         "coords": "coords",
