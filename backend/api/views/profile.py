@@ -55,6 +55,10 @@ class SelfProfileViewSet(
         result.save()
         return result
 
+    def perform_destroy(self, instance):
+        instance.events.all().delete()
+        return super().perform_destroy(instance)
+
 
 class AlienProfileViewSet(RetrieveModelMixin, CreateModelMixin, GenericViewSet):
     queryset = User.objects.all()
