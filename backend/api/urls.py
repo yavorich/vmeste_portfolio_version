@@ -1,4 +1,4 @@
-from django.urls import path, re_path, include
+from django.urls import path, re_path
 from rest_framework.routers import DefaultRouter
 
 from . import views
@@ -27,7 +27,6 @@ router.register(
     basename="alien-profile",
 )
 urlpatterns = [
-    path("", include(router.urls)),
     path(
         "events/",
         views.EventListViewSet.as_view({"get": "list", "post": "create"}),
@@ -100,4 +99,4 @@ urlpatterns = [
         views.EventFastFiltersListView.as_view(),
         name="fast-filter-list",
     ),
-]
+] + router.urls
