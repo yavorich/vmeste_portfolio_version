@@ -47,7 +47,7 @@ def create_event_notifications(sender, instance: Event, created: bool, **kwargs)
         create_notifications_task.delay(instance.pk, Notification.Type.EVENT_CHANGED)
 
     if is_active:
-        for delta in [timedelta(days=1), timedelta(hours=4)]:
+        for delta in [timedelta(days=1), timedelta(hours=4), timedelta(hours=1)]:
             if instance.start_datetime - delta > localtime():
                 create_notifications_task.apply_async(
                     eta=instance.start_datetime - delta,

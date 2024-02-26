@@ -300,13 +300,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data = self.prepare_location(validated_data)
-        self.validate_start_datetime(validated_data, hours=6)
+        self.validate_start_datetime(validated_data, hours=2)
         self.validate_age(validated_data)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data, instance=instance)
-        self.validate_start_datetime(validated_data, hours=3, instance=instance)
+        self.validate_start_datetime(validated_data, hours=2, instance=instance)
         self.validate_age(validated_data, instance=instance)
         return super().update(instance, validated_data)
 
