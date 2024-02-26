@@ -21,6 +21,11 @@ router.register(
     views.DocsViewSet,
     basename="docs",
 )
+router.register(
+    "profile",
+    views.AlienProfileViewSet,
+    basename="alien-profile",
+)
 urlpatterns = [
     path("", include(router.urls)),
     path(
@@ -38,7 +43,7 @@ urlpatterns = [
     path("auth/send_code", views.AuthSendCodeView.as_view(), name="auth-code"),
     path("auth/", views.AuthView.as_view(), name="auth"),
     path(
-        "profile/",
+        "profile/my/",
         views.SelfProfileViewSet.as_view(
             {
                 "get": "retrieve",
@@ -48,11 +53,6 @@ urlpatterns = [
             }
         ),
         name="my-profile",
-    ),
-    path(
-        "profile/<int:pk>/",
-        views.AlienProfileViewSet.as_view(),
-        name="user-profile",
     ),
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),
     path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
