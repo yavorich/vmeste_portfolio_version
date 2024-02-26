@@ -4,7 +4,7 @@ from .eventlist import EventListViewSet
 from .eventdetail import EventDetailViewSet
 from .eventsign import EventPublishedSignViewSet
 from .auth import AuthView, AuthSendCodeView
-from .profile import SelfProfileViewSet, AlienProfileView
+from .profile import SelfProfileViewSet, AlienProfileViewSet
 from .token import UserTokenObtainPairView, UserTokenRefreshView
 from .docs import DocsViewSet
 from .participants import (
