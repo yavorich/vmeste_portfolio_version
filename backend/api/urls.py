@@ -51,7 +51,7 @@ urlpatterns = [
     ),
     path(
         "profile/<int:pk>/",
-        views.AlienProfileView.as_view(),
+        views.AlienProfileViewSet.as_view(),
         name="user-profile",
     ),
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),

@@ -52,7 +52,7 @@ class SelfProfileViewSet(
         return result
 
 
-class AlienProfileView(RetrieveAPIView):
+class AlienProfileViewSet(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = ProfileRetrieveSerializer
     permission_classes = [AllowAny]
