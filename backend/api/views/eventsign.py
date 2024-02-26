@@ -1,4 +1,5 @@
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -7,9 +8,10 @@ from rest_framework.exceptions import ValidationError
 
 from api.services import get_event_object
 from api.models import Event, EventParticipant
+from api.serializers import SupportMessageCreateSerializer
 
 
-class EventPublishedSignViewSet(GenericViewSet):
+class EventPublishedSignViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Event.objects.all()
 
@@ -83,4 +85,27 @@ class EventPublishedSignViewSet(GenericViewSet):
         return Response(
             {"message": "Запись на мероприятие отменена"},
             status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["post"])
+    def report(self, request, pk=None):
+        user = request.user
+        obj = self.get_object()
+        participant = obj.get_participant(user)
+
+        if participant and participant.is_organizer:
+            raise ValidationError(
+                {"error": "Вы не можете пожаловаться на своё событие"}
+            )
+
+        serializer = SupportMessageCreateSerializer(
+            data=request.data, context={"event": obj, "user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {"message": "Вы успешно пожаловались на событие"},
+            status=status.HTTP_201_CREATED,
+            headers=headers,
         )
