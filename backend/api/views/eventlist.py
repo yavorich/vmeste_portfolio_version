@@ -68,10 +68,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         "date": "date",
     }
 
-    search_fields = {
-        "title": {"fuzziness": "AUTO"},
-        "short_description": {"fuzziness": "AUTO"},
-    }
+    search_fields = ("title", "short_description")
 
     def get_queryset(self):
         qs: Search = super().get_queryset()
