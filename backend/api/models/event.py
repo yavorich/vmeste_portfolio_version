@@ -212,7 +212,7 @@ class Event(models.Model):
 
     def is_valid_sign_time(self) -> bool:
         start = self.start_datetime
-        return localtime() <= start - timedelta(hours=3)
+        return localtime() <= start - timedelta(hours=1)
 
     def is_valid_media_time(self) -> bool:
         start = self.start_datetime
