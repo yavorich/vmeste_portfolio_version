@@ -26,7 +26,7 @@ def send_info_message(instance: EventParticipant, join: bool):
     event_pk = instance.event.id
     send_ws_message(message_serializer.data, event_pk)
     for participant in instance.event.participants.all():
-        message.read.create(user=participant.user)
+        message.read.get_or_create(user=participant.user)
 
 
 @receiver(post_save, sender=EventParticipant)
