@@ -115,7 +115,8 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         if status == EventStatus.POPULAR:
             qs = qs.sort("-participants.free_places.total")
 
-        return qs
+        total = qs.count()
+        return qs[:total]
 
     def apply_fast_filters(self, queryset):
         query_params = self.request.query_params.dict()
