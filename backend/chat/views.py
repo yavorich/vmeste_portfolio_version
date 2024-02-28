@@ -33,7 +33,11 @@ class ChatListView(ListAPIView):
         if status not in [EventStatus.UPCOMING, EventStatus.PAST]:
             raise ValidationError("Status query parameter is required (upcoming/past)")
 
-        queryset = Event.objects.filter_participant(user).distinct()
+        queryset = (
+            Event.objects.filter_participant(user)
+            .distinct()
+            .filter(is_draft=False, is_active=True)
+        )
         queryset = getattr(queryset, f"filter_{status}")()
         return queryset
 
