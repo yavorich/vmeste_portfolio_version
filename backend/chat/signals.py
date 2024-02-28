@@ -1,8 +1,8 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete, post_delete
 
-from api.models import Event, EventParticipant
-from chat.models import Message
+from api.models import Event, EventParticipant, User
+from chat.models import Message, Chat
 from chat.utils import (
     send_ws_message,
     add_user_to_group,
@@ -40,8 +40,11 @@ def send_join_message(sender, instance: EventParticipant, created: bool, **kwarg
 @receiver(pre_delete, sender=EventParticipant)
 def send_leave_message(sender, instance: EventParticipant, **kwargs):
     print("USER LEFT")
+    try:
+        send_info_message(instance, join=False)
+    except (Event.DoesNotExist, Chat.DoesNotExist, User.DoesNotExist):
+        pass
     remove_user_from_group(instance.event)
-    send_info_message(instance, join=False)
 
 
 @receiver(post_save, sender=Event)
@@ -53,3 +56,8 @@ def create_chat_group(sender, instance: Event, created: bool, **kwargs):
 @receiver(post_delete, sender=Event)
 def delete_chat_group(sender, instance: Event, **kwargs):
     remove_user_from_group(instance)
+
+
+@receiver(post_delete, sender=Chat)
+def delete_chat_event(sender, instance: Chat, **kwargs):
+    instance.event.delete()
