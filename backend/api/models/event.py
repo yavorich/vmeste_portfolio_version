@@ -77,8 +77,8 @@ class Event(models.Model):
     cover = models.ImageField(
         _("Обложка"), upload_to=get_upload_path, default="defaults/cover.jpg"
     )
-    short_description = models.CharField(_("Краткое описание"), max_length=80)
-    description = models.TextField(_("Полное описание"), max_length=1000)
+    short_description = models.CharField(_("Краткое описание"), max_length=2000)
+    description = models.CharField(_("Полное описание"), max_length=2000)
     location = models.ForeignKey(
         verbose_name=_("Место"),
         to=Location,
