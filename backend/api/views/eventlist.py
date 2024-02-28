@@ -75,6 +75,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         qs = qs.filter(Q("term", is_active=True))
         user = self.request.user
         status = self.request.query_params.get("status")
+        search = self.request.query_params.get("search")
 
         if status not in set(EventStatus):
             raise ValidationError(
@@ -108,7 +109,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             )
 
         # PUBLISHED события сортируются по возрастанию даты
-        if status == EventStatus.PUBLISHED:
+        if status == EventStatus.PUBLISHED and not search:
             qs = qs.sort("date")
 
         # POPULAR события сортируются по убыванию кол-ва свободных мест
