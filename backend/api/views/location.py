@@ -50,7 +50,8 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
         query_params = self.request.query_params
         if not query_params.get("search") and not query_params.get("ordering"):
             qs = qs.sort("-id")
-        return qs
+        total = qs.count()
+        return qs[:total]
 
     def get_serializer_class(self):
         return self.serializer_class[self.action]
