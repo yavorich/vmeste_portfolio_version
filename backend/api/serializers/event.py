@@ -312,8 +312,8 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data = self.prepare_location(validated_data, instance=instance)
         self.validate_start_datetime(validated_data, hours=2, instance=instance)
         self.validate_age(validated_data, instance=instance)
-        if not isinstance(validated_data["cover"], InMemoryUploadedFile):
-            validated_data.pop("cover")
+        if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):
+            validated_data.pop("cover", None)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
