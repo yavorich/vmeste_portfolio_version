@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
 from django.utils.timezone import localtime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -27,6 +28,17 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
             "about_me",
         ]
         extra_kwargs = {f: {"required": False} for f in fields}
+
+    def update(self, instance, validated_data):
+        avatar = validated_data.get("avatar")
+        if not isinstance(
+            avatar, (InMemoryUploadedFile)
+        ):
+            if avatar:
+                validated_data.pop("avatar")
+            else:
+                validated_data["avatar"] = None
+        return super().update(instance, validated_data)
 
     def validate_email(self, value):
         user = self.context["user"]

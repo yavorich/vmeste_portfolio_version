@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import Serializer, ModelSerializer
 from django.utils.timezone import localtime, datetime, timedelta
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -311,7 +312,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data = self.prepare_location(validated_data, instance=instance)
         self.validate_start_datetime(validated_data, hours=2, instance=instance)
         self.validate_age(validated_data, instance=instance)
-        if validated_data["cover"] is None:
+        if not isinstance(validated_data["cover"], InMemoryUploadedFile):
             validated_data.pop("cover")
         return super().update(instance, validated_data)
 
