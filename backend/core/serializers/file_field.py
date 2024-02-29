@@ -1,15 +1,26 @@
-import base64
-import filetype
-import binascii
-
-from rest_framework.serializers import ValidationError
+from rest_framework.serializers import FileField
 from rest_framework.settings import api_settings
-from django.core.files.base import ContentFile
-from django.utils.translation import gettext_lazy as _
-from drf_extra_fields.fields import Base64FileField, Base64FieldMixin
 
 
-class UrlWithoutDomainMixin:
+class CustomFileField(FileField):
+
+    def to_internal_value(self, data):
+        try:
+            # `UploadedFile` objects should have name and size attributes.
+            file_name = data.name
+            file_size = data.size
+        except AttributeError:
+            return None
+
+        if not file_name:
+            self.fail("no_name")
+        if not self.allow_empty_file and not file_size:
+            self.fail("empty")
+        if self.max_length and len(file_name) > self.max_length:
+            self.fail("max_length", max_length=self.max_length, length=len(file_name))
+
+        return data
+
     def to_representation(self, value):
         if not value:
             return None
@@ -20,49 +31,13 @@ class UrlWithoutDomainMixin:
                 url = value.url
             except AttributeError:
                 return None
-
+            request = self.context.get("request", None)
+            if request is not None:
+                return request.build_absolute_uri(url)
+            headers = self.context.get("headers", None)
+            if headers is not None and b"host" in headers:
+                host = headers[b"host"].decode()
+                return f"http://{host}{url}"
             return url
 
         return value.name
-
-
-class CustomFileField(UrlWithoutDomainMixin, Base64FileField):
-    INVALID_FILE_MESSAGE = "Некорректный файл"
-
-    def to_internal_value(self, base64_data):
-        # Check if this is a base64 string
-        if base64_data in self.EMPTY_VALUES:
-            return super(Base64FieldMixin, self).to_internal_value(None)
-
-        if isinstance(base64_data, str):
-            # Strip base64 header.
-            if ";base64," in base64_data:
-                header, base64_data = base64_data.split(";base64,")
-
-            # Try to decode the file. Return validation error if it fails.
-            try:
-                decoded_file = base64.b64decode(base64_data)
-            except (TypeError, binascii.Error, ValueError):
-                raise ValidationError(self.INVALID_FILE_MESSAGE)
-            # Generate file name:
-            file_name = self.get_file_name(decoded_file)
-            # Get the file name extension:
-            file_extension = self.get_file_extension(file_name, decoded_file)
-
-            complete_file_name = file_name + "." + file_extension
-            data = ContentFile(decoded_file, name=complete_file_name)
-            return super(Base64FieldMixin, self).to_internal_value(data)
-        raise ValidationError(
-            _(
-                "Invalid type. This is not an base64 string: {}".format(
-                    type(base64_data)
-                )
-            )
-        )
-
-    def get_file_extension(self, filename, decoded_file):
-        try:
-            kind = filetype.guess(decoded_file)
-            return kind.extension
-        except AttributeError:
-            raise ValidationError(self.INVALID_FILE_MESSAGE)
