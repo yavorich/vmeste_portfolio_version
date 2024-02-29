@@ -1,7 +1,11 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import (
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+)
 
 from api.models import Event
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
@@ -9,7 +13,9 @@ from api.permissions import IsEventOrganizer
 from api.services import get_event_object
 
 
-class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class EventDetailViewSet(
+    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet
+):
     queryset = Event.objects.all()
     serializer_class = {
         "retrieve": EventDetailSerializer,
@@ -23,6 +29,7 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
         permission_classes = {
             "retrieve": [AllowAny],
             "partial_update": [IsEventOrganizer],
+            "destroy": [IsEventOrganizer],
         }
         self.permission_classes = permission_classes[self.action]
         return super(EventDetailViewSet, self).get_permissions()
@@ -41,3 +48,6 @@ class EventDetailViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
             unread_notify = self.request.user.notifications.filter(read=False).count()
             data["unread_notify"] = unread_notify
         return Response(data)
+
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
