@@ -127,6 +127,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("Дата принятия соглашения"), null=True
     )
     event_rules_applied = models.BooleanField(default=False)
+    offer_applied = models.BooleanField(default=False)
     sending_push = models.BooleanField(default=True)
     receive_recs = models.BooleanField(default=True)
 

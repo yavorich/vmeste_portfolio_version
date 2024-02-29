@@ -31,6 +31,8 @@ class DocsViewSet(ListModelMixin, GenericViewSet):
             user.agreement_applied_at = localtime()
         if obj.name == Docs.Name.RULES:
             user.event_rules_applied = True
+        if obj.name == Docs.Name.OFFER:
+            user.offer_applied = True
         user.save()
         return Response(f"{obj.name} applied.", status=HTTP_200_OK)
 
