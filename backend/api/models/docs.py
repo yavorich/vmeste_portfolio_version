@@ -6,6 +6,7 @@ class Docs(models.Model):
     class Name(models.TextChoices):
         RULES = "rules", "Правила"
         AGREEMENT = "agreement", "Соглашение"
+        OFFER = "offer", "Оферта"
 
     name = models.CharField(
         _("Тип документа"), choices=Name.choices, max_length=10, unique=True
