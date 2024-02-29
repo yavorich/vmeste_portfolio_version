@@ -22,6 +22,7 @@ from api.serializers import (
 )
 from api.documents import EventDocument
 from api.models import EventFastFilter
+from core.serializers import CustomFileField
 from core.utils import validate_file_size
 
 
@@ -208,7 +209,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     address = serializers.CharField(write_only=True)
     latitude = serializers.FloatField(write_only=True)
     longitude = serializers.FloatField(write_only=True)
-    cover = serializers.FileField(validators=[validate_file_size], read_only=False)
+    cover = CustomFileField(validators=[validate_file_size], read_only=False)
 
     class Meta:
         model = Event
@@ -302,12 +303,16 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data = self.prepare_location(validated_data)
         self.validate_start_datetime(validated_data, hours=2)
         self.validate_age(validated_data)
+        if validated_data["cover"] is None:
+            raise ValidationError({"error": "Обложка события не выбрана"})
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data, instance=instance)
         self.validate_start_datetime(validated_data, hours=2, instance=instance)
         self.validate_age(validated_data, instance=instance)
+        if validated_data["cover"] is None:
+            validated_data.pop("cover")
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
