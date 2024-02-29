@@ -16,7 +16,7 @@ from chat.serializers import (
     MessageSerializer,
     MessageSendSerializer,
 )
-from chat.models import Message, Chat
+from chat.models import Message, Chat, ReadMessage
 from chat.utils import send_ws_message
 from core.pagination import PageNumberSetPagination
 
@@ -71,6 +71,10 @@ class MessageListView(ListAPIView):
         context["user"] = self.request.user
         return context
 
+    def read_all_messages(self, messages):
+        for message in messages:
+            ReadMessage.objects.get_or_create(user=self.request.user, message=message)
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         event = get_event_object(self.kwargs["event_pk"])
@@ -93,6 +97,7 @@ class MessageListView(ListAPIView):
                 response = Response({"results": serializer.data})
             grouped_messages.append({"date": date, **response.data})
 
+        self.read_all_messages(queryset)
         return Response({"event": event_serializer.data, "messages": grouped_messages})
 
 
