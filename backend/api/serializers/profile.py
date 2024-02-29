@@ -30,11 +30,11 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {f: {"required": False} for f in fields}
 
     def update(self, instance, validated_data):
-        avatar = validated_data.get("avatar")
+        avatar = validated_data.get("avatar", None)
         if not isinstance(
             avatar, (InMemoryUploadedFile)
         ):
-            validated_data.pop("avatar")
+            validated_data.pop("avatar", None)
         return super().update(instance, validated_data)
 
     def validate_email(self, value):
