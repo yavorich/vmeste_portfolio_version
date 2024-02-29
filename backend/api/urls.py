@@ -35,7 +35,7 @@ urlpatterns = [
     re_path(
         r"^events/(?P<event_pk>[0-9]+|[0-9a-f-]+)/$",
         views.EventDetailViewSet.as_view(
-            {"get": "retrieve", "patch": "partial_update"}
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
         ),
         name="event-detail",
     ),
