@@ -39,7 +39,9 @@ class ChatListView(ListAPIView):
             .filter(is_draft=False, is_active=True)
         )
         queryset = getattr(queryset, f"filter_{status}")()
-        return queryset
+        return sorted(
+            queryset, key=lambda x: x.chat.messages.latest().sent_at, reverse=True
+        )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

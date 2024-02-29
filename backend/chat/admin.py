@@ -39,7 +39,7 @@ class ChatMessagesInline(admin.TabularInline):
 
 
 @admin.register(Chat)
-class ChatModel(admin.ModelAdmin):
+class ChatAdmin(admin.ModelAdmin):
     inlines = [ChatMessagesInline]
     list_display = [
         "event_id",
