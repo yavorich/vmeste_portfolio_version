@@ -67,7 +67,7 @@ def get_upload_path(instance, filename):
 class Event(models.Model):
     is_close_event = models.BooleanField(_("Закрытое мероприятие"))
     uuid = models.UUIDField(default=_uuid.uuid4, unique=True, editable=False)
-    title = models.CharField(_("Название"), max_length=255)
+    title = models.CharField(_("Название"), max_length=30)
     max_age = models.PositiveSmallIntegerField(
         _("Макс. возраст"), validators=[MinValueValidator(13), MaxValueValidator(100)]
     )
@@ -77,8 +77,8 @@ class Event(models.Model):
     cover = models.ImageField(
         _("Обложка"), upload_to=get_upload_path, default="defaults/cover.jpg"
     )
-    short_description = models.CharField(_("Краткое описание"), max_length=2000)
-    description = models.CharField(_("Полное описание"), max_length=2000)
+    short_description = models.CharField(_("Краткое описание"), max_length=80)
+    description = models.CharField(_("Полное описание"), max_length=500)
     location = models.ForeignKey(
         verbose_name=_("Место"),
         to=Location,
