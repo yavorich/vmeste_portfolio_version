@@ -51,6 +51,7 @@ class SelfProfileViewSet(
 
     def perform_update(self, serializer):
         result = serializer.save()
+        print(self.request.data)
         result.profile_is_completed = True
         result.save()
         return result

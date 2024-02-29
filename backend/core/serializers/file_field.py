@@ -10,7 +10,7 @@ class CustomFileField(FileField):
             file_name = data.name
             file_size = data.size
         except AttributeError:
-            return None
+            return data
 
         if not file_name:
             self.fail("no_name")
