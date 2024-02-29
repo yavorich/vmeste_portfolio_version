@@ -34,10 +34,7 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
         if not isinstance(
             avatar, (InMemoryUploadedFile)
         ):
-            if avatar:
-                validated_data.pop("avatar")
-            else:
-                validated_data["avatar"] = None
+            validated_data.pop("avatar")
         return super().update(instance, validated_data)
 
     def validate_email(self, value):
