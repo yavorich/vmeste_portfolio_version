@@ -109,3 +109,21 @@ class EventPublishedSignViewSet(CreateModelMixin, GenericViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user = request.user
+        obj = self.get_object()
+        participant = obj.get_participant(user)
+
+        if participant:
+            if participant.is_organizer:
+                raise ValidationError({"error": "Вы являетесь организатором"})
+            participant.has_confirmed = True
+            participant.save()
+            return Response(
+                {"message": "Вы подтвердили своё присутствие"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            raise ValidationError({"error": "Вы не являетесь участником события"})
