@@ -12,6 +12,8 @@ async def send_ws_message(message, event_pk):
 
 
 async def asend_ws_message(message: Message, event_pk, _channel_layer):
+    with open("log.txt", "a") as f:
+        f.write(f"Sending message from utils: {message}\n")
     await _channel_layer.group_send(
         "chat_%s" % event_pk,
         {
