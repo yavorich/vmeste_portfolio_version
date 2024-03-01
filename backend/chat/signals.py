@@ -60,4 +60,7 @@ def delete_chat_group(sender, instance: Event, **kwargs):
 
 @receiver(post_delete, sender=Chat)
 def delete_chat_event(sender, instance: Chat, **kwargs):
-    instance.event.delete()
+    try:
+        instance.event.delete()
+    except Event.DoesNotExist:
+        pass

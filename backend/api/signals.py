@@ -23,6 +23,11 @@ def delete_event_cover(sender, instance: Event, **kwargs):
     delete_file(instance, "cover")
 
 
+@receiver(post_delete, sender=Event)
+def delete_event_notifications(sender, instance: Event, **kwargs):
+    instance.notifications.all().delete()
+
+
 @receiver(pre_save, sender=Event)
 def update_event_cover(sender, instance, **kwargs):
     delete_file_on_update(sender, instance, "cover", **kwargs)
