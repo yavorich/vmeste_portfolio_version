@@ -188,7 +188,8 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
         # Добавление более поздних событий
         response = self._list_queryset(request, later)
-        grouped_events.append({"date": "Позже", **response.data})
+        if len(response.data["results"]) != 0:
+            grouped_events.append({"date": "Позже", **response.data})
 
         response_data = {"events": grouped_events}
 
