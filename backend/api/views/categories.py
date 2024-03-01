@@ -1,5 +1,5 @@
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.filters import SearchFilter
 
 from api.serializers import (
@@ -11,7 +11,7 @@ from api.models import Category, Occupation, Theme
 
 
 class CategoryListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = CategorySerializer
     filter_backends = [SearchFilter]
     search_fields = ["title"]
@@ -22,13 +22,13 @@ class CategoryListView(ListAPIView):
 
 
 class InterestListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
 
 
 class OccupationListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = OccupationSerializer
     filter_backends = [SearchFilter]
     search_fields = ["title"]
@@ -37,7 +37,7 @@ class OccupationListView(ListAPIView):
 
 
 class ThemeListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = ThemeSerializer
     filter_backends = [SearchFilter]
     search_fields = ["title"]
