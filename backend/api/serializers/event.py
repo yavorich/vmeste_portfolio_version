@@ -83,7 +83,7 @@ class EventMixin:
         return serializer.data
 
     def get_state(self, obj: Event):
-        if localtime() + timedelta(hours=1) < obj.start_datetime:
+        if localtime() < obj.start_datetime:
             return EventState.BEFORE
         if localtime() > obj.end_datetime:
             return EventState.AFTER
