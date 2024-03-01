@@ -59,6 +59,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         event = await self.add_user_info(event)
+        with open("log.txt", "a") as f:
+            f.write(f"Sending message from chat_message to {self.user}: {event}\n")
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
@@ -101,17 +103,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_serializer = MessageSerializer(
             instance=message, context={"user": self.user, "headers": headers}
         )
+        with open("log.txt", "a") as f:
+            f.write(f"Sending message from consumer: {message_serializer.data}\n")
 
         send_ws_message(message_serializer.data, chat.pk)
 
     async def join_chat(self, data):
         group_name = "chat_%s" % data["event_id"]
+        with open("log.txt", "a") as f:
+            f.write(f"{self.user} connected to group: {group_name}\n")
         await self.channel_layer.group_add(
             group_name,
             self.channel_name,
         )
 
     async def leave_chat(self, data):
+        with open("log.txt", "a") as f:
+            f.write(f"{self.user} disconnected from group: {data['group']}\n")
         await self.channel_layer.group_discard(
             data["group"],
             self.channel_name,
@@ -159,4 +167,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             .filter_not_expired()
             .filter(is_active=True, is_draft=False)
         )
-        return ["chat_%s" % id for id in events.values_list("id")]
+        groups = ["chat_%s" % id for id in events.values_list("id")]
+        names = [title for title in events.values_list("title", flat=True)]
+        with open("log.txt", "a") as f:
+            f.write(f"{self.user} groups: {names}\n")
+        return groups
