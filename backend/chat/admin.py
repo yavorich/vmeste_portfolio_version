@@ -65,6 +65,3 @@ class ChatAdmin(admin.ModelAdmin):
         if messages.exists():
             return messages.latest().sent_at
         return None
-
-    def has_delete_permission(self, request, obj=None) -> bool:
-        return False
