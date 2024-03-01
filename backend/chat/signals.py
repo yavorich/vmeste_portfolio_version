@@ -33,7 +33,7 @@ def send_info_message(instance: EventParticipant, join: bool):
 def send_join_message(sender, instance: EventParticipant, created: bool, **kwargs):
     if created:
         print("USER JOINED")
-        # add_user_to_group(instance.event) - will be called from client
+        add_user_to_group(instance.event)  # лучше с фронта !!!
         send_info_message(instance, join=True)
 
 
