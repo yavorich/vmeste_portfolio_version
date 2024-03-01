@@ -56,3 +56,11 @@ def create_chat_group(sender, instance: Event, created: bool, **kwargs):
 @receiver(post_delete, sender=Event)
 def delete_chat_group(sender, instance: Event, **kwargs):
     remove_user_from_group(instance)
+
+
+@receiver(post_delete, sender=Chat)
+def delete_chat_event(sender, instance: Chat, **kwargs):
+    try:
+        instance.event.delete()
+    except Event.DoesNotExist:
+        pass
