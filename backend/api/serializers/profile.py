@@ -31,9 +31,7 @@ class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         avatar = validated_data.get("avatar", None)
-        if not isinstance(
-            avatar, (InMemoryUploadedFile)
-        ):
+        if not isinstance(avatar, (InMemoryUploadedFile)):
             validated_data.pop("avatar", None)
         return super().update(instance, validated_data)
 
@@ -105,13 +103,15 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
         return obj.notifications.filter(read=False).count()
 
     def get_stats(self, obj: User):
-        participation = EventParticipant.objects.filter(user=obj)
-        organized = participation.filter(is_organizer=True).count()
-        past_events = Event.objects.filter(
-            start_datetime__gte=localtime() - timedelta(hours=2)
+        participation = EventParticipant.objects.filter(
+            user=obj, event__is_active=True, event__is_draft=False
         )
-        past_participation = participation.filter(event__in=past_events)
-        signed = participation.count()
+        past_participation = participation.filter(
+            is_organizer=False,
+            event__start_datetime__gte=localtime() - timedelta(hours=2),
+        )
+        organized = participation.filter(is_organizer=True).count()
+        signed = participation.count() - organized
         visited = past_participation.filter(has_confirmed=True).count()
         skipped = past_participation.count() - visited
         return {
