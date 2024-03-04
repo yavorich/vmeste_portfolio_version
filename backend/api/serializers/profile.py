@@ -108,7 +108,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
         )
         past_participation = participation.filter(
             is_organizer=False,
-            event__start_datetime__gte=localtime() - timedelta(hours=2),
+            event__start_datetime__lte=localtime() - timedelta(hours=2),
         )
         organized = participation.filter(is_organizer=True).count()
         signed = participation.count() - organized
