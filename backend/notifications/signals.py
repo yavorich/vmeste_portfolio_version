@@ -1,3 +1,4 @@
+from asgiref.sync import async_to_sync
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import timedelta, localtime
@@ -6,9 +7,13 @@ from celery.signals import before_task_publish
 from django_celery_results.models import TaskResult
 
 from config.celery import celery_app
-from api.models import Event
-from notifications.models import Notification
-from notifications.tasks import create_notifications_task, send_push_notifications_task
+from api.models import Event, EventParticipant
+from notifications.models import Notification, UserNotification
+from notifications.tasks import (
+    create_notifications_task,
+    send_push_notifications_task,
+    send_push_notifications,
+)
 from notifications.services import PushGroup
 
 
@@ -27,6 +32,25 @@ def create_task_result_on_publish(sender=None, headers=None, body=None, **kwargs
         task_args=headers["argsrepr"],
         task_kwargs=headers["kwargsrepr"],
     )
+
+
+@receiver([post_save], sender=EventParticipant)
+def send_join_event_notification(
+    sender, instance: EventParticipant, created: bool, **kwargs
+):
+    if created:
+        title = instance.event.title
+        if instance.is_organizer:
+            body = f'Вы успешно создали событие: "{title}"'
+        else:
+            body = f'Вы успешно записались на событие: "{title}"'
+        notification = UserNotification.objects.create(
+            user=instance.user,
+            title=instance.event.title,
+            event=instance.event,
+            body=body,
+        )
+        async_to_sync(send_push_notifications([instance.user], [notification]))
 
 
 @receiver([post_save], sender=Event)
@@ -66,7 +90,7 @@ def revoke_existing_remind_notifications(instance):
 
 
 @receiver(post_save, sender=Notification)
-def send_push_notifications(sender, instance, **kwargs):
+def send_group_push_notifications(sender, instance, **kwargs):
     groups = {
         Notification.Type.ADMIN: [PushGroup.ALL],
         Notification.Type.EVENT_REC: [PushGroup.RECS_ENABLED],

@@ -42,13 +42,25 @@ class UserNotification(models.Model):
         Notification,
         verbose_name="Уведомление",
         related_name="receivers",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     user = models.ForeignKey(
         User,
         verbose_name="Пользователь",
         related_name="notifications",
         on_delete=models.CASCADE,
+    )
+    title = models.CharField(_("Заголовок"), max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    event = models.ForeignKey(
+        verbose_name=_("Событие"),
+        to=Event,
+        on_delete=models.CASCADE,
+        related_name="user_notifications",
+        blank=True,
+        null=True,
     )
     body = models.TextField(_("Текст"), max_length=500)
     read = models.BooleanField(_("Прочитано"), default=False)
