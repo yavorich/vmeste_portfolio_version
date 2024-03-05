@@ -75,6 +75,7 @@ class SenderSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    event_name = serializers.CharField(source="chat.event.title")
     sender = SenderSerializer()
     is_mine = serializers.SerializerMethodField()
     sent_at_time = serializers.SerializerMethodField()
