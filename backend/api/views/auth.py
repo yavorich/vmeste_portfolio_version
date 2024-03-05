@@ -15,6 +15,7 @@ from api.serializers import (
 )
 from api.services import send_confirmation_code
 from api.models import User, Subscription
+from config.settings import DEBUG
 
 
 class AuthSendCodeView(APIView):
@@ -79,19 +80,22 @@ class AuthView(APIView):
         data = serializer.data
         return getattr(self, f"_{_type}")(request, data)
 
+    @staticmethod
+    def validate_code(user, data):
+        if data["confirmation_code"] == ("11111" if DEBUG else user.confirmation_code):
+            return
+        raise ValidationError({"error": "Неверный код подтверждения"})
+
     def _mail(self, request, data):
         user = User.objects.get(email=data["email"])
-        if user.confirmation_code == data["confirmation_code"]:
-            user.email_is_confirmed = True
-            user.save()
+        self.validate_code(user, data)
+        user.email_is_confirmed = True
+        user.save()
         return Response({"success": "Почта подтверждена"})
 
     def _phone(self, request, data):
         user = authenticate(request, phone_number=data["phone_number"])
-        if user.confirmation_code != data["confirmation_code"]:
-            return ValidationError(
-                {"error": "Confirmation code is not valid"},
-            )
+        self.validate_code(user, data)
         login(
             request,
             user,
