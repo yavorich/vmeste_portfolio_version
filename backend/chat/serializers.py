@@ -85,6 +85,7 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "chat",
+            "event_name",
             "sender",
             "text",
             "sent_at_time",
