@@ -58,8 +58,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.leave_chat(text_data_json)
 
     async def chat_message(self, event):
-        event = await self.add_user_info(event)
         with open("log.txt", "a") as f:
+            event = await self.add_user_info(event)
             f.write(f"Sending message from chat_message to {self.user}: {event}\n")
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
