@@ -10,8 +10,7 @@ class PhoneAuthSendCodeSerializer(serializers.Serializer):
     confirmation_code = serializers.SerializerMethodField()
 
     def get_confirmation_code(self, obj):
-        return "11111"
-        # return generate_confirmation_code()
+        return generate_confirmation_code()
 
 
 class EmailAuthSendCodeSerializer(serializers.ModelSerializer):
