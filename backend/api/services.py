@@ -4,6 +4,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from api.models import Event
 from api.tasks import send_mail_confirmation_code
+from config.settings import DEBUG
 
 
 def generate_confirmation_code():
@@ -11,9 +12,9 @@ def generate_confirmation_code():
 
 
 def send_confirmation_code(user, confirm_type):
-    if confirm_type == "mail":
+    if confirm_type == "mail" and not DEBUG:
         send_mail_confirmation_code.delay(user.email, user.confirmation_code)
-    elif confirm_type == "phone":
+    elif confirm_type == "phone" and not DEBUG:
         pass  # нужен смс-сервис
 
 
