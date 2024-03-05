@@ -74,4 +74,4 @@ class UserNotification(models.Model):
             return f"{self.title[:max_length-3]}..."
 
     def __str__(self) -> str:
-        return f"{self.notification.title}: для {self.user.get_full_name()}"
+        return f"{self.title}: для {self.user.get_full_name()}"
