@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, login
 from django.utils.timezone import localtime
@@ -76,25 +77,26 @@ class AuthView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         data = serializer.data
-        if _type == "phone":
-            user = authenticate(request, phone_number=data["phone_number"])
-            if user.confirmation_code == data["confirmation_code"]:
-                login(
-                    request,
-                    user,
-                    backend="api.backends.auth.PhoneAuthBackend",
-                )
-            else:
-                return Response(
-                    {"error": "Confirmation code is not valid"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        elif _type == "mail":
-            user = User.objects.get(email=data["email"])
-            if user.confirmation_code == data["confirmation_code"]:
-                user.email_is_confirmed = True
-                user.save()
+        return getattr(self, f"_{_type}")(request, data)
 
+    def _mail(self, request, data):
+        user = User.objects.get(email=data["email"])
+        if user.confirmation_code == data["confirmation_code"]:
+            user.email_is_confirmed = True
+            user.save()
+        return Response({"success": "Почта подтверждена"})
+
+    def _phone(self, request, data):
+        user = authenticate(request, phone_number=data["phone_number"])
+        if user.confirmation_code != data["confirmation_code"]:
+            return ValidationError(
+                {"error": "Confirmation code is not valid"},
+            )
+        login(
+            request,
+            user,
+            backend="api.backends.auth.PhoneAuthBackend",
+        )
         refresh = RefreshToken.for_user(user)
         data = {
             "id": user.id,
