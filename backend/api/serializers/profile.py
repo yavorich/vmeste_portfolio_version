@@ -94,6 +94,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
             "categories",
             "about_me",
             "stats",
+            "email_is_confirmed",
         ]
 
     def get_age(self, obj: User):
