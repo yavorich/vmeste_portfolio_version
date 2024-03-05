@@ -33,7 +33,11 @@ def send_push_notifications_task(pk, groups):
     for group in groups:
         for user in users[group]:
             user_notification = UserNotification.objects.create(
-                user=user, notification=notification, body=body[group]
+                user=user,
+                notification=notification,
+                title=notification.title,
+                event=event,
+                body=body[group],
             )
             user_notifications.append(user_notification)
 
@@ -50,7 +54,7 @@ async def send_push_notifications(users, notifications):
     # async for user, notification in zip(users, notifications):
     #     push_token = PushToken.objects.filter(user=user)
     #     await send_fcm_push(
-    #         push_token.token, notification.notification.title, notification.body
+    #         push_token.token, notification.title, notification.body
     #     )
 
 

@@ -18,7 +18,7 @@ class NotificationListUpdateApiView(BulkUpdateModelMixin, ListAPIView):
 
     def get_queryset(self):
         return UserNotification.objects.filter(user=self.request.user).order_by(
-            "-notification__created_at"
+            "-created_at"
         )
 
     def get_serializer_class(self):
