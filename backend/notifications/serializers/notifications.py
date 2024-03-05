@@ -24,6 +24,7 @@ class NotificationSerializer(ModelSerializer):
 
 
 class UserNotificationListSerializer(ModelSerializer):
+    event = NotificationEventSerializer()
 
     class Meta:
         model = UserNotification
