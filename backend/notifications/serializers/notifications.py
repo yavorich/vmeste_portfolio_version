@@ -24,12 +24,10 @@ class NotificationSerializer(ModelSerializer):
 
 
 class UserNotificationListSerializer(ModelSerializer):
-    created_at = DateTimeField(source="notification.created_at")
-    event = NotificationEventSerializer(source="notification.event")
 
     class Meta:
         model = UserNotification
-        fields = ["id", "read", "created_at", "event", "body"]
+        fields = ["id", "read", "created_at", "event", "title", "body"]
 
 
 class UserNotificationBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer):
