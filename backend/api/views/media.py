@@ -1,6 +1,8 @@
 from rest_framework_bulk.mixins import BulkCreateModelMixin
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.response import Response
+from rest_framework import status
 
 from api.permissions import (
     IsEventParticipant,
@@ -42,5 +44,11 @@ class EventMediaViewSet(
     def get_serializer_class(self):
         return self.serializer_class[self.request.method]
 
-    def post(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+    def get_request_data(self):
+        return [{"file": e} for e in self.request.data.getlist("files")]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=self.get_request_data(), many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_bulk_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
