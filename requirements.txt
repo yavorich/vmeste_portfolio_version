@@ -19,3 +19,4 @@ httpx
 Pillow==10.1.0
 psycopg2-binary==2.9.9
 uvicorn[standard]==0.24.0.post1
+moviepy==1.0.3
