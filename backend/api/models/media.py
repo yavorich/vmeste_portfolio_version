@@ -16,6 +16,8 @@ class EventMedia(models.Model):
 
     event = models.ForeignKey(Event, related_name="media", on_delete=models.CASCADE)
     file = models.FileField(_("Файл"), upload_to=get_upload_path)
+    mimetype = models.CharField(max_length=31, blank=True, null=True)
+    preview = models.FileField(blank=True, null=True)
     uploaded_at = models.DateTimeField(_("Дата загрузки"), auto_now_add=True)
     author = models.ForeignKey(
         User, verbose_name=_("Автор"), related_name="media", on_delete=models.CASCADE
@@ -24,3 +26,20 @@ class EventMedia(models.Model):
     class Meta:
         verbose_name = "Медиафайл"
         verbose_name_plural = "Медиафайлы"
+
+    # def generate_video_preview(self):
+    #     video_path = self.file.path
+    #     clip = VideoFileClip(video_path)
+    #     preview_path = os.path.join(
+    #         MEDIA_ROOT, "previews", self.file.name, "_preview.png"
+    #     )
+    #     clip.save_frame(
+    #         preview_path, t=clip.duration / 2
+    #     )  # Генерация превью из середины видео
+    #     return preview_path
+
+    # def save(self, *args, **kwargs):
+    #     self.mimetype = mimetypes.guess_type(self.file.url)[0]
+    #     if "video" in self.mimetype:
+    #         self.preview = self.generate_video_preview()
+    #     return super().save(*args, **kwargs)

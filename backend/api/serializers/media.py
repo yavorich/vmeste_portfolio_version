@@ -2,6 +2,7 @@ from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMi
 from rest_framework.serializers import (
     ModelSerializer,
     FileField,
+    SerializerMethodField,
 )
 
 from api.models import EventMedia
@@ -27,11 +28,18 @@ class EventMediaBulkCreateSerializer(BulkSerializerMixin, ModelSerializer):
 
 
 class EventMediaListSerializer(ModelSerializer):
+    size = SerializerMethodField()
 
     class Meta:
         model = EventMedia
         fields = [
             "id",
             "file",
+            "size",
+            "mimetype",
+            "preview",
             "uploaded_at",
         ]
+
+    def get_size(self, obj: EventMedia):
+        return obj.file.size
