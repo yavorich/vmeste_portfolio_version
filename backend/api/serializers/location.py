@@ -68,7 +68,7 @@ class LocationDocumentSerializer(DocumentSerializer):
 
 
 class LocationCreateSerializer(ModelSerializer):
-    cover = FileField(validators=[validate_file_size])
+    cover = FileField(validators=[validate_file_size(max_size_mb=10)])
 
     class Meta:
         model = Location

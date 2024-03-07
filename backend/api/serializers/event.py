@@ -211,7 +211,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     address = serializers.CharField(write_only=True)
     latitude = serializers.FloatField(write_only=True)
     longitude = serializers.FloatField(write_only=True)
-    cover = CustomFileField(validators=[validate_file_size], read_only=False)
+    cover = CustomFileField(
+        validators=[validate_file_size(max_size_mb=10)], read_only=False
+    )
 
     class Meta:
         model = Event
