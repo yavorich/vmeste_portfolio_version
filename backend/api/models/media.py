@@ -15,9 +15,9 @@ class EventMedia(models.Model):
         VIDEO = "video", "Видео"
 
     event = models.ForeignKey(Event, related_name="media", on_delete=models.CASCADE)
-    file = models.FileField(_("Файл"), upload_to=get_upload_path)
+    file = models.FileField(_("Файл"), upload_to=get_upload_path, max_length=511)
     mimetype = models.CharField(max_length=31, blank=True, null=True)
-    preview = models.FileField(blank=True, null=True)
+    preview = models.FileField(blank=True, null=True, max_length=511)
     uploaded_at = models.DateTimeField(_("Дата загрузки"), auto_now_add=True)
     author = models.ForeignKey(
         User, verbose_name=_("Автор"), related_name="media", on_delete=models.CASCADE
