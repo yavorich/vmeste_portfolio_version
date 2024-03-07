@@ -44,6 +44,7 @@ class SelfProfileViewSet(
         return context
 
     def get_object(self):
+        print(self.request.data)
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, pk=self.request.user.pk)
         self.check_object_permissions(self.request, obj)
