@@ -75,7 +75,7 @@ def delete_blocked_user_events(sender, instance: User, **kwargs):
 @receiver(post_save, sender=EventMedia)
 def add_media_info(sender, instance: EventMedia, created: bool, **kwargs):
     if created:
-        instance.mimetype = mimetypes.guess_type(instance.file.url)[0]
-        if "video" in instance.mimetype:
+        instance.mimetype = mimetypes.guess_type(instance.file.url)[0].split("/")[0]
+        if instance.mimetype == "video":
             instance.preview = generate_video_preview(instance)
         instance.save()
