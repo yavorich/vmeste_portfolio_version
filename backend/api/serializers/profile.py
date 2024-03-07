@@ -11,9 +11,7 @@ from core.utils import validate_file_size
 
 
 class SelfProfilePartialUpdateSerializer(serializers.ModelSerializer):
-    avatar = serializers.FileField(
-        validators=[validate_file_size(max_size_mb=10)], required=False
-    )
+    avatar = serializers.FileField(validators=[validate_file_size], required=False)
 
     class Meta:
         model = User

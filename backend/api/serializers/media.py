@@ -10,7 +10,7 @@ from core.utils import validate_file_size
 
 
 class FileBulkListSerializer(BulkListSerializer):
-    file = FileField(validators=[validate_file_size(max_size_mb=200)], read_only=False)
+    file = FileField(validators=[validate_file_size], read_only=False)
 
 
 class EventMediaBulkCreateSerializer(BulkSerializerMixin, ModelSerializer):
