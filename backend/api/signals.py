@@ -21,8 +21,11 @@ def delete_organized_events(sender, instance: EventParticipant, **kwargs):
 
 
 @receiver(post_delete, sender=Event)
-def delete_event_cover(sender, instance: Event, **kwargs):
+def delete_event_cover_and_media(sender, instance: Event, **kwargs):
     delete_file(instance, "cover")
+    for media in instance.media.all():
+        delete_file(media, "file")
+        delete_file(media, "preview")
 
 
 @receiver(post_delete, sender=Event)
