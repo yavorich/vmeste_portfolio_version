@@ -32,7 +32,7 @@ class UserManager(BaseUserManager):
     def create_user(self, phone_number, password=None, **extra_fields):
         if not phone_number:
             raise ValueError("The phone number must be set")
-        phone_number = self.normalize_phone_number(phone_number)
+        phone_number = self.normalize_phone_number(str(phone_number))
         user = self.model(phone_number=phone_number, password=password, **extra_fields)
         if password is None:
             user.set_unusable_password()
