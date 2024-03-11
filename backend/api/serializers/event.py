@@ -305,8 +305,10 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data = self.prepare_location(validated_data)
         self.validate_start_datetime(validated_data, hours=2)
         self.validate_age(validated_data)
-        if validated_data["cover"] is None:
-            raise ValidationError({"error": "Обложка события не выбрана"})
+        if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):
+            raise ValidationError(
+                {"error": "Обложка события не является корректным файлом"}
+            )
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
