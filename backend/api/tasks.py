@@ -13,3 +13,8 @@ def send_mail_confirmation_code(email, code):
     }
 
     return send_mail(**msg_data)
+
+
+@shared_task
+def send_phone_confirmation_code(phone, code):
+    pass

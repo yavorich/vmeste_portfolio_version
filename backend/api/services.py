@@ -5,19 +5,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from api.models import Event, EventMedia
-from api.tasks import send_mail_confirmation_code
-from config.settings import DEBUG, MEDIA_ROOT
+from config.settings import MEDIA_ROOT
 
 
 def generate_confirmation_code():
     return "".join([str(random.randint(0, 9)) for _ in range(5)])
-
-
-def send_confirmation_code(user, confirm_type):
-    if confirm_type == "mail" and not DEBUG:
-        send_mail_confirmation_code.delay(user.email, user.confirmation_code)
-    elif confirm_type == "phone" and not DEBUG:
-        pass  # нужен смс-сервис
 
 
 def get_event_object(id):
