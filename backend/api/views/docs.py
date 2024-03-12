@@ -1,17 +1,16 @@
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from django.shortcuts import get_object_or_404, get_list_or_404
-from django.utils.timezone import localtime
 
 from api.models import Docs
 from api.serializers import DocsSerializer
 
 
-class DocsViewSet(ListModelMixin, GenericViewSet):
+class DocsViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = DocsSerializer
 
@@ -23,18 +22,14 @@ class DocsViewSet(ListModelMixin, GenericViewSet):
         name = self.request.query_params.get("name")
         return get_object_or_404(Docs, name=name)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.request.user
+        return context
+
     @action(methods=["post"], detail=False)
-    def apply(self, request, pk=None):
-        user = request.user
-        obj = self.get_object()
-        if obj.name == Docs.Name.AGREEMENT and not user.agreement_applied_at:
-            user.agreement_applied_at = localtime()
-        if obj.name == Docs.Name.RULES:
-            user.event_rules_applied = True
-        if obj.name == Docs.Name.OFFER:
-            user.offer_applied = True
-        user.save()
-        return Response(f"{obj.name} applied.", status=HTTP_200_OK)
+    def apply(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
