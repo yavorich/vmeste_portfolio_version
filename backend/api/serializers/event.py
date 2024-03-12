@@ -89,6 +89,12 @@ class EventMixin:
             return EventState.AFTER
         return EventState.WHILE
 
+    def get_media(self, obj: Event):
+        return obj.is_valid_media_time()
+
+    def get_sign_and_edit(self, obj: Event):
+        return obj.is_valid_sign_and_edit_time()
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         auth_only_fields = [
@@ -133,6 +139,8 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     am_i_registered = serializers.SerializerMethodField()
     are_there_free_places = serializers.SerializerMethodField()
     am_i_confirmed = serializers.SerializerMethodField()
+    media = serializers.SerializerMethodField()
+    sign_and_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -165,6 +173,8 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "are_there_free_places",
             "did_organizer_marking",
             "am_i_confirmed",
+            "media",
+            "sign_and_edit",
             "is_draft",
         ]
 
