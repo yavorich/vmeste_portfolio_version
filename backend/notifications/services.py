@@ -49,7 +49,7 @@ def get_push_notification_users_list(group, event=None):
         organizer = event.organizer
         return [organizer] if organizer.sending_push else []
     if group == PushGroup.PARTICIPANTS:
-        return users.filter(events__event=event)
+        return users.filter(events__event=event, events__is_organizer=False)
 
 
 async def send_fcm_push(token, title, body):
