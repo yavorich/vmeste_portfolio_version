@@ -213,8 +213,8 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
 
 
 class EventCreateUpdateSerializer(serializers.ModelSerializer):
-    country = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all())
-    city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all())
+    country_name = serializers.CharField(write_only=True)
+    city_name = serializers.CharField(write_only=True)
     theme = serializers.PrimaryKeyRelatedField(queryset=Theme.objects.all())
     categories = serializers.ListField(child=serializers.IntegerField())
     location_name = serializers.CharField(write_only=True)
@@ -229,15 +229,15 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "id",
             "cover",
             "title",
-            "country",
-            "city",
-            "date",
-            "start_time",
-            "end_time",
+            "country_name",
+            "city_name",
             "location_name",
             "address",
             "latitude",
             "longitude",
+            "date",
+            "start_time",
+            "end_time",
             "max_age",
             "min_age",
             "theme",
@@ -252,42 +252,38 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {f: {"required": True} for f in fields}
         extra_kwargs["cover"].update({"read_only": False})
 
-    @staticmethod
-    def get_value(key, validated_data: dict, instance: Event | None = None):
-        return validated_data.get(key, getattr(instance, key, None))
-
-    @staticmethod
-    def pop_value(key, validated_data: dict, instance: Event | None = None):
-        return validated_data.pop(key, getattr(instance, key, None))
-
     def prepare_location(self, validated_data: dict, instance: Event | None = None):
-        current_location = getattr(instance, "location", None)
-        location, created = Location.objects.get_or_create(
-            country=self.get_value("country", validated_data, instance),
-            city=self.get_value("city", validated_data, instance),
-            name=validated_data.pop(
-                "location_name", getattr(current_location, "name", None)
-            ),
-            address=self.pop_value("address", validated_data, current_location),
+        validated_data["country"], _ = Country.objects.get_or_create(
+            name=validated_data.pop("country_name")
+        )
+        validated_data["city"], _ = City.objects.get_or_create(
+            name=validated_data.pop("city_name"), country=validated_data["country"]
+        )
+        cover = (
+            validated_data["cover"]
+            if isinstance(validated_data["cover"], InMemoryUploadedFile)
+            else instance.location.cover
+        )
+
+        validated_data["location"], _ = Location.objects.get_or_create(
+            country=validated_data["country"],
+            city=validated_data["city"],
+            address=validated_data.pop("address"),
+            name=validated_data.pop("location_name"),
             defaults={
-                "latitude": self.pop_value(
-                    "latitude", validated_data, current_location
-                ),
-                "longitude": self.pop_value(
-                    "longitude", validated_data, current_location
-                ),
+                "latitude": validated_data.pop("latitude"),
+                "longitude": validated_data.pop("longitude"),
                 "status": Location.Status.UNKNOWN,
-                "cover": self.get_value("cover", validated_data, instance),
+                "cover": cover,
             },
         )
 
-        validated_data["location"] = location
         return validated_data
 
-    def validate_start_datetime(self, validated_data, hours, instance=None):
+    def validate_start_datetime(self, validated_data, hours):
         start_datetime = datetime.combine(
-            self.get_value("date", validated_data, instance),
-            self.get_value("start_time", validated_data, instance),
+            validated_data["date"],
+            validated_data["start_time"],
             tzinfo=localtime().tzinfo,
         )
         if start_datetime < localtime() + timedelta(hours=hours):
@@ -295,18 +291,16 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 {"error": f"Минимальное время до начала мероприятия - {hours} часов"}
             )
 
-    def validate_age(self, validated_data, instance=None):
-        min_age = self.get_value("min_age", validated_data, instance)
-        max_age = self.get_value("max_age", validated_data, instance)
-        if min_age >= max_age:
+    def validate_age(self, validated_data):
+        if validated_data["min_age"] >= validated_data["max_age"]:
             raise ValidationError(
                 {"error": "Минимальный возраст должен быть меньше максимального"}
             )
-        if min_age < 12:
+        if validated_data["min_age"] < 12:
             raise ValidationError(
                 {"error": "Минимальный возраст не может быть меньше 12"}
             )
-        if max_age > 100:
+        if validated_data["max_age"] > 100:
             raise ValidationError(
                 {"error": "Максимальный возраст не может быть больше 100"}
             )
@@ -323,8 +317,8 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data, instance=instance)
-        self.validate_start_datetime(validated_data, hours=2, instance=instance)
-        self.validate_age(validated_data, instance=instance)
+        self.validate_start_datetime(validated_data, hours=2)
+        self.validate_age(validated_data)
         if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):
             validated_data.pop("cover", None)
         return super().update(instance, validated_data)
