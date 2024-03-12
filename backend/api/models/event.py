@@ -210,7 +210,7 @@ class Event(models.Model):
             )
         return self.total_male + self.total_female - self.get_participants().count()
 
-    def is_valid_sign_time(self) -> bool:
+    def is_valid_sign_and_edit_time(self) -> bool:
         start = self.start_datetime
         return localtime() <= start - timedelta(hours=1)
 
