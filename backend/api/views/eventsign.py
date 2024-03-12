@@ -40,7 +40,7 @@ class EventPublishedSignViewSet(CreateModelMixin, GenericViewSet):
                 {"error": "На данное мероприятие не осталось свободных мест"}
             )
 
-        if not obj.is_valid_sign_time():
+        if not obj.is_valid_sign_and_edit_time():
             raise ValidationError({"error": "Время записи на мероприятие истекло"})
 
         EventParticipant.objects.create(event=obj, user=self.request.user)
@@ -66,7 +66,7 @@ class EventPublishedSignViewSet(CreateModelMixin, GenericViewSet):
             )
 
         if participant.is_organizer:
-            if not obj.is_valid_sign_time():
+            if not obj.is_valid_sign_and_edit_time():
                 raise ValidationError(
                     {
                         "error": "Нельзя отменить: до начала события осталось"
