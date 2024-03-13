@@ -8,7 +8,7 @@ app_name = "api"
 router = DefaultRouter()
 router.register(
     "events/published",
-    views.EventPublishedSignViewSet,
+    views.EventPublishedViewSet,
     basename="event-published",
 )
 router.register(

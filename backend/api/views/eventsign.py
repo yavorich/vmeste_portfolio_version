@@ -1,129 +1,51 @@
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import UpdateModelMixin
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework.exceptions import ValidationError
 
 from api.services import get_event_object
-from api.models import Event, EventParticipant
-from api.serializers import SupportMessageCreateSerializer
+from api.models import Event
+from api.serializers import (
+    EventSignSerializer,
+    EventCancelSerializer,
+    EventReportSerializer,
+    EventConfirmSerializer,
+)
 
 
-class EventPublishedSignViewSet(CreateModelMixin, GenericViewSet):
+class EventPublishedViewSet(UpdateModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated]
+    serializer_class = {
+        "sign": EventSignSerializer,
+        "cancel": EventCancelSerializer,
+        "report": EventReportSerializer,
+        "confirm": EventConfirmSerializer,
+    }
     queryset = Event.objects.all()
 
     def get_object(self):
         return get_event_object(self.kwargs["pk"])
 
-    @action(detail=True, methods=["post"])
-    def sign(self, request, pk=None):
-        user = request.user
-        obj = self.get_object()
-        participant = obj.get_participant(user)
+    def get_serializer_class(self):
+        return self.serializer_class[self.action]
 
-        if obj.is_draft:
-            raise ValidationError({"error": "Событие ещё не опубликовано"})
-
-        if not obj.is_active:
-            raise ValidationError({"error": "Событие удалено или заблокировано"})
-
-        if participant is not None:
-            raise ValidationError(
-                {"error": "Пользователь уже записан или является организатором"}
-            )
-
-        if obj.get_free_places(user.gender) == 0:
-            raise ValidationError(
-                {"error": "На данное мероприятие не осталось свободных мест"}
-            )
-
-        if not obj.is_valid_sign_and_edit_time():
-            raise ValidationError({"error": "Время записи на мероприятие истекло"})
-
-        EventParticipant.objects.create(event=obj, user=self.request.user)
-        return Response(
-            {"message": "Запись на мероприятие прошла успешно"},
-            status=status.HTTP_201_CREATED,
-        )
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.request.user
+        return context
 
     @action(detail=True, methods=["post"])
-    def cancel(self, request, pk=None):
-        user = request.user
-        obj = self.get_object()
-        participant = obj.get_participant(user)
-
-        if obj.is_draft or not obj.is_active:
-            raise ValidationError(
-                {"error": "Мероприятие уже отменено или заблокировано"}
-            )
-
-        if participant is None:
-            raise ValidationError(
-                {"error": "Пользователь не является участником/организатором"}
-            )
-
-        if participant.is_organizer:
-            if not obj.is_valid_sign_and_edit_time():
-                raise ValidationError(
-                    {
-                        "error": "Нельзя отменить: до начала события осталось"
-                        + " менее 1 часа"
-                    }
-                )
-
-            obj.is_draft = True
-            obj.save()
-            return Response(
-                {"message": "Мероприятие отменено и добавлено в черновики"},
-                status=status.HTTP_201_CREATED,
-            )
-
-        participant.delete()
-        return Response(
-            {"message": "Запись на мероприятие отменена"},
-            status=status.HTTP_201_CREATED,
-        )
+    def sign(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
     @action(detail=True, methods=["post"])
-    def report(self, request, pk=None):
-        user = request.user
-        obj = self.get_object()
-        participant = obj.get_participant(user)
-
-        if participant and participant.is_organizer:
-            raise ValidationError(
-                {"error": "Вы не можете пожаловаться на своё событие"}
-            )
-
-        serializer = SupportMessageCreateSerializer(
-            data=request.data, context={"event": obj, "user": user}
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            {"message": "Вы успешно пожаловались на событие"},
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
+    def cancel(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
     @action(detail=True, methods=["post"])
-    def confirm(self, request, pk=None):
-        user = request.user
-        obj = self.get_object()
-        participant = obj.get_participant(user)
+    def report(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
-        if participant:
-            if participant.is_organizer:
-                raise ValidationError({"error": "Вы являетесь организатором"})
-            participant.has_confirmed = True
-            participant.save()
-            return Response(
-                {"message": "Вы подтвердили своё присутствие"},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            raise ValidationError({"error": "Вы не являетесь участником события"})
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)

@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from rest_framework.serializers import Serializer, ModelSerializer
+from rest_framework.serializers import (
+    Serializer,
+    ModelSerializer,
+)
 from django.utils.timezone import localtime, datetime, timedelta
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
@@ -25,6 +28,7 @@ from api.documents import EventDocument
 from api.models import EventFastFilter
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
+from .support import SupportMessageCreateSerializer
 
 
 class CharacterSeparatedField(serializers.ListField):
@@ -361,3 +365,81 @@ class FilterQuerySerializer(Serializer):
             filters = EventFastFilter.objects.filter(id__in=fast_filters)
             data["fast_filters"] = EventFastFilterSerializer(filters, many=True).data
         return data
+
+
+class EventSignSerializer(ModelSerializer):
+    class Meta:
+        model = Event
+        fields = []
+
+    def update(self, instance: Event, validated_data):
+        if instance.get_free_places(gender=self.context["user"].gender) == 0:
+            raise ValidationError(
+                {"error": "На данное мероприятие не осталось свободных мест"}
+            )
+        if not instance.is_valid_sign_and_edit_time():
+            raise ValidationError({"error": "Время записи на мероприятие истекло"})
+        EventParticipant.objects.get_or_create(
+            event=instance, user=self.context["user"]
+        )
+        return instance
+
+
+class EventCancelSerializer(ModelSerializer):
+    class Meta:
+        model = Event
+        fields = []
+
+    def update(self, instance: Event, validated_data):
+        if not instance.is_valid_sign_and_edit_time():
+            raise ValidationError({"error": "Время отмены записи/события истекло"})
+
+        participant = instance.get_participant(user=self.context["user"])
+        if not participant:
+            raise ValidationError(
+                {"error": "Пользователь не является участником/организатором события"}
+            )
+
+        if participant.is_organizer:
+            instance.is_draft = True
+            instance.save()
+        else:
+            participant.delete()
+        return instance
+
+
+class EventReportSerializer(ModelSerializer):
+    class Meta:
+        model = Event
+        fields = []
+
+    def update(self, instance: Event, validated_data):
+        request = self.context["request"]
+        user = self.context["user"]
+        if instance.organizer == user:
+            raise ValidationError(
+                {"error": "Вы не можете пожаловаться на своё событие"}
+            )
+        serializer = SupportMessageCreateSerializer(
+            data=request.data, context={"event": instance, "user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return instance
+
+
+class EventConfirmSerializer(ModelSerializer):
+
+    class Meta:
+        model = Event
+        fields = []
+
+    def update(self, instance: Event, validated_data):
+        participant = instance.get_participant(user=self.context["user"])
+        if not participant:
+            raise ValidationError(
+                {"error": "Пользователь не является участником/организатором"}
+            )
+        participant.has_confirmed = True
+        participant.save()
+        return instance
