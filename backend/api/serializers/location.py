@@ -83,13 +83,6 @@ class LocationCreateSerializer(ModelSerializer):
             "city",
         ]
 
-    def validate(self, attrs):
-        lat = attrs["latitude"]
-        lon = attrs["longitude"]
-        if not (-90 < lat < 90) or not (-180 < lon < 180):
-            raise ValidationError({"error": "Неверные координаты"})
-        return super().validate(attrs)
-
     def create(self, validated_data):
         if Location.objects.filter(
             **{
