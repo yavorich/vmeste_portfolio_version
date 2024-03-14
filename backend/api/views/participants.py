@@ -7,7 +7,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.timezone import localtime, timedelta
 
@@ -64,18 +63,19 @@ class EventParticipantView(
             return Event.objects.all()
 
         event = self.get_object()
-        return event.participants.all()
+        return event.participants.filter(is_organizer=False)
 
     def get_request_data(self):
-        return [{"id": e} for e in self.request.data["id"]]
+        participants_ids = self.get_queryset().values_list("id", flat=True)
+        if self.request.method == "PATCH":
+            return [
+                {"id": e, "has_confirmed": e in self.request.data["id"]}
+                for e in participants_ids
+            ]
+        return [{"id": e for e in self.request.data["id"]}]
 
     def filter_queryset(self, queryset):
-        queryset = queryset.filter(id__in=self.request.data["id"])
-
-        if queryset.filter(is_organizer=True).exists():
-            raise ValidationError({"error": "Event organizer cannot be deleted"})
-
-        return super().filter_queryset(queryset)
+        return queryset.filter(id__in=self.request.data["id"])
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -101,7 +101,7 @@ class EventParticipantView(
 
         # restrict the update to the filtered queryset
         serializer = self.get_serializer(
-            self.filter_queryset(self.get_queryset()),
+            self.get_queryset(),
             data=self.get_request_data(),
             many=True,
             partial=partial,
