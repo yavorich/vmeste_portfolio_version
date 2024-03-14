@@ -41,41 +41,25 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
                 options=options,
                 args=[six.moves.reduce(operator.or_, __queries)],
             )
-
         return queryset
 
+    @staticmethod
+    def apply_fast_filters(request, queryset):
+        query_params = request.query_params.dict()
+        if "fast_filters" in query_params:
+            fast_filters = list(map(int, query_params["fast_filters"].split(",")))
+            filter_query = EventFastFilter.objects.get_filter_query(
+                fast_filters, request.user
+            )
+            queryset = queryset.filter(filter_query)
+        return queryset
 
-class EventListViewSet(CreateModelMixin, DocumentViewSet):
-    document = EventDocument
-    pagination_class = PageNumberSetPagination
-    serializer_class = {
-        "list": EventDocumentSerializer,
-        "create": EventCreateUpdateSerializer,
-    }
-
-    filter_backends = [
-        CompoundSearchFilterBackend,
-        CustomFilteringFilterBackend,
-    ]
-
-    filter_fields = {
-        "country": "country.id",
-        "city": "city.id",
-        "category": {
-            "field": "categories.id",
-            "default_lookup": "in",
-        },
-        "date": "date",
-    }
-
-    search_fields = ("title", "short_description")
-
-    def get_queryset(self):
-        qs: Search = super().get_queryset()
-        qs = qs.filter(Q("term", is_active=True))
-        user = self.request.user
-        status = self.request.query_params.get("status")
-        search = self.request.query_params.get("search")
+    @staticmethod
+    def apply_status_filter(request, queryset):
+        qs: Search = queryset.filter(Q("term", is_active=True))
+        user = request.user
+        status = request.query_params.get("status")
+        search = request.query_params.get("search")
 
         if status not in set(EventStatus):
             raise ValidationError(
@@ -120,26 +104,48 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         total = qs.count()
         return qs[:total]
 
-    def apply_fast_filters(self, queryset):
-        query_params = self.request.query_params.dict()
-        if "fast_filters" in query_params:
-            fast_filters = list(map(int, query_params["fast_filters"].split(",")))
-            filter_query = EventFastFilter.objects.get_filter_query(
-                fast_filters, self.request.user
-            )
-            queryset = queryset.filter(filter_query)
-        return queryset
-
-    def filter_queryset(self, queryset):
-        queryset = self.apply_fast_filters(queryset)
-        queryset = super().filter_queryset(queryset)
-        min_age = self.request.query_params.get("min_age")
-        max_age = self.request.query_params.get("max_age")
+    @staticmethod
+    def apply_age_filter(request, queryset):
+        min_age = request.query_params.get("min_age")
+        max_age = request.query_params.get("max_age")
         if min_age:
             queryset = queryset.filter(Q("range", **{"max_age": {"gte": min_age}}))
         if max_age:
             queryset = queryset.filter(Q("range", **{"min_age": {"lte": max_age}}))
         return queryset
+
+    def filter_queryset(self, request, queryset, view):
+        queryset = super().filter_queryset(request, queryset, view)
+        queryset = self.apply_status_filter(request, queryset)
+        queryset = self.apply_fast_filters(request, queryset)
+        queryset = self.apply_age_filter(request, queryset)
+        return queryset
+
+
+class EventListViewSet(CreateModelMixin, DocumentViewSet):
+    document = EventDocument
+    pagination_class = PageNumberSetPagination
+    serializer_class = {
+        "list": EventDocumentSerializer,
+        "create": EventCreateUpdateSerializer,
+    }
+
+    filter_backends = [
+        CompoundSearchFilterBackend,
+        CustomFilteringFilterBackend,
+    ]
+
+    filter_fields = {
+        "country": "country.id",
+        "city": "city.id",
+        "category": {
+            "field": "categories.id",
+            "default_lookup": "in",
+        },
+        "date": "date",
+    }
+
+    search_fields = ("title", "short_description")
 
     def get_permissions(self):
         permission_classes = {
