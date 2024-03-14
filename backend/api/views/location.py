@@ -35,7 +35,7 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
     ]
 
     filter_fields = {
-        "city_id": "city.id",
+        "city": "city.id",
     }
 
     search_fields = ("name", "address")
