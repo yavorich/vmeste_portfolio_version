@@ -7,7 +7,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.timezone import localtime, timedelta
 from django.shortcuts import get_object_or_404
@@ -76,12 +75,7 @@ class EventParticipantView(
         return [{"id": e for e in self.request.data["id"]}]
 
     def filter_queryset(self, queryset):
-        queryset = queryset.filter(id__in=self.request.data["id"])
-
-        if queryset.filter(is_organizer=True).exists():
-            raise ValidationError({"error": "Event organizer cannot be deleted"})
-
-        return super().filter_queryset(queryset)
+        return queryset.filter(id__in=self.request.data["id"])
 
     def get_serializer_class(self):
         if self.request.method == "GET":
