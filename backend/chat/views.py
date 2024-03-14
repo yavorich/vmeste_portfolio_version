@@ -1,4 +1,5 @@
 from django.utils.timezone import localtime
+from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
@@ -8,7 +9,6 @@ from itertools import groupby
 
 from api.models import Event
 from api.permissions import IsEventParticipant
-from api.services import get_event_object
 from api.enums import EventStatus
 from chat.serializers import (
     ChatListSerializer,
@@ -77,7 +77,7 @@ class MessageListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        event = get_event_object(self.kwargs["event_pk"])
+        event = get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
         event_serializer = ChatEventSerializer(event, context={"request": request})
         grouped_messages = []
         for date, messages in groupby(

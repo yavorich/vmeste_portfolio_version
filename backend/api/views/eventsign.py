@@ -2,8 +2,8 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
-from api.services import get_event_object
 from api.models import Event
 from api.serializers import (
     EventSignSerializer,
@@ -24,7 +24,7 @@ class EventPublishedViewSet(UpdateModelMixin, GenericViewSet):
     queryset = Event.objects.all()
 
     def get_object(self):
-        return get_event_object(self.kwargs["pk"])
+        return get_object_or_404(Event, pk=self.kwargs["pk"], is_active=True)
 
     def get_serializer_class(self):
         return self.serializer_class[self.action]
