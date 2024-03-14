@@ -1,22 +1,13 @@
 import os
 import random
 from moviepy.editor import VideoFileClip
-from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 
-from api.models import Event, EventMedia
+from api.models import EventMedia
 from config.settings import MEDIA_ROOT
 
 
 def generate_confirmation_code():
     return "".join([str(random.randint(0, 9)) for _ in range(5)])
-
-
-def get_event_object(id):
-    event = get_object_or_404(Event, id=id)
-    if not event.is_active:
-        raise ValidationError({"error": "Событие заблокировано администрацией"})
-    return event
 
 
 def generate_video_preview(instance: EventMedia):

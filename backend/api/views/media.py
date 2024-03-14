@@ -3,14 +3,14 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 
 from api.permissions import (
     IsEventParticipant,
     IsMediaTimeValid,
 )
 from api.serializers import EventMediaBulkCreateSerializer, EventMediaListSerializer
-from api.models import EventMedia
-from api.services import get_event_object
+from api.models import Event, EventMedia
 from core.pagination import PageNumberSetPagination
 
 
@@ -29,7 +29,7 @@ class EventMediaViewSet(
     queryset = EventMedia.objects.all()
 
     def get_queryset(self):
-        event = get_event_object(self.kwargs["event_pk"])
+        event = get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
         return self.queryset.filter(event=event)
 
     def get_object(self):
@@ -37,7 +37,9 @@ class EventMediaViewSet(
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["event"] = get_event_object(self.kwargs["event_pk"])
+        context["event"] = get_object_or_404(
+            Event, pk=self.kwargs["event_pk"], is_active=True
+        )
         context["user"] = self.request.user
         return context
 

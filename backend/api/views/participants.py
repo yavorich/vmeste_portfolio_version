@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.db.models import Q
 from django.utils.timezone import localtime, timedelta
+from django.shortcuts import get_object_or_404
 
 from api.permissions import (
     IsEventOrganizer,
@@ -19,7 +20,6 @@ from api.serializers import (
     EventParticipantBulkSerializer,
 )
 from api.models import Event, EventParticipant
-from api.services import get_event_object
 
 
 class EventMarkingDetailView(RetrieveAPIView):
@@ -56,7 +56,7 @@ class EventParticipantView(
     RetrieveModelMixin, BulkUpdateModelMixin, BulkDestroyModelMixin, GenericAPIView
 ):
     def get_object(self):
-        return get_event_object(self.kwargs["event_pk"])
+        return get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
 
     def get_queryset(self):
         if self.request.method == "GET":

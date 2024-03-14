@@ -6,11 +6,11 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
+from django.shortcuts import get_object_or_404
 
 from api.models import Event
 from api.serializers import EventDetailSerializer, EventCreateUpdateSerializer
 from api.permissions import IsEventOrganizer
-from api.services import get_event_object
 
 
 class EventDetailViewSet(
@@ -23,7 +23,7 @@ class EventDetailViewSet(
     }
 
     def get_object(self):
-        return get_event_object(self.kwargs["event_pk"])
+        return get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
 
     def get_permissions(self):
         permission_classes = {
