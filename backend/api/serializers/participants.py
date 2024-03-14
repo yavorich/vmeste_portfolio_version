@@ -118,10 +118,7 @@ class EventParticipantsListSerializer(ModelSerializer):
 
 
 class EventParticipantBulkListSerializer(BulkListSerializer):
-    has_confirmed = serializers.SerializerMethodField(read_only=False)
-
-    def get_has_confirmed(self, obj):
-        return True
+    pass
 
 
 class EventParticipantBulkSerializer(BulkSerializerMixin, ModelSerializer):
@@ -129,11 +126,10 @@ class EventParticipantBulkSerializer(BulkSerializerMixin, ModelSerializer):
         model = EventParticipant
         list_serializer_class = EventParticipantBulkListSerializer
         fields = [
-            "id",
+            "id", "has_confirmed"
         ]
 
     def update(self, instance, validated_data):
-        validated_data["has_confirmed"] = True
         return super().update(instance, validated_data)
 
 
