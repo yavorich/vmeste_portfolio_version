@@ -64,11 +64,16 @@ class EventParticipantView(
             return Event.objects.all()
 
         event = self.get_object()
-        return event.participants.all()
+        return event.participants.filter(is_organizer=False)
 
     def get_request_data(self):
-        # конвертация в нужный формат (с фронта приходит id list)
-        return [{"id": e} for e in self.request.data["id"]]
+        participants_ids = self.get_queryset().values_list("id", flat=True)
+        if self.request.method == "PATCH":
+            return [
+                {"id": e, "has_confirmed": e in self.request.data["id"]}
+                for e in participants_ids
+            ]
+        return [{"id": e for e in self.request.data["id"]}]
 
     def filter_queryset(self, queryset):
         queryset = queryset.filter(id__in=self.request.data["id"])
@@ -102,7 +107,7 @@ class EventParticipantView(
 
         # restrict the update to the filtered queryset
         serializer = self.get_serializer(
-            self.filter_queryset(self.get_queryset()),
+            self.get_queryset(),
             data=self.get_request_data(),
             many=True,
             partial=partial,
