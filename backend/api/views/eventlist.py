@@ -92,9 +92,9 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
                 & Q("term", is_close_event=False)
             )
 
-        # PUBLISHED события сортируются по возрастанию даты
-        if status == EventStatus.PUBLISHED and not search:
-            qs = qs.sort("date")
+        # события сортируются по убыванию
+        if not search:
+            qs = qs.sort("-start_datetime")
 
         # POPULAR события сортируются по убыванию кол-ва свободных мест
         if status == EventStatus.POPULAR:
