@@ -2,7 +2,7 @@ import os
 import random
 from moviepy.editor import VideoFileClip
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 
 from api.models import Event, EventMedia
 from config.settings import MEDIA_ROOT
@@ -13,15 +13,10 @@ def generate_confirmation_code():
 
 
 def get_event_object(id):
-    if id.isdigit():
-        event = get_object_or_404(Event, id=id)
-        if event.is_close_event:
-            raise PermissionDenied("Закрытые события доступны только по uuid")
-        if not event.is_active:
-            raise ValidationError({"error": "Событие заблокировано администрацией"})
-        return event
-
-    return get_object_or_404(Event, uuid=id)
+    event = get_object_or_404(Event, id=id)
+    if not event.is_active:
+        raise ValidationError({"error": "Событие заблокировано администрацией"})
+    return event
 
 
 def generate_video_preview(instance: EventMedia):
