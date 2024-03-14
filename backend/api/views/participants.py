@@ -67,6 +67,7 @@ class EventParticipantView(
         return event.participants.all()
 
     def get_request_data(self):
+        # конвертация в нужный формат (с фронта приходит id list)
         return [{"id": e} for e in self.request.data["id"]]
 
     def filter_queryset(self, queryset):
