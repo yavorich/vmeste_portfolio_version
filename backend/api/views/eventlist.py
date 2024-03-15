@@ -108,9 +108,12 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
                 & Q("term", is_close_event=False)
             )
 
-        # события сортируются по убыванию
+        # события сортируются по убыванию времени начала
         if not search:
-            qs = qs.sort("-start_datetime")
+            if status == EventStatus.PAST:
+                qs = qs.sort("-start_datetime")
+            else:
+                qs = qs.sort("start_datetime")
 
         # POPULAR события сортируются по убыванию кол-ва свободных мест
         if status == EventStatus.POPULAR:
