@@ -1,11 +1,10 @@
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
 from rest_framework.serializers import (
     ModelSerializer,
-    DateTimeField,
 )
 
 from api.models import Event
-from notifications.models import Notification, UserNotification
+from notifications.models import GroupNotification, UserNotification
 
 
 class NotificationEventSerializer(ModelSerializer):
@@ -19,7 +18,7 @@ class NotificationSerializer(ModelSerializer):
     event = NotificationEventSerializer()
 
     class Meta:
-        model = Notification
+        model = GroupNotification
         fields = ["id", "created_at", "event", "title", "body"]
 
 

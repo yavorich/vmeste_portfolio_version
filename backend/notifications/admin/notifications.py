@@ -1,14 +1,14 @@
 from django.contrib import admin
 
-from notifications.models import Notification, UserNotification
+from notifications.models import GroupNotification, UserNotification
 
 
 class UserNotificationsInline(admin.TabularInline):
     model = UserNotification
 
 
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
+@admin.register(GroupNotification)
+class GroupNotificationAdmin(admin.ModelAdmin):
     inlines = [UserNotificationsInline]
     list_display = [
         "type",
@@ -16,4 +16,16 @@ class NotificationAdmin(admin.ModelAdmin):
         "event",
         "title",
         "body",
+    ]
+
+
+@admin.register(UserNotification)
+class UserNotificationAdmin(admin.ModelAdmin):
+    list_display = [
+        "notification",
+        "user",
+        "event",
+        "title",
+        "body",
+        "created_at",
     ]
