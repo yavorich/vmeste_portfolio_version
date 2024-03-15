@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
     "channels",
-    "django_celery_results",
     "rangefilter",
     "phonenumber_field",
 ]
@@ -197,11 +196,6 @@ CELERY_BROKER_URL = (
     f"{RABBITMQ['PROTOCOL']}://{RABBITMQ['USER']}:"
     f"{RABBITMQ['PASSWORD']}@{RABBITMQ['HOST']}:{RABBITMQ['PORT']}"
 )
-
-CELERY_RESULT_BACKEND = "django-db"
-CELERY_RESULT_EXTENDED = True
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TRACK_STARTED = True
 
 CELERY_TIMEZONE = "Europe/Moscow"
 

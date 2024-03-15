@@ -2,7 +2,6 @@ celery==5.3.6
 channels-redis==4.1.0
 channels[daphne]==4.0.0
 django-admin-rangefilter==0.12.0
-django-celery-results==2.5.1
 django-elasticsearch-dsl-drf==0.22.5
 django-elasticsearch-dsl==7.4
 django-filter==23.4
