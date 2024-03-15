@@ -6,7 +6,7 @@ from rest_framework.serializers import (
 from django.utils.timezone import localtime, timedelta
 
 from api.models import Event
-from notifications.models import Notification, UserNotification
+from notifications.models import GroupNotification, UserNotification
 
 
 class NotificationEventSerializer(ModelSerializer):
@@ -20,7 +20,7 @@ class NotificationSerializer(ModelSerializer):
     event = NotificationEventSerializer()
 
     class Meta:
-        model = Notification
+        model = GroupNotification
         fields = ["id", "created_at", "event", "title", "body"]
 
 
