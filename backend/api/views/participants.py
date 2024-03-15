@@ -65,17 +65,9 @@ class EventParticipantView(
         event = self.get_object()
         return event.participants.filter(is_organizer=False)
 
-    def get_request_data(self):
-        participants_ids = self.get_queryset().values_list("id", flat=True)
-        if self.request.method == "PATCH":
-            return [
-                {"id": e, "has_confirmed": e in self.request.data["id"]}
-                for e in participants_ids
-            ]
-        return [{"id": e for e in self.request.data["id"]}]
-
     def filter_queryset(self, queryset):
-        return queryset.filter(id__in=self.request.data["id"])
+        ids = [e["id"] for e in self.request.data]
+        return queryset.filter(id__in=ids)
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -96,20 +88,6 @@ class EventParticipantView(
             self.permission_classes = [IsEventOrganizer]
         return super(EventParticipantView, self).get_permissions()
 
-    def bulk_update(self, *args, **kwargs):
-        partial = kwargs.pop("partial", False)
-
-        # restrict the update to the filtered queryset
-        serializer = self.get_serializer(
-            self.get_queryset(),
-            data=self.get_request_data(),
-            many=True,
-            partial=partial,
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_bulk_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     def confirm_marking(self):
         event = self.get_object()
         event.did_organizer_marking = True
@@ -122,9 +100,8 @@ class EventParticipantView(
         return super().partial_bulk_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        qs = self.get_queryset()
-        filtered = self.filter_queryset(qs)
-        self.perform_bulk_destroy(filtered)
+        qs = self.filter_queryset(self.get_queryset())
+        self.perform_bulk_destroy(qs)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_update(self, serializer):
