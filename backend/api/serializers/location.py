@@ -21,6 +21,7 @@ class CountrySerializer(ModelSerializer):
 
 
 class CitySerializer(ModelSerializer):
+    # REVIEW: country_id есть по дефолту, т.к. есть поле fk country
     country_id = IntegerField(source="country.id")
 
     class Meta:
@@ -62,6 +63,8 @@ class LocationDocumentSerializer(DocumentSerializer):
             "discount",
         ]
 
+    # REVIEW: эта штука много где используется.
+    #  Можно сделать DocumentImageField и закинуть в core
     def get_cover(self, obj):
         request = self.context.get("request")
         return request.build_absolute_uri(obj.cover) if obj.cover else None

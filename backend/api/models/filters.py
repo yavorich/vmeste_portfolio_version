@@ -18,6 +18,8 @@ class FilterGroup(str, Enum):
 
 
 class EventFastFilterQuerySet(models.QuerySet):
+    # REVIEW: фильтр относится к документу. Странно добавлять его сюда.
+    #  Можно попробовать сделать что похожее на менеджер для Document
     def get_filter_query(self, filter_ids, user):
         filter_queries = {
             FilterName.TODAY: Q("term", **{"date": localtime().date()}),

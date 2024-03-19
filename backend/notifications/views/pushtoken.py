@@ -6,13 +6,14 @@ from rest_framework.exceptions import NotFound
 from notifications.serializers import PushTokenSerializer
 
 
-class PushTokenView(
+class PushTokenView(  # REVIEW: тут можно оставить только create и destroy
     CreateModelMixin, DestroyModelMixin, ListModelMixin, GenericAPIView
 ):
     permission_classes = (IsAuthenticated,)
     serializer_class = PushTokenSerializer
 
     def get_object(self):
+        # REVIEW: query_params вместо data. Тут косяк моего кода)
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         instance = self.request.user.push_tokens.filter(

@@ -17,6 +17,7 @@ class EventDetailViewSet(
     RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericViewSet
 ):
     queryset = Event.objects.all()
+    # REVIEW: надо либо добавить update, либо запретить PUT иначе будет 500
     serializer_class = {
         "retrieve": EventDetailSerializer,
         "partial_update": EventCreateUpdateSerializer,

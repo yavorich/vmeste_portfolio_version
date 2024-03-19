@@ -37,7 +37,7 @@ class CustomFileField(FileField):
             headers = self.context.get("headers", None)
             if headers is not None and b"host" in headers:
                 host = headers[b"host"].decode()
-                return f"http://{host}{url}"
+                return f"http://{host}{url}"  # REVIEW: https не подключен?
             return url
 
         return value.name

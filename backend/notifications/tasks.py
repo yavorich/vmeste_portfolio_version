@@ -30,4 +30,4 @@ async def send_push_notification(notification: UserNotification):
 def create_daily_event_notifications():
     event = Event.objects.filter_has_free_places().order_by("-free_places").first()
     GroupNotification.objects.create(event=event, type=GroupNotification.Type.EVENT_REC)
-    return f"Notification of type={type} was created"
+    return f"Notification of type={type} was created"  # REVIEW: type - функция

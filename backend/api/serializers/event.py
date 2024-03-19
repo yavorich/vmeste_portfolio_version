@@ -34,6 +34,7 @@ from .support import SupportMessageCreateSerializer
 class CharacterSeparatedField(serializers.ListField):
     def __init__(self, *args, **kwargs):
         self.separator = kwargs.pop("separator", ",")
+        # REVIEW: у меня написано, что *args - Unexpected argument
         super().__init__(*args, **kwargs)
 
     def to_internal_value(self, data):
@@ -100,6 +101,10 @@ class EventMixin:
         return obj.is_valid_sign_and_edit_time()
 
     def to_representation(self, instance):
+        # REVIEW: проблема в том, что здесь auth_only_fields высчитываются
+        #  для всех пользователей, но потом удаляются для неавторизованных.
+        #  При этом везде происходит проверка is_authenticated
+        #  Лучше переопределить метод get_fields
         data = super().to_representation(instance)
         auth_only_fields = [
             "am_i_organizer",
@@ -321,6 +326,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data, instance=instance)
+
+        # REVIEW: строки ниже желательно поместить в функцию validate
+        #  create и update отличаются тем, что в при create 'self.instance is None'
         self.validate_start_datetime(validated_data, hours=2)
         self.validate_age(validated_data)
         if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):

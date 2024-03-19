@@ -15,6 +15,10 @@ from api.serializers import (
 
 class EventPublishedViewSet(UpdateModelMixin, GenericViewSet):
     permission_classes = [IsAuthenticated]
+    # REVIEW: т.к. сериализаторы использованы для определения разной логики,
+    #  их желательно вынести хотя бы в другую папку,
+    #  отдельно от сериализаторов для отображения
+    #  по сути, можно было бы сделать функции в services, и вызывать их
     serializer_class = {
         "sign": EventSignSerializer,
         "cancel": EventCancelSerializer,

@@ -27,6 +27,7 @@ from core.pagination import PageNumberSetPagination
 from core.utils import humanize_date
 
 
+# REVIEW: этот класс нужно переместить в файл в папке api.filters
 class CustomFilteringFilterBackend(FilteringFilterBackend):
     @classmethod
     def apply_query_in(cls, queryset, options, value):
@@ -47,6 +48,7 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
     def apply_fast_filters(request, queryset):
         query_params = request.query_params.dict()
         if "fast_filters" in query_params:
+            # REVIEW: будет 500, если в fast_filters будет не int
             fast_filters = list(map(int, query_params["fast_filters"].split(",")))
             filter_query = EventFastFilter.objects.get_filter_query(
                 fast_filters, request.user
@@ -100,6 +102,8 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
         if status == EventStatus.POPULAR:
             qs = qs.sort("-participants.free_places.total")
 
+        # REVIEW: это значение может поменяться после применения других фильтров.
+        #  Логичнее в последнем вызове queryset это сделать. И не в этом классе
         total = qs.count()
         return qs[:total]
 
@@ -113,6 +117,11 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
             queryset = queryset.filter(Q("range", **{"min_age": {"lte": max_age}}))
         return queryset
 
+    # REVIEW: по хорошему, это разделить на 2 или 4 разных класса.
+    #  Чтобы можно было переиспользовать
+    #  - разделение через запятую вообще в core можно сохранить, полезная штука
+    #  - остальные фильтры можно в один класс запихнуть,
+    #    если они используются только здесь. Можно и на разные разделить
     def filter_queryset(self, request, queryset, view):
         queryset = super().filter_queryset(request, queryset, view)
         queryset = self.apply_status_filter(request, queryset)
@@ -159,6 +168,7 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        # REVIEW: если это везде в коде добавляется, то лучше создать mixin
         context["user"] = self.request.user
         return context
 
