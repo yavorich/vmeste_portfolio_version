@@ -382,18 +382,19 @@ class EventSignSerializer(ModelSerializer):
         fields = []
 
     def update(self, instance: Event, validated_data):
-        if instance.get_free_places(gender=self.context["user"].gender) == 0:
+        user = self.context["user"]
+        if instance.get_free_places(gender=user.gender) == 0:
             raise ValidationError(
                 {"error": "На данное мероприятие не осталось свободных мест."}
             )
 
-        if not instance.is_valid_age_to_sign():
+        if not instance.is_valid_age_to_sign(user=user):
             raise ValidationError(
                 {"error": "Ваш возраст не подходит для записи на событие."}
             )
 
         EventParticipant.objects.get_or_create(
-            event=instance, user=self.context["user"]
+            event=instance, user=user
         )
         return instance
 
