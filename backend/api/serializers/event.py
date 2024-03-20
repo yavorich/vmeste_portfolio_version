@@ -6,6 +6,7 @@ from rest_framework.serializers import (
 from django.utils.timezone import localtime, datetime, timedelta
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
+from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 
 from api.models import (
@@ -145,6 +146,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     am_i_confirmed = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
     sign_and_edit = serializers.SerializerMethodField()
+    unread_messages = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -180,6 +182,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "media",
             "sign_and_edit",
             "is_draft",
+            "unread_messages",
         ]
 
     def get_start_datetime(self, obj: Event):
@@ -187,6 +190,12 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
 
     def get_end_datetime(self, obj: Event):
         return obj.end_datetime.astimezone(localtime().tzinfo)
+
+    def get_unread_messages(self, obj: Event):
+        user = self.context["user"]
+        if user.is_authenticated:
+            return obj.chat.messages.filter(~Q(read__user=user))
+        return 0
 
 
 class EventDocumentSerializer(EventMixin, DocumentSerializer):
@@ -300,9 +309,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 {"error": "Минимальный возраст должен быть меньше максимального"}
             )
-        if validated_data["min_age"] < 12:
+        if validated_data["min_age"] < 13:
             raise ValidationError(
-                {"error": "Минимальный возраст не может быть меньше 12"}
+                {"error": "Минимальный возраст не может быть меньше 13"}
             )
         if validated_data["max_age"] > 100:
             raise ValidationError(
@@ -375,10 +384,16 @@ class EventSignSerializer(ModelSerializer):
     def update(self, instance: Event, validated_data):
         if instance.get_free_places(gender=self.context["user"].gender) == 0:
             raise ValidationError(
-                {"error": "На данное мероприятие не осталось свободных мест"}
+                {"error": "На данное мероприятие не осталось свободных мест."}
             )
         if not instance.is_valid_sign_and_edit_time():
-            raise ValidationError({"error": "Время записи на мероприятие истекло"})
+            raise ValidationError({"error": "Время записи на мероприятие истекло."})
+
+        if not instance.is_valid_age_to_sign():
+            raise ValidationError(
+                {"error": "Ваш возраст не подходит для записи на событие."}
+            )
+
         EventParticipant.objects.get_or_create(
             event=instance, user=self.context["user"]
         )
@@ -391,9 +406,6 @@ class EventCancelSerializer(ModelSerializer):
         fields = []
 
     def update(self, instance: Event, validated_data):
-        if not instance.is_valid_sign_and_edit_time():
-            raise ValidationError({"error": "Время отмены записи/события истекло"})
-
         participant = instance.get_participant(user=self.context["user"])
         if not participant:
             raise ValidationError(

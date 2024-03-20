@@ -61,17 +61,16 @@ class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
             "email": {"required": True},
         }
 
-        def validate_date_of_birth(self, value):
-            age = relativedelta(localtime().date(), value).years
-            if age < 12:
-                raise ValidationError({"error": "Возраст не может быть меньше 12"})
-            elif age > 99:
-                raise ValidationError({"error": "Возраст не может быть больше 99"})
+    def validate_date_of_birth(self, value):
+        age = relativedelta(localtime().date(), value).years
+        if age < 13:
+            raise ValidationError({"error": "Возраст не может быть меньше 13"})
+        elif age > 99:
+            raise ValidationError({"error": "Возраст не может быть больше 99"})
 
 
 class ProfileRetrieveSerializer(serializers.ModelSerializer):
     unread_notify = serializers.SerializerMethodField()
-    age = serializers.SerializerMethodField()
     country = CountrySerializer(allow_null=True)
     city = CitySerializer(allow_null=True)
     occupation = serializers.CharField(source="occupation.title", allow_null=True)
@@ -96,9 +95,6 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
             "stats",
             "email_is_confirmed",
         ]
-
-    def get_age(self, obj: User):
-        return relativedelta(localtime().date(), obj.date_of_birth).years
 
     def get_unread_notify(self, obj: User):
         return obj.notifications.filter(read=False).count()
