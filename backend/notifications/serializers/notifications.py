@@ -1,8 +1,9 @@
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
 from rest_framework.serializers import (
     ModelSerializer,
-    DateTimeField,
+    SerializerMethodField,
 )
+from django.utils.timezone import localtime, timedelta
 
 from api.models import Event
 from notifications.models import Notification, UserNotification
@@ -25,10 +26,24 @@ class NotificationSerializer(ModelSerializer):
 
 class UserNotificationListSerializer(ModelSerializer):
     event = NotificationEventSerializer()
+    date = SerializerMethodField()
+    time = SerializerMethodField()
 
     class Meta:
         model = UserNotification
-        fields = ["id", "read", "created_at", "event", "title", "body"]
+        fields = ["id", "read", "date", "time", "event", "title", "body"]
+
+    def get_date(self, obj: UserNotification):
+        date = obj.created_at.astimezone(tz=localtime().tzinfo).date()
+        if localtime().date() == date:
+            return "Сегодня"
+        elif localtime().date() == date + timedelta(days=1):
+            return "Вчера"
+        else:
+            return date
+
+    def get_time(self, obj: UserNotification):
+        return obj.created_at.astimezone(tz=localtime().tzinfo).time()
 
 
 class UserNotificationBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer):
