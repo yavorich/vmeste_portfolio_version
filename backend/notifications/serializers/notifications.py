@@ -40,7 +40,7 @@ class UserNotificationListSerializer(ModelSerializer):
         elif localtime().date() == date + timedelta(days=1):
             return "Вчера"
         else:
-            return date
+            return date.strftime("%d.%m.%Y")
 
     def get_time(self, obj: UserNotification):
         return obj.created_at.astimezone(tz=localtime().tzinfo).time()
