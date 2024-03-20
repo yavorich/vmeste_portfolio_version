@@ -194,7 +194,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     def get_unread_messages(self, obj: Event):
         user = self.context["user"]
         if user.is_authenticated:
-            return obj.chat.messages.filter(~Q(read__user=user))
+            return obj.chat.messages.filter(~Q(read__user=user)).count()
         return 0
 
 
