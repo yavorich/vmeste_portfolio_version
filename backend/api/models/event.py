@@ -214,6 +214,9 @@ class Event(models.Model):
         start = self.start_datetime
         return localtime() <= start - timedelta(hours=1)
 
+    def is_valid_age_to_sign(self, user: User) -> bool:
+        return self.min_age <= user.age <= self.max_age
+
     def is_valid_media_time(self) -> bool:
         start = self.start_datetime
         return start + timedelta(days=90) >= localtime() >= start

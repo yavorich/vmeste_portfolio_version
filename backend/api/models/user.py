@@ -6,7 +6,10 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils.timezone import localtime
+from dateutil.relativedelta import relativedelta
 from phonenumber_field.modelfields import PhoneNumberField
 
 from api.enums import Gender
@@ -140,6 +143,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+
+    def clean(self):
+        if self.age <= 13:
+            raise ValidationError(
+                {"error": "Возраст должен быть не менее 13 лет"}
+            )
+        elif self.age >= 99:
+            raise ValidationError(
+                {"error": "Возраст должен быть не менее 13 лет"}
+            )
+
+    @property
+    def age(self) -> int:
+        return relativedelta(localtime().date(), self.date_of_birth).years
 
     class Meta:
         verbose_name = "Пользователь"
