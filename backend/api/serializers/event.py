@@ -386,8 +386,6 @@ class EventSignSerializer(ModelSerializer):
             raise ValidationError(
                 {"error": "На данное мероприятие не осталось свободных мест."}
             )
-        if not instance.is_valid_sign_and_edit_time():
-            raise ValidationError({"error": "Время записи на мероприятие истекло."})
 
         if not instance.is_valid_age_to_sign():
             raise ValidationError(
@@ -406,17 +404,27 @@ class EventCancelSerializer(ModelSerializer):
         fields = []
 
     def update(self, instance: Event, validated_data):
-        participant = instance.get_participant(user=self.context["user"])
+        user = self.context["user"]
+        participant = instance.get_participant(user=user)
+        valid_time = instance.is_valid_sign_and_edit_time()
+
         if not participant:
             raise ValidationError(
                 {"error": "Пользователь не является участником/организатором события"}
             )
 
         if participant.is_organizer:
+            if not valid_time:
+                raise ValidationError({"error": "Время отмены события истекло."})
             instance.is_draft = True
             instance.save()
         else:
+            if not valid_time:
+                raise ValidationError(
+                    {"error": "Время отмены участия в событии истекло."}
+                )
             participant.delete()
+
         return instance
 
 
