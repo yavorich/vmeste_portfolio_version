@@ -83,14 +83,7 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
         # все события гл. страницы фильтруются на наличие свободных мест и открытость
         # если пользователь залогинен, фильтр также учитывает его пол
         if status in [EventStatus.POPULAR, EventStatus.PUBLISHED]:
-            gender = user.gender if user.is_authenticated else None
-            qs = qs.filter(
-                Q(
-                    "range",
-                    **{f"participants.free_places.{gender or 'total'}": {"gt": 0}},
-                )
-                & Q("term", is_close_event=False)
-            )
+            qs = qs.filter(Q("term", is_close_event=False))
 
         # события сортируются по убыванию
         if not search:
