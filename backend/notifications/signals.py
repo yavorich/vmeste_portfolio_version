@@ -64,12 +64,18 @@ def create_event_remind_notifications(instance: Event):
 
 
 def create_event_cancel_notification(instance: Event):
+    GroupNotification.objects.filter(
+        event=instance, type=GroupNotification.Type.EVENT_CANCELED
+    ).delete()
     GroupNotification.objects.create(
         event=instance, type=GroupNotification.Type.EVENT_CANCELED
     )
 
 
 def create_event_change_notification(instance: Event):
+    GroupNotification.objects.filter(
+        event=instance, type=GroupNotification.Type.EVENT_CHANGED
+    ).delete()
     GroupNotification.objects.create(
         event=instance, type=GroupNotification.Type.EVENT_CHANGED
     )
