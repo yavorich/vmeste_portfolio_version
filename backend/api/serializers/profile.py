@@ -63,10 +63,10 @@ class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
 
     def validate_date_of_birth(self, value):
         age = relativedelta(localtime().date(), value).years
-        if age < 13:
-            raise ValidationError({"error": "Возраст не может быть меньше 13"})
-        elif age > 99:
-            raise ValidationError({"error": "Возраст не может быть больше 99"})
+        if age < 18:
+            raise ValidationError({"error": "Возраст не может быть меньше 18"})
+        elif age > 90:
+            raise ValidationError({"error": "Возраст не может быть больше 90"})
 
 
 class ProfileRetrieveSerializer(serializers.ModelSerializer):
