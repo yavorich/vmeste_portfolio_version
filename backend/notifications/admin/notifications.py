@@ -22,7 +22,6 @@ class GroupNotificationAdmin(admin.ModelAdmin):
 @admin.register(UserNotification)
 class UserNotificationAdmin(admin.ModelAdmin):
     list_display = [
-        "notification",
         "user",
         "event",
         "title",

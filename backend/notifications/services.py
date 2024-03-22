@@ -1,5 +1,26 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from httpx import AsyncClient, HTTPError
+
 from config.settings import FCM_TOKEN
+
+channel_layer = get_channel_layer()
+
+
+@async_to_sync
+async def send_ws_notification(notification: dict, user_pk: int):
+    await asend_ws_notification(notification, user_pk, channel_layer)
+
+
+async def asend_ws_notification(notification: dict, user_pk: int, _channel_layer):
+    print("send notification message")
+    await _channel_layer.group_send(
+        "user_%s" % user_pk,
+        {
+            "type": "user_notification",
+            "message": notification,
+        },
+    )
 
 
 async def send_fcm_push(token, title, body):

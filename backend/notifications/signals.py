@@ -1,4 +1,3 @@
-from asgiref.sync import async_to_sync
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils.timezone import timedelta, localtime
@@ -8,7 +7,7 @@ from api.models import Event, EventParticipant
 from notifications.models import GroupNotification, UserNotification
 from notifications.tasks import (
     user_notifications_task,
-    send_push_notification,
+    push_notification,
 )
 
 
@@ -24,11 +23,11 @@ def send_join_event_notification(
             body = f'Вы успешно записались на событие: "{title}"'
         notification = UserNotification.objects.create(
             user=instance.user,
-            title=instance.event.title,
             event=instance.event,
+            title=title,
             body=body,
         )
-        async_to_sync(send_push_notification(notification))
+        push_notification(notification)
 
 
 @receiver([post_save], sender=Event)

@@ -3,7 +3,8 @@ from asgiref.sync import async_to_sync
 
 from api.models import Event
 from notifications.models import GroupNotification, UserNotification, PushToken
-from notifications.services import send_fcm_push
+from notifications.serializers import UserNotificationMessageSerializer
+from notifications.services import send_fcm_push, send_ws_notification
 
 
 @shared_task
@@ -16,9 +17,15 @@ def user_notifications_task(pk):
             event=notification.event,
             user=user,
         )
-        async_to_sync(send_push_notification)(user_notification)
+        push_notification(user_notification)
     if notification.type == GroupNotification.Type.EVENT_CANCELED:
         notification.event.participants.filter(is_organizer=False).delete()
+
+
+def push_notification(notification: UserNotification):
+    serializer = UserNotificationMessageSerializer(instance=notification)
+    send_ws_notification(serializer.data, notification.user.pk)
+    async_to_sync(send_push_notification)(notification)
 
 
 async def send_push_notification(notification: UserNotification):

@@ -24,7 +24,7 @@ class NotificationSerializer(ModelSerializer):
         fields = ["id", "created_at", "event", "title", "body"]
 
 
-class UserNotificationListSerializer(ModelSerializer):
+class UserNotificationSerializer(ModelSerializer):
     event = NotificationEventSerializer()
     date = SerializerMethodField()
     time = SerializerMethodField()
@@ -43,7 +43,7 @@ class UserNotificationListSerializer(ModelSerializer):
             return date.strftime("%d.%m.%Y")
 
     def get_time(self, obj: UserNotification):
-        return obj.created_at.astimezone(tz=localtime().tzinfo).time()
+        return obj.created_at.astimezone(tz=localtime().tzinfo).strftime("%H:%M")
 
 
 class UserNotificationBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer):
@@ -55,3 +55,18 @@ class UserNotificationBulkUpdateSerializer(BulkSerializerMixin, ModelSerializer)
     def update(self, instance, validated_data):
         validated_data["read"] = True
         return super().update(instance, validated_data)
+
+
+class UserNotificationMessageSerializer(ModelSerializer):
+    notification = SerializerMethodField()
+    unread = SerializerMethodField()
+
+    class Meta:
+        model = UserNotification
+        fields = ["notification", "unread"]
+
+    def get_notification(self, obj: UserNotification):
+        return UserNotificationSerializer(instance=obj).data
+
+    def get_unread(self, obj: UserNotification):
+        return obj.user.notifications.filter(read=False).count()
