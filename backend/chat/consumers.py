@@ -28,11 +28,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        unread = await self.get_unread_notifications_count()
         await self.channel_layer.group_send(
             "user_%s" % self.user.id,
             {
                 "type": "notifications",
-                "unread": self.get_unread_notifications_count(),
+                "unread": unread,
             },
         )
 
