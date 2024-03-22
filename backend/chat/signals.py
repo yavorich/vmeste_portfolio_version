@@ -5,7 +5,7 @@ from api.models import Event, EventParticipant, User
 from chat.models import Message, Chat
 from chat.utils import (
     send_ws_message,
-    add_user_to_group,
+    # add_user_to_group,
     remove_user_from_group,
 )
 from chat.serializers import MessageSerializer
@@ -33,7 +33,6 @@ def send_info_message(instance: EventParticipant, join: bool):
 def send_join_message(sender, instance: EventParticipant, created: bool, **kwargs):
     if created:
         print("USER JOINED")
-        # add_user_to_group(instance.event) - will be called from client
         send_info_message(instance, join=True)
 
 
@@ -47,10 +46,10 @@ def send_leave_message(sender, instance: EventParticipant, **kwargs):
     remove_user_from_group(instance.event)
 
 
-@receiver(post_save, sender=Event)
-def create_chat_group(sender, instance: Event, created: bool, **kwargs):
-    if created:
-        add_user_to_group(instance)
+# @receiver(post_save, sender=Event)
+# def create_chat_group(sender, instance: Event, created: bool, **kwargs):
+#     if created:
+#         add_user_to_group(instance)
 
 
 @receiver(post_delete, sender=Event)
