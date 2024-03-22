@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.db import transaction
+from django.db.models import Q
 
 from chat.models import ReadMessage, Message, Chat
 from chat.serializers import MessageSendSerializer, MessageSerializer
@@ -77,6 +78,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat = Chat.objects.get(pk=data["message"]["chat"])
             participant = chat.event.get_participant(user=self.user)
             data["message"]["send_notification"] = participant.chat_notifications
+            data["message"]["unread"] = chat.messages.filter(
+                ~Q(read__user=self.user)
+            ).count()
             return data
 
     @database_sync_to_async

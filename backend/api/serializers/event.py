@@ -393,9 +393,7 @@ class EventSignSerializer(ModelSerializer):
                 {"error": "Ваш возраст не подходит для записи на событие."}
             )
 
-        EventParticipant.objects.get_or_create(
-            event=instance, user=user
-        )
+        EventParticipant.objects.get_or_create(event=instance, user=user)
         return instance
 
 
