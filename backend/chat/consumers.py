@@ -3,7 +3,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.db import transaction
 from django.db.models import Q
-from asgiref.sync import async_to_sync
 
 from chat.models import ReadMessage, Message, Chat
 from chat.serializers import MessageSendSerializer, MessageSerializer
@@ -160,14 +159,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def read_notification(self, data):
-        with transaction.atomic():
-            try:
-                notification = UserNotification.objects.get(id=data["notification_id"])
-            except UserNotification.DoesNotExist:
-                return
-            notification.read = True
-            notification.save()
-            async_to_sync(self.send_unread_notifications())
+        try:
+            notification = UserNotification.objects.get(id=data["notification_id"])
+        except UserNotification.DoesNotExist:
+            return
+        notification.read = True
+        notification.save()
 
     @database_sync_to_async
     def chat_notifications(self, data):
