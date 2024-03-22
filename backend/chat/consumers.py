@@ -160,13 +160,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def read_notification(self, data):
-        try:
-            notification = UserNotification.objects.get(id=data["notification_id"])
-        except UserNotification.DoesNotExist:
-            return
-        notification.read = True
-        notification.save()
-        async_to_sync(self.send_unread_notifications())
+        with transaction.atomic():
+            try:
+                notification = UserNotification.objects.get(id=data["notification_id"])
+            except UserNotification.DoesNotExist:
+                return
+            notification.read = True
+            notification.save()
+            async_to_sync(self.send_unread_notifications())
 
     @database_sync_to_async
     def chat_notifications(self, data):
