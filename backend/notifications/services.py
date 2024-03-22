@@ -16,7 +16,7 @@ async def asend_ws_notification(data: dict, user_pk: int, _channel_layer):
     await _channel_layer.group_send(
         "user_%s" % user_pk,
         {
-            "type": "user_notification",
+            "type": "notifications",
             "notification": data["notification"],
             "unread": data["unread"],
         },
