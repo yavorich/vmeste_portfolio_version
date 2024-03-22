@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.db import transaction
 from django.db.models import Q
+from asgiref.sync import async_to_sync
 
 from chat.models import ReadMessage, Message, Chat
 from chat.serializers import MessageSendSerializer, MessageSerializer
@@ -27,7 +28,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
         await self.accept()
+        await self.send_unread_notifications()
 
+    async def send_unread_notifications(self):
         unread = await self.get_unread_notifications_count()
         await self.channel_layer.group_send(
             "user_%s" % self.user.id,
@@ -163,6 +166,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         notification.read = True
         notification.save()
+        async_to_sync(self.send_unread_notifications())
 
     @database_sync_to_async
     def chat_notifications(self, data):
