@@ -272,13 +272,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["city"], _ = City.objects.get_or_create(
             name=validated_data.pop("city_name"), country=validated_data["country"]
         )
-        cover = (
-            validated_data["cover"]
-            if isinstance(validated_data["cover"], InMemoryUploadedFile)
-            else instance.location.cover
-        )
-
-        validated_data["location"], _ = Location.objects.get_or_create(
+        validated_data["location"], created = Location.objects.get_or_create(
             country=validated_data["country"],
             city=validated_data["city"],
             address=validated_data.pop("address"),
@@ -287,9 +281,16 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 "latitude": validated_data.pop("latitude"),
                 "longitude": validated_data.pop("longitude"),
                 "status": Location.Status.UNKNOWN,
-                "cover": cover,
             },
         )
+        # if created:
+        #     cover = (
+        #         validated_data["cover"]
+        #         if isinstance(validated_data["cover"], InMemoryUploadedFile)
+        #         else instance.cover
+        #     )
+        #     validated_data["location"].cover = cover
+        #     validated_data["location"].save()
 
         return validated_data
 
