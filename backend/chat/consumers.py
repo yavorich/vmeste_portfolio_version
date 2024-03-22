@@ -186,7 +186,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             Event.objects.filter_participant(self.user)
             .distinct()
             .filter_not_expired()
-            .filter(is_active=True, is_draft=False)
         )
         groups = ["chat_%s" % id for id in events.values_list("id")]
         groups += [f"user_{self.user.id}"]
