@@ -309,9 +309,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 {"error": "Минимальный возраст должен быть меньше максимального"}
             )
-        if validated_data["min_age"] < 13:
+        if validated_data["min_age"] < 18:
             raise ValidationError(
-                {"error": "Минимальный возраст не может быть меньше 13"}
+                {"error": "Минимальный возраст не может быть меньше 18"}
             )
         if validated_data["max_age"] > 100:
             raise ValidationError(
