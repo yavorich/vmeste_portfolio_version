@@ -265,7 +265,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {f: {"required": True} for f in fields}
         extra_kwargs["cover"].update({"read_only": False})
 
-    def prepare_location(self, validated_data: dict, instance: Event | None = None):
+    def prepare_location(self, validated_data: dict):
         validated_data["country"], _ = Country.objects.get_or_create(
             name=validated_data.pop("country_name")
         )
@@ -330,7 +330,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        validated_data = self.prepare_location(validated_data, instance=instance)
+        validated_data = self.prepare_location(validated_data)
         self.validate_start_datetime(validated_data, hours=2)
         self.validate_age(validated_data)
         if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):

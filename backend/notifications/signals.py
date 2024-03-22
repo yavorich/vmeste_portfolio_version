@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, post_delete
 from django.dispatch import receiver
 from django.utils.timezone import timedelta, localtime
 
@@ -21,6 +21,20 @@ def send_join_event_notification(
             body = f'Вы успешно создали событие: "{title}"'
         else:
             body = f'Вы успешно записались на событие: "{title}"'
+        notification = UserNotification.objects.create(
+            user=instance.user,
+            event=instance.event,
+            title=title,
+            body=body,
+        )
+        push_notification(notification)
+
+
+@receiver([post_delete], sender=EventParticipant)
+def send_kick_event_notification(sender, instance: EventParticipant, **kwargs):
+    if instance.event and instance.user and not instance.is_organizer:
+        title = instance.event.title
+        body = "Организатор события убрал вас из списка участников."
         notification = UserNotification.objects.create(
             user=instance.user,
             event=instance.event,
@@ -53,7 +67,7 @@ def delete_existing_remind_notifications(instance: Event):
 
 
 def create_event_remind_notifications(instance: Event):
-    for hours in [24, 4, 1]:
+    for hours in [24, 4, 1, 0]:
         if instance.start_datetime - timedelta(hours=hours) > localtime():
             GroupNotification.objects.create(
                 type=GroupNotification.Type.EVENT_REMIND,
@@ -69,6 +83,14 @@ def create_event_cancel_notification(instance: Event):
     GroupNotification.objects.create(
         event=instance, type=GroupNotification.Type.EVENT_CANCELED
     )
+    if not instance.is_active:
+        notification = UserNotification.objects.create(
+            user=instance.organizer,
+            event=instance,
+            title=instance.title,
+            body="Событие заблокировано администрацией",
+        )
+        push_notification(notification)
 
 
 def create_event_change_notification(instance: Event):
