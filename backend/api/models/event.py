@@ -184,7 +184,10 @@ class Event(models.Model):
 
     @property
     def organizer(self):
-        return self.participants.get(is_organizer=True).user
+        try:
+            return self.participants.get(is_organizer=True).user
+        except EventParticipant.DoesNotExist:
+            return None
 
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
