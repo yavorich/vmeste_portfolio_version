@@ -35,6 +35,7 @@ DEBUG = os.environ.get("DEBUG", True)
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(
     ","
 )
+MAIN_HOST = os.getenv("MAIN_HOST", "localhost")
 
 CSRF_TRUSTED_ORIGINS = ["http://" + host + ":8000" for host in ALLOWED_HOSTS] + [
     "https://" + host for host in ALLOWED_HOSTS

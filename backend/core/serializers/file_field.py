@@ -1,5 +1,6 @@
 from rest_framework.serializers import FileField
 from rest_framework.settings import api_settings
+from config.settings import MAIN_HOST
 
 
 class CustomFileField(FileField):
@@ -37,7 +38,8 @@ class CustomFileField(FileField):
             headers = self.context.get("headers", None)
             if headers is not None and b"host" in headers:
                 host = headers[b"host"].decode()
-                return f"http://{host}{url}"
-            return url
+            else:
+                host = MAIN_HOST
+            return f"http://{host}{url}"
 
         return value.name
