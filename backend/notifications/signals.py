@@ -1,14 +1,17 @@
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.dispatch import receiver
 from django.utils.timezone import timedelta, localtime
+from asgiref.sync import async_to_sync
 
 from config.celery import celery_app
 from api.models import Event, EventParticipant
 from notifications.models import GroupNotification, UserNotification
 from notifications.tasks import (
     user_notifications_task,
-    push_notification,
+    send_push_notification,
 )
+from notifications.serializers import UserNotificationMessageSerializer
+from notifications.services import send_ws_notification
 
 
 @receiver([post_save], sender=EventParticipant)
@@ -27,7 +30,7 @@ def send_join_event_notification(
             title=title,
             body=body,
         )
-        push_notification(notification)
+        async_to_sync(send_push_notification)(notification)
 
 
 @receiver([post_delete], sender=EventParticipant)
@@ -41,7 +44,7 @@ def send_kick_event_notification(sender, instance: EventParticipant, **kwargs):
             title=title,
             body=body,
         )
-        push_notification(notification)
+        async_to_sync(send_push_notification)(notification)
 
 
 @receiver([post_save], sender=Event)
@@ -90,7 +93,7 @@ def create_event_cancel_notification(instance: Event):
             title=instance.title,
             body="Событие заблокировано администрацией",
         )
-        push_notification(notification)
+        async_to_sync(send_push_notification)(notification)
 
 
 def create_event_change_notification(instance: Event):
@@ -123,3 +126,9 @@ def create_user_notifications_task(
 def revoke_pending_task(sender, instance: GroupNotification, **kwargs):
     if instance.type == GroupNotification.Type.EVENT_REMIND:
         celery_app.control.revoke(task_id=instance.task_id)
+
+
+@receiver(post_save, sender=UserNotification)
+def send_unread_notifications_ws_message(sender, instance: UserNotification, **kwargs):
+    serializer = UserNotificationMessageSerializer(instance=instance)
+    send_ws_notification(serializer.data, instance.user.pk)

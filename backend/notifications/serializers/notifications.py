@@ -68,7 +68,7 @@ class UserNotificationMessageSerializer(ModelSerializer):
         fields = ["notification", "unread"]
 
     def get_notification(self, obj: UserNotification):
-        return UserNotificationSerializer(instance=obj).data
+        return UserNotificationSerializer(instance=obj).data if not obj.read else None
 
     def get_unread(self, obj: UserNotification):
         return obj.user.notifications.filter(read=False).count()
