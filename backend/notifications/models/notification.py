@@ -94,7 +94,7 @@ class UserNotification(models.Model):
         return f"{self.title}: для {self.user.get_full_name()}"
 
     def generate_remind_body(self):
-        hours = {"1": "час", "3": "3 часа", "24": "24 часа"}
+        hours = {"1": "час", "4": "4 часа", "24": "24 часа"}
         hours_sample = hours[str(self.notification.remind_hours)]
         organizer = self.user == self.event.organizer
         event_remind_sample = "отменить" if organizer else "не пойти на"

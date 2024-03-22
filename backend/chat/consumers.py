@@ -63,6 +63,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             f.write(f"Sending message from chat_message to {self.user}: {event}\n")
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
+    async def user_notification(self, event):
+        await self.send(text_data=json.dumps(event, ensure_ascii=False))
+
     @database_sync_to_async
     def add_user_info(self, data):
         # TODO: попробовать без этого
@@ -168,7 +171,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             .filter(is_active=True, is_draft=False)
         )
         groups = ["chat_%s" % id for id in events.values_list("id")]
-        names = [title for title in events.values_list("title", flat=True)]
+        groups += [f"user_{self.user.id}"]
         with open("log.txt", "a") as f:
-            f.write(f"{self.user} groups: {names}\n")
+            f.write(f"{self.user} groups: {groups}\n")
         return groups

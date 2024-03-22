@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from notifications.models import UserNotification
 from notifications.serializers import (
-    UserNotificationListSerializer,
+    UserNotificationSerializer,
     UserNotificationBulkUpdateSerializer,
 )
 
@@ -12,7 +12,7 @@ from notifications.serializers import (
 class NotificationListUpdateApiView(BulkUpdateModelMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = {
-        "GET": UserNotificationListSerializer,
+        "GET": UserNotificationSerializer,
         "PATCH": UserNotificationBulkUpdateSerializer,
     }
 
