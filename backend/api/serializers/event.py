@@ -393,6 +393,10 @@ class EventSignSerializer(ModelSerializer):
             raise ValidationError(
                 {"error": "Ваш возраст не подходит для записи на событие."}
             )
+        if instance.is_draft:
+            raise ValidationError(
+                {"error": "Событие ещё не опубликовано."}
+            )
 
         EventParticipant.objects.get_or_create(event=instance, user=user)
         return instance
