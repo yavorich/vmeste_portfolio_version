@@ -79,7 +79,6 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = SenderSerializer()
     is_mine = serializers.SerializerMethodField()
     sent_at_time = serializers.SerializerMethodField()
-    unread = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
