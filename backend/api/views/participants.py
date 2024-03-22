@@ -10,6 +10,7 @@ from rest_framework import status
 from django.db.models import Q
 from django.utils.timezone import localtime, timedelta
 from django.shortcuts import get_object_or_404
+from typing import Iterable
 
 from api.permissions import (
     IsEventOrganizer,
@@ -108,7 +109,7 @@ class EventParticipantView(
         serializer.save()
         self.confirm_marking()
 
-    def perform_bulk_destroy(self, objects):
+    def perform_bulk_destroy(self, objects: Iterable[EventParticipant]):
         for obj in objects:
-            self.perform_destroy(obj)
-        self.confirm_marking()
+            obj.kicked_by_organizer = True
+            obj.save()
