@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, pre_delete, post_delete
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils.timezone import timedelta, localtime
 from asgiref.sync import async_to_sync
@@ -33,9 +33,9 @@ def send_join_event_notification(
         async_to_sync(send_push_notification)(notification)
 
 
-@receiver([post_delete], sender=EventParticipant)
+@receiver([post_save], sender=EventParticipant)
 def send_kick_event_notification(sender, instance: EventParticipant, **kwargs):
-    if instance.event and instance.user and not instance.is_organizer:
+    if instance.kicked_by_organizer:
         title = instance.event.title
         body = "Организатор события убрал вас из списка участников."
         notification = UserNotification.objects.create(
@@ -45,6 +45,7 @@ def send_kick_event_notification(sender, instance: EventParticipant, **kwargs):
             body=body,
         )
         async_to_sync(send_push_notification)(notification)
+        instance.delete()
 
 
 @receiver([post_save], sender=Event)

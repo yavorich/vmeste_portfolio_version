@@ -10,6 +10,7 @@ class EventParticipant(models.Model):
     user = models.ForeignKey(User, related_name="events", on_delete=models.CASCADE)
     has_confirmed = models.BooleanField(default=False)
     is_organizer = models.BooleanField(default=False)
+    kicked_by_organizer = models.BooleanField(default=False)
     chat_notifications = models.BooleanField(default=True)
 
     class Meta:
