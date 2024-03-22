@@ -8,17 +8,17 @@ channel_layer = get_channel_layer()
 
 
 @async_to_sync
-async def send_ws_notification(notification: dict, user_pk: int):
-    await asend_ws_notification(notification, user_pk, channel_layer)
+async def send_ws_notification(data: dict, user_pk: int):
+    await asend_ws_notification(data, user_pk, channel_layer)
 
 
-async def asend_ws_notification(notification: dict, user_pk: int, _channel_layer):
-    print("send notification message")
+async def asend_ws_notification(data: dict, user_pk: int, _channel_layer):
     await _channel_layer.group_send(
         "user_%s" % user_pk,
         {
             "type": "user_notification",
-            "message": notification,
+            "notification": data["notification"],
+            "unread": data["unread"],
         },
     )
 
