@@ -59,6 +59,15 @@ class EventQuerySet(models.QuerySet):
     def filter_participant(self, user: User):
         return self.filter(participants__user=user)
 
+    def get_recommended_event(self):
+        return (
+            self.filter(is_active=True, is_draft=False)
+            .filter_upcoming()
+            .filter_has_free_places()
+            .order_by("-free_places")
+            .first()
+        )
+
 
 def get_upload_path(instance, filename):
     return os.path.join("events", str(instance.pk), "cover", filename)
