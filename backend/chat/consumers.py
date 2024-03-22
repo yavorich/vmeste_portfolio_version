@@ -28,6 +28,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        await self.channel_layer.group_send(
+            "user_%s" % self.user.id,
+            {
+                "type": "notifications",
+                "unread": self.get_unread_notifications_count(),
+            },
+        )
+
     async def disconnect(self, code):
         if self.user.is_authenticated and hasattr(self, "room_group_names"):
             for group_name in self.room_group_names:
@@ -65,6 +73,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     async def user_notification(self, event):
+        await self.send(text_data=json.dumps(event, ensure_ascii=False))
+
+    async def notifications(self, event):
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
@@ -179,3 +190,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         with open("log.txt", "a") as f:
             f.write(f"{self.user} groups: {groups}\n")
         return groups
+
+    @database_sync_to_async
+    def get_unread_notifications_count(self):
+        return self.user.notifications.filter(read=False).count()
