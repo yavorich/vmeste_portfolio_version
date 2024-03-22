@@ -6,10 +6,12 @@ from rest_framework.serializers import (
 from django.utils.timezone import localtime, timedelta
 
 from api.models import Event
+from core.serializers import CustomFileField
 from notifications.models import GroupNotification, UserNotification
 
 
 class NotificationEventSerializer(ModelSerializer):
+    cover = CustomFileField()
 
     class Meta:
         model = Event
