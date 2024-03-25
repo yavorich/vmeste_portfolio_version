@@ -67,6 +67,7 @@ class SelfProfileUpdateSerializer(SelfProfilePartialUpdateSerializer):
             raise ValidationError({"error": "Возраст не может быть меньше 18"})
         elif age > 90:
             raise ValidationError({"error": "Возраст не может быть больше 90"})
+        return value
 
 
 class ProfileRetrieveSerializer(serializers.ModelSerializer):
