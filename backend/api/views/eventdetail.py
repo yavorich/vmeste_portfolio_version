@@ -6,6 +6,7 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
+from rest_framework.exceptions import NotFound, ValidationError
 from django.shortcuts import get_object_or_404
 
 from api.models import Event
@@ -23,7 +24,10 @@ class EventDetailViewSet(
     }
 
     def get_object(self):
-        return get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
+        event = get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
+        if event.is_draft and self.request.user != event.organizer:
+            raise NotFound({"error": "Событие отменено или ещё не опубликовано"})
+        return event
 
     def get_permissions(self):
         permission_classes = {
