@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
-from django.utils.timezone import localtime, timedelta
+from django.utils.timezone import localtime
 from dateutil.relativedelta import relativedelta
 from rest_framework.exceptions import ValidationError
 
@@ -105,8 +105,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
             user=obj, event__is_active=True, event__is_draft=False
         )
         past_participation = participation.filter(
-            is_organizer=False,
-            event__start_datetime__lte=localtime() - timedelta(hours=2),
+            event__end_datetime__lte=localtime(),
         )
         organized = participation.filter(is_organizer=True).count()
         signed = participation.count() - organized
