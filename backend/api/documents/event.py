@@ -146,3 +146,11 @@ class EventDocument(Document):
     def prepare_organizer(instance: Event):
         organizer = instance.organizer
         return {"id": getattr(organizer, "id", None)}
+
+    @staticmethod
+    def prepare_location(instance: Event):
+        location = instance.location
+        return {
+            "name": location.name,
+            "address": f"{location.city.name}, {location.address}",
+        }
