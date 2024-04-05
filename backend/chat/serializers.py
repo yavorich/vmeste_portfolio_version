@@ -8,7 +8,7 @@ from core.serializers import CustomFileField
 
 
 class ChatListSerializer(serializers.ModelSerializer):
-    address = serializers.CharField(source="location.address", allow_null=True)
+    address = serializers.SerializerMethodField()
     location_name = serializers.CharField(source="location.name", allow_null=True)
     unread_messages = serializers.SerializerMethodField()
     am_i_organizer = serializers.SerializerMethodField()
@@ -25,6 +25,10 @@ class ChatListSerializer(serializers.ModelSerializer):
             "unread_messages",
             "am_i_organizer",
         ]
+
+    def get_address(self, obj: Event):
+        address = obj.location.address
+        return f"{obj.city.name}, {address}"
 
     def get_unread_messages(self, obj: Event):
         user = self.context["user"]
