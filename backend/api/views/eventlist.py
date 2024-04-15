@@ -1,18 +1,21 @@
 import six
 import operator
 from itertools import groupby
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.response import Response
+
+from django.core.management import call_command
+from django_elasticsearch_dsl.search import Search
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
 from django_elasticsearch_dsl_drf.filter_backends import (
     CompoundSearchFilterBackend,
     FilteringFilterBackend,
 )
+from django.utils.timezone import localtime, timedelta
 from elasticsearch_dsl import Q
+from elasticsearch.exceptions import NotFoundError
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from django.utils.timezone import localtime, timedelta
-from django_elasticsearch_dsl.search import Search
 
 from api.serializers import (
     EventDocumentSerializer,
@@ -108,11 +111,15 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
         return queryset
 
     def filter_queryset(self, request, queryset, view):
-        queryset = super().filter_queryset(request, queryset, view)
-        queryset = self.apply_status_filter(request, queryset)
-        queryset = self.apply_fast_filters(request, queryset)
-        queryset = self.apply_age_filter(request, queryset)
-        return queryset
+        try:
+            queryset = super().filter_queryset(request, queryset, view)
+            queryset = self.apply_status_filter(request, queryset)
+            queryset = self.apply_fast_filters(request, queryset)
+            queryset = self.apply_age_filter(request, queryset)
+            return queryset
+        except NotFoundError:
+            call_command("search_index", "--rebuild", "-f")
+            return self.filter_queryset(request, queryset, view)
 
 
 class EventListViewSet(CreateModelMixin, DocumentViewSet):

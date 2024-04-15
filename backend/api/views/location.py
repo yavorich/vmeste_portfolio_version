@@ -1,9 +1,11 @@
+from django.core.management import call_command
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
 from django_elasticsearch_dsl_drf.filter_backends import (
     GeoSpatialOrderingFilterBackend,
     FilteringFilterBackend,
     CompoundSearchFilterBackend,
 )
+from elasticsearch.exceptions import NotFoundError
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
@@ -45,12 +47,16 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
     }
 
     def get_queryset(self):
-        qs = super().get_queryset().filter("term", status=Location.Status.VERIFIED)
-        query_params = self.request.query_params
-        if not query_params.get("search") and not query_params.get("ordering"):
-            qs = qs.sort("-id")
-        total = qs.count()
-        return qs[:total]
+        try:
+            qs = super().get_queryset().filter("term", status=Location.Status.VERIFIED)
+            query_params = self.request.query_params
+            if not query_params.get("search") and not query_params.get("ordering"):
+                qs = qs.sort("-id")
+            total = qs.count()
+            return qs[:total]
+        except NotFoundError:
+            call_command("search_index", "--rebuild", "-f")
+            return self.get_queryset()
 
     def get_serializer_class(self):
         return self.serializer_class[self.action]
