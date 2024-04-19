@@ -169,8 +169,8 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = "api.User"
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=1),
 }
 
 AUTHENTICATION_BACKENDS = [
