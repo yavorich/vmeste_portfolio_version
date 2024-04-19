@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
     "channels",
@@ -171,6 +172,8 @@ AUTH_USER_MODEL = "api.User"
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 AUTHENTICATION_BACKENDS = [
