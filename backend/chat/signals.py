@@ -70,5 +70,7 @@ def delete_chat_event(sender, instance: Chat, **kwargs):
 def send_unread_messages_ws_message(
     sender, instance: ReadMessage, created: bool, **kwargs
 ):
-    serializer = MessageSerializer(instance=instance)
+    serializer = MessageSerializer(
+        instance=instance.message, context={"user": instance.user}
+    )
     send_ws_unread_messages(serializer.data, instance.user.pk)
