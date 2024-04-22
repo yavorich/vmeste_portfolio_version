@@ -33,7 +33,7 @@ async def asend_ws_unread_messages(data: dict, user_pk: int, _channel_layer):
         "user_%s" % user_pk,
         {
             "type": "messages",
-            "chat": data["chat"].pk,
+            "chat": data["chat"],
             "unread": data["unread"],
         },
     )
