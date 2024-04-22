@@ -76,5 +76,7 @@ def send_unread_messages_ws_message(
             .distinct()
             .filter(is_draft=False, is_active=True)
         )
-        serializer = ChatListSerializer(events, many=True)
+        serializer = ChatListSerializer(
+            events, many=True, context={"user": instance.user}
+        )
         send_ws_unread_messages(serializer.data, instance.user.pk)
