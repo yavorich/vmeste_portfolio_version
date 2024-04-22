@@ -24,17 +24,16 @@ async def asend_ws_message(message: Message, event_pk, _channel_layer):
 
 
 @async_to_sync
-async def send_ws_unread_messages(data: dict, user_pk: int):
+async def send_ws_unread_messages(data: list, user_pk: int):
     await asend_ws_unread_messages(data, user_pk, channel_layer)
 
 
-async def asend_ws_unread_messages(data: dict, user_pk: int, _channel_layer):
+async def asend_ws_unread_messages(data: list, user_pk: int, _channel_layer):
     await _channel_layer.group_send(
         "user_%s" % user_pk,
         {
             "type": "messages",
-            "chat": data["chat"],
-            "unread": data["unread"],
+            "unread": sum([e["unread_messages"] for e in data]),
         },
     )
 

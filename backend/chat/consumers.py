@@ -46,16 +46,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             for group in self.room_group_names
             if "chat" in group
         ]
+        unread = 0
         for chat_id in chat_ids:
-            unread = await self.get_unread_messages_count(chat_id)
-            await self.channel_layer.group_send(
-                "user_%s" % self.user.id,
-                {
-                    "type": "messages",
-                    "chat_id": chat_id,
-                    "unread": unread,
-                },
-            )
+            unread += await self.get_unread_messages_count(chat_id)
+        await self.channel_layer.group_send(
+            "user_%s" % self.user.id,
+            {
+                "type": "messages",
+                "unread": unread,
+            },
+        )
 
     async def disconnect(self, code):
         if self.user.is_authenticated and hasattr(self, "room_group_names"):

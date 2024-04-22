@@ -9,7 +9,7 @@ from chat.utils import (
     remove_user_from_group,
     send_ws_unread_messages,
 )
-from chat.serializers import MessageSerializer
+from chat.serializers import MessageSerializer, ChatListSerializer
 
 
 def send_info_message(instance: EventParticipant, join: bool):
@@ -70,7 +70,11 @@ def delete_chat_event(sender, instance: Chat, **kwargs):
 def send_unread_messages_ws_message(
     sender, instance: ReadMessage, created: bool, **kwargs
 ):
-    serializer = MessageSerializer(
-        instance=instance.message, context={"user": instance.user}
-    )
-    send_ws_unread_messages(serializer.data, instance.user.pk)
+    if created:
+        events = (
+            Event.objects.filter_participant(instance.user)
+            .distinct()
+            .filter(is_draft=False, is_active=True)
+        )
+        serializer = ChatListSerializer(events, many=True)
+        send_ws_unread_messages(serializer.data, instance.user.pk)
