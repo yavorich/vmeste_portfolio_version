@@ -220,4 +220,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_unread_messages_count(self, chat_id):
         chat = Chat.objects.get(pk=chat_id)
         unread = chat.messages.filter(~Q(read__user=self.user)).count()
+        with open("log.txt", "a") as f:
+            f.write(f"Chat: {chat.event.title}, unread: {unread}")
         return unread
