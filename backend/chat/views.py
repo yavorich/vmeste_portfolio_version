@@ -24,7 +24,6 @@ from core.pagination import PageNumberSetPagination
 class ChatListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ChatListSerializer
-    pagination_class = PageNumberSetPagination
 
     def get_queryset(self):
         status = self.request.query_params.get("status")
