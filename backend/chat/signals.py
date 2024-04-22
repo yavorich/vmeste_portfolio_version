@@ -2,11 +2,12 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete, post_delete
 
 from api.models import Event, EventParticipant, User
-from chat.models import Message, Chat
+from chat.models import Message, Chat, ReadMessage
 from chat.utils import (
     send_ws_message,
     # add_user_to_group,
     remove_user_from_group,
+    send_ws_unread_messages,
 )
 from chat.serializers import MessageSerializer
 
@@ -63,3 +64,11 @@ def delete_chat_event(sender, instance: Chat, **kwargs):
         instance.event.delete()
     except Event.DoesNotExist:
         pass
+
+
+@receiver(post_save, sender=ReadMessage)
+def send_unread_messages_ws_message(
+    sender, instance: ReadMessage, created: bool, **kwargs
+):
+    serializer = MessageSerializer(instance=instance)
+    send_ws_unread_messages(serializer.data, instance.user.pk)

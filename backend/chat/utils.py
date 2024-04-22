@@ -23,6 +23,21 @@ async def asend_ws_message(message: Message, event_pk, _channel_layer):
     )
 
 
+@async_to_sync
+async def send_ws_unread_messages(data: dict, user_pk: int):
+    await asend_ws_unread_messages(data, user_pk, channel_layer)
+
+
+async def asend_ws_unread_messages(data: dict, user_pk: int, _channel_layer):
+    await _channel_layer.group_send(
+        "user_%s" % user_pk,
+        {
+            "type": "messages",
+            "unread": data["unread"],
+        },
+    )
+
+
 # @async_to_sync
 # async def add_user_to_group(event):
 #     group_name = "chat_%s" % event.pk
@@ -43,5 +58,5 @@ async def remove_user_from_group(event):
         {
             "type": "leave_chat",
             "group": group_name,
-        }
+        },
     )

@@ -28,6 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
         await self.send_unread_notifications()
+        await self.send_unread_messages()
 
     async def send_unread_notifications(self):
         unread = await self.get_unread_notifications_count()
@@ -38,6 +39,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "unread": unread,
             },
         )
+
+    async def send_unread_messages(self):
+        chat_ids = [
+            int(group.split("_")[-1])
+            for group in self.room_group_names
+            if "chat" in group
+        ]
+        for chat_id in chat_ids:
+            unread = await self.get_unread_messages_count(chat_id)
+            await self.channel_layer.group_send(
+                "user_%s" % self.user.id,
+                {
+                    "type": "messages",
+                    "chat_id": chat_id,
+                    "unread": unread,
+                },
+            )
 
     async def disconnect(self, code):
         if self.user.is_authenticated and hasattr(self, "room_group_names"):
@@ -79,6 +97,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     async def notifications(self, event):
+        await self.send(text_data=json.dumps(event, ensure_ascii=False))
+
+    async def messages(self, event):
         await self.send(text_data=json.dumps(event, ensure_ascii=False))
 
     @database_sync_to_async
@@ -183,9 +204,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_user_groups(self):
         events = (
-            Event.objects.filter_participant(self.user)
-            .distinct()
-            .filter_not_expired()
+            Event.objects.filter_participant(self.user).distinct().filter_not_expired()
         )
         groups = ["chat_%s" % id for id in events.values_list("id")]
         groups += [f"user_{self.user.id}"]
@@ -196,3 +215,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_unread_notifications_count(self):
         return self.user.notifications.filter(read=False).count()
+
+    @database_sync_to_async
+    def get_unread_messages_count(self, chat_id):
+        chat = Chat.objects.get(pk=chat_id)
+        unread = chat.messages.filter(~Q(read__user=self.user)).count()
+        return unread

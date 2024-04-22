@@ -83,6 +83,7 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = SenderSerializer()
     is_mine = serializers.SerializerMethodField()
     sent_at_time = serializers.SerializerMethodField()
+    unread = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -96,6 +97,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "is_info",
             "is_incoming",
             "is_mine",
+            "unread",
         ]
 
     def get_is_mine(self, obj: Message):
@@ -103,6 +105,9 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def get_sent_at_time(self, obj: Message):
         return obj.sent_at.astimezone(tz=localtime().tzinfo).strftime("%H:%M")
+
+    def get_unread(self, obj: Message):
+        return obj.chat.messages.filter(~Q(read__user=self.context["user"])).count()
 
 
 class MessageSendSerializer(serializers.ModelSerializer):
