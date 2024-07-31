@@ -13,6 +13,7 @@ urlpatterns = [
                 path("", include("api.urls", namespace="api")),
                 path("", include("chat.urls", namespace="chat")),
                 path("", include("notifications.urls", namespace="notifications")),
+                path("coins/", include("coins.urls")),
             ]
         ),
     ),

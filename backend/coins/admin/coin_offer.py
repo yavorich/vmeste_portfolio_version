@@ -7,9 +7,9 @@ from coins.models import CoinOffer
 class CoinOfferAdmin(admin.ModelAdmin):
     fields = ("coins", "discount")
     ordering = ("coins",)
-    list_display = ("coins", "discount", "coins_with_discount")
+    list_display = ("coins", "discount", "price_with_discount")
     list_display_links = list_display
 
     @admin.display(description="Стоимость со скидкой, Р")
-    def coins_with_discount(self, obj):
-        return obj.coins_with_discount
+    def price_with_discount(self, obj):
+        return obj.price_with_discount

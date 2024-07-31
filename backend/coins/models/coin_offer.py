@@ -18,6 +18,6 @@ class CoinOffer(Model):
         return ""
 
     @property
-    def coins_with_discount(self):
+    def price_with_discount(self):
         rate = ExchangeRate.get_solo().rate
         return round(self.coins * (1 - self.discount / 100) * rate)

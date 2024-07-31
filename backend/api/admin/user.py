@@ -7,7 +7,7 @@ from api.models import User
 
 class WalletInline(admin.StackedInline):
     model = Wallet
-    fields = ("balance", "unlimited")
+    fields = ("balance", "unlimited_until")
     min_num = 1
     max_num = 1
     can_delete = False

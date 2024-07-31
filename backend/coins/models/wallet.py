@@ -3,8 +3,8 @@ from django.db.models import (
     Model,
     PositiveIntegerField,
     OneToOneField,
-    BooleanField,
     CASCADE,
+    DateField,
 )
 
 
@@ -14,10 +14,11 @@ User = get_user_model()
 class Wallet(Model):
     user = OneToOneField(User, on_delete=CASCADE)
     balance = PositiveIntegerField("Баланс", default=10)
-    unlimited = BooleanField(
-        "Неограниченный",
-        default=False,
-        help_text="Монеты не будут списываться за операции",
+    unlimited_until = DateField(
+        "Неограниченный до даты",
+        null=True,
+        blank=True,
+        help_text="Монеты не будут списываться за операции до установленной даты",
     )
 
     class Meta:

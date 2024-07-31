@@ -20,3 +20,4 @@ psycopg2-binary==2.9.9
 uvicorn[standard]==0.24.0.post1
 moviepy==1.0.3
 django-solo==2.3.0
+django-admin-sortable2==2.2.1

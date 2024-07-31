@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from api.models import User, EventParticipant
 from api.serializers import CategorySerializer, CitySerializer, CountrySerializer
+from coins.serializers import WalletSerializer
 from core.utils import validate_file_size
 
 
@@ -122,6 +123,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
 class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):
     subscription_days = serializers.SerializerMethodField()
     is_trial = serializers.BooleanField(source="subscription.is_trial", allow_null=True)
+    wallet = WalletSerializer()
 
     class Meta(ProfileRetrieveSerializer.Meta):
         fields = ProfileRetrieveSerializer.Meta.fields + [
@@ -131,6 +133,7 @@ class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):
             "telegram",
             "subscription_days",
             "is_trial",
+            "wallet",
         ]
 
     def get_subscription_days(self, obj: User):

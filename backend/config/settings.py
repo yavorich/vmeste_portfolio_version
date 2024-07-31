@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "rangefilter",
     "phonenumber_field",
     "solo",
+    "adminsortable2",
 ]
 
 MIDDLEWARE = [
