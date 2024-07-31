@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", True)
+DEBUG = os.environ.get("DEBUG", "true").lower() in ("true", "1")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(
     ","
@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "api",
     "chat",
     "notifications",
+    "coins",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     "channels",
     "rangefilter",
     "phonenumber_field",
+    "solo",
 ]
 
 MIDDLEWARE = [

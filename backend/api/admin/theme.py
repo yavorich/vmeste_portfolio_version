@@ -10,7 +10,7 @@ class CategoryInline(admin.TabularInline):
 @admin.register(Theme)
 class ThemeAdmin(admin.ModelAdmin):
     inlines = [CategoryInline]
-    list_display = ["title", "events_count"]
+    list_display = ["title", "events_count", "organizer_price", "participant_price"]
 
     @admin.display(description="Кол-во событий")
     def events_count(self, obj):
