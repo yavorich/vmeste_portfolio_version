@@ -1,6 +1,11 @@
 from django.urls import path
 
-from coins.views import CoinOfferView, CoinSubscriptionView, ActivatePromoCodeView
+from coins.views import (
+    CoinOfferView,
+    CoinSubscriptionView,
+    ActivatePromoCodeView,
+    BuyCoinsView,
+)
 
 urlpatterns = [
     path("offer/", CoinOfferView.as_view(), name="coin_offer"),
@@ -10,4 +15,5 @@ urlpatterns = [
         ActivatePromoCodeView.as_view(),
         name="activate_promo_code",
     ),
+    path("buy/", BuyCoinsView.as_view(), name="buy_coins"),
 ]
