@@ -6,7 +6,7 @@ from django.db.models import (
     CASCADE,
     DateField,
 )
-
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -27,3 +27,10 @@ class Wallet(Model):
 
     def __str__(self):
         return ""
+
+    @property
+    def unlimited(self):
+        return (
+            self.unlimited_until is not None
+            and timezone.now().date() <= self.unlimited_until
+        )

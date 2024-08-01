@@ -6,4 +6,4 @@ from coins.models import Wallet
 class WalletSerializer(ModelSerializer):
     class Meta:
         model = Wallet
-        fields = ("balance", "unlimited")
+        fields = ("balance", "unlimited", "unlimited_until")
