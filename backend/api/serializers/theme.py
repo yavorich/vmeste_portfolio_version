@@ -23,4 +23,4 @@ class ThemeSerializer(ModelSerializer):
 
     class Meta:
         model = Theme
-        fields = ["id", "title", "sub"]
+        fields = ["id", "title", "organizer_price", "participant_price", "sub"]
