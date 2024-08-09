@@ -12,7 +12,16 @@ from django_elasticsearch_dsl.fields import (
 from elasticsearch_dsl import analyzer
 from elasticsearch_dsl.analysis import token_filter
 
-from api.models import Event, Location, EventParticipant, User, Country, City, Category
+from api.models import (
+    Event,
+    Location,
+    EventParticipant,
+    User,
+    Country,
+    City,
+    Category,
+    Theme,
+)
 from api.enums import Gender
 
 edge_ngram_completion_filter = token_filter(
@@ -100,13 +109,22 @@ class EventDocument(Document):
             ),
         }
     )
+    sign_price = IntegerField()
 
     class Index:
         name = "event"
 
     class Django:
         model = Event
-        related_models = [EventParticipant, Country, City, Category, Location, User]
+        related_models = [
+            EventParticipant,
+            Country,
+            City,
+            Theme,
+            Category,
+            Location,
+            User,
+        ]
 
     settings = {
         "number_of_shards": 1,
@@ -118,7 +136,7 @@ class EventDocument(Document):
             return related_instance.objects.all()
         if isinstance(related_instance, EventParticipant):
             return related_instance.event
-        if isinstance(related_instance, (Country, City, Category, Location)):
+        if isinstance(related_instance, (Country, City, Theme, Category, Location)):
             return related_instance.events.all()
         if isinstance(related_instance, User):
             return Event.objects.filter_participant(related_instance)

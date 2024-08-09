@@ -147,6 +147,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     are_there_free_places = serializers.SerializerMethodField()
     am_i_confirmed = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
+    sign_price = serializers.IntegerField()
     sign_and_edit = serializers.SerializerMethodField()
     unread_messages = serializers.SerializerMethodField()
 
@@ -183,6 +184,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "am_i_confirmed",
             "media",
             "sign_and_edit",
+            "sign_price",
             "is_draft",
             "unread_messages",
         ]
@@ -220,6 +222,7 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
             "stats_women",
             "date_and_time",
             "am_i_organizer",
+            "sign_price",
         ]
 
     def get_cover(self, obj):
@@ -460,7 +463,20 @@ class EventSignSerializer(ModelSerializer):
         if instance.is_draft:
             raise ValidationError({"error": "Событие ещё не опубликовано."})
 
-        EventParticipant.objects.get_or_create(event=instance, user=user)
+        price = 0
+        if not instance.organizer_will_pay:
+            price = instance.theme.participant_price
+            if not user.wallet.has_coin(price):
+                raise NoCoinsError
+
+        participant, _ = EventParticipant.objects.get_or_create(
+            event=instance, user=user
+        )
+        if price > 0:  # плата за вступление
+            user.wallet.spend(price)
+            participant.payed = price
+            participant.save()
+
         return instance
 
 
@@ -482,13 +498,15 @@ class EventCancelSerializer(ModelSerializer):
         if participant.is_organizer:
             if not valid_time:
                 raise ValidationError({"error": "Время отмены события истекло."})
-            instance.is_draft = True
+            instance.is_draft = True  # возврат организатору в сигнале
             instance.save()
         else:
             if not valid_time:
                 raise ValidationError(
                     {"error": "Время отмены участия в событии истекло."}
                 )
+            if participant.payed > 0:  # возврат за событие для участника
+                participant.user.wallet.refund(participant.payed)
             participant.delete()
 
         return instance

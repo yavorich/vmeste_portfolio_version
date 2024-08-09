@@ -192,6 +192,13 @@ class Event(models.Model):
         except EventParticipant.DoesNotExist:
             return None
 
+    @property
+    def sign_price(self):
+        if self.organizer_will_pay:
+            return 0
+        else:
+            return self.theme.participant_price
+
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
         participants = EventParticipant.objects.filter(event=self, user__gender=gender)
