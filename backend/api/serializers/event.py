@@ -1,14 +1,16 @@
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models import Q
+from django.utils.timezone import localtime, datetime, timedelta
+from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import (
     Serializer,
     ModelSerializer,
 )
-from django.utils.timezone import localtime, datetime, timedelta
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
-from django.db.models import Q
-from rest_framework.exceptions import ValidationError
 
+from api.documents import EventDocument
+from api.enums import EventState
 from api.models import (
     Event,
     EventParticipant,
@@ -18,15 +20,15 @@ from api.models import (
     Theme,
     User,
 )
-from api.enums import EventState
+from api.models import EventFastFilter
 from api.serializers import (
     LocationSerializer,
     CategorySerializer,
     ThemeSerializer,
     ThemeCategoriesSerializer,
 )
-from api.documents import EventDocument
-from api.models import EventFastFilter
+from api.services.payment import do_payment_on_create
+from coins.exceptions import NoCoinsError
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
 from .support import SupportMessageCreateSerializer
@@ -261,28 +263,45 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "description",
             "is_close_event",
             "is_draft",
+            "organizer_will_pay",
         ]
         extra_kwargs = {f: {"required": True} for f in fields}
         extra_kwargs["cover"].update({"read_only": False})
 
-    def prepare_location(self, validated_data: dict):
-        validated_data["country"], _ = Country.objects.get_or_create(
-            name=validated_data.pop("country_name")
+    @staticmethod
+    def prepare_location(validated_data: dict):
+        location_fields = (
+            "country_name",
+            "city_name",
+            "address",
+            "location_name",
+            "latitude",
+            "longitude",
         )
-        validated_data["city"], _ = City.objects.get_or_create(
-            name=validated_data.pop("city_name"), country=validated_data["country"]
-        )
-        validated_data["location"], created = Location.objects.get_or_create(
-            country=validated_data["country"],
-            city=validated_data["city"],
-            address=validated_data.pop("address"),
-            name=validated_data.pop("location_name"),
-            defaults={
-                "latitude": validated_data.pop("latitude"),
-                "longitude": validated_data.pop("longitude"),
-                "status": Location.Status.UNKNOWN,
-            },
-        )
+
+        if all((field in validated_data for field in location_fields)):
+            validated_data["country"], _ = Country.objects.get_or_create(
+                name=validated_data.pop("country_name")
+            )
+            validated_data["city"], _ = City.objects.get_or_create(
+                name=validated_data.pop("city_name"),
+                country=validated_data["country"],
+            )
+            validated_data["location"], created = Location.objects.get_or_create(
+                country=validated_data["country"],
+                city=validated_data["city"],
+                address=validated_data.pop("address"),
+                name=validated_data.pop("location_name"),
+                defaults={
+                    "latitude": validated_data.pop("latitude"),
+                    "longitude": validated_data.pop("longitude"),
+                    "status": Location.Status.UNKNOWN,
+                },
+            )
+        else:
+            for field in location_fields:
+                validated_data.pop(field, None)
+
         # if created:
         #     cover = (
         #         validated_data["cover"]
@@ -294,30 +313,65 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
         return validated_data
 
-    def validate_start_datetime(self, validated_data, hours):
-        start_datetime = datetime.combine(
-            validated_data["date"],
-            validated_data["start_time"],
-            tzinfo=localtime().tzinfo,
-        )
-        if start_datetime < localtime() + timedelta(hours=hours):
-            raise ValidationError(
-                {"error": f"Минимальное время до начала мероприятия - {hours} часов"}
+    @staticmethod
+    def validate_start_datetime(validated_data, hours):
+        date_fields = ("date", "start_time")
+        if all((field in validated_data for field in date_fields)):
+            start_datetime = datetime.combine(
+                validated_data["date"],
+                validated_data["start_time"],
+                tzinfo=localtime().tzinfo,
             )
+            if start_datetime < localtime() + timedelta(hours=hours):
+                raise ValidationError(
+                    {
+                        "error": f"Минимальное время до начала мероприятия - {hours} часов"
+                    }
+                )
+        else:
+            for field in date_fields:
+                validated_data.pop(field, None)
 
-    def validate_age(self, validated_data):
-        if validated_data["min_age"] >= validated_data["max_age"]:
-            raise ValidationError(
-                {"error": "Минимальный возраст должен быть меньше максимального"}
-            )
-        if validated_data["min_age"] < 18:
-            raise ValidationError(
-                {"error": "Минимальный возраст не может быть меньше 18"}
-            )
-        if validated_data["max_age"] > 100:
-            raise ValidationError(
-                {"error": "Максимальный возраст не может быть больше 100"}
-            )
+    @staticmethod
+    def validate_age(validated_data):
+        age_fields = ("min_age", "max_age")
+
+        if all((field in validated_data for field in age_fields)):
+            if validated_data["min_age"] >= validated_data["max_age"]:
+                raise ValidationError(
+                    {"error": "Минимальный возраст должен быть меньше максимального"}
+                )
+            if validated_data["min_age"] < 18:
+                raise ValidationError(
+                    {"error": "Минимальный возраст не может быть меньше 18"}
+                )
+            if validated_data["max_age"] > 100:
+                raise ValidationError(
+                    {"error": "Максимальный возраст не может быть больше 100"}
+                )
+        else:
+            for field in age_fields:
+                validated_data.pop(field, None)
+
+    def validate(self, attrs):
+        user = self.context["user"]
+        if self.instance is None:  # create
+            if not attrs["is_draft"] and attrs["organizer_will_pay"]:
+                price = attrs["theme"].organizer_price
+                if not user.wallet.has_coin(price):
+                    raise NoCoinsError
+
+        else:  # update
+            if (
+                not attrs.get("is_draft", self.instance.is_draft)
+                and attrs.get("organizer_will_pay", self.instance.organizer_will_pay)
+                and not self.instance.is_draft
+            ):
+                price = attrs.get("theme", self.instance.theme).organizer_price
+                if not user.wallet.has_coin(price):
+                    raise NoCoinsError
+
+        return attrs
 
     def create(self, validated_data):
         validated_data = self.prepare_location(validated_data)
@@ -327,7 +381,17 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 {"error": "Обложка события не является корректным файлом"}
             )
-        return super().create(validated_data)
+
+        event = super().create(validated_data)
+        # Создание организатора
+        EventParticipant.objects.create(
+            event=event,
+            user=self.context["user"],
+            is_organizer=True,
+            has_confirmed=True,
+        )
+        do_payment_on_create(event)
+        return event
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data)
@@ -394,9 +458,7 @@ class EventSignSerializer(ModelSerializer):
                 {"error": "Ваш возраст не подходит для записи на событие."}
             )
         if instance.is_draft:
-            raise ValidationError(
-                {"error": "Событие ещё не опубликовано."}
-            )
+            raise ValidationError({"error": "Событие ещё не опубликовано."})
 
         EventParticipant.objects.get_or_create(event=instance, user=user)
         return instance
@@ -453,7 +515,6 @@ class EventReportSerializer(ModelSerializer):
 
 
 class EventConfirmSerializer(ModelSerializer):
-
     class Meta:
         model = Event
         fields = []

@@ -12,6 +12,7 @@ class EventParticipant(models.Model):
     is_organizer = models.BooleanField(default=False)
     kicked_by_organizer = models.BooleanField(default=False)
     chat_notifications = models.BooleanField(default=True)
+    payed = models.PositiveIntegerField("Оплачено", default=0)
 
     class Meta:
         verbose_name = "Участник события"

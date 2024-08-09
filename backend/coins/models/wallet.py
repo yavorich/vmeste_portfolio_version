@@ -34,3 +34,16 @@ class Wallet(Model):
             self.unlimited_until is not None
             and timezone.now().date() <= self.unlimited_until
         )
+
+    def has_coin(self, coins: int) -> bool:
+        return self.unlimited or coins <= self.balance
+
+    def spend(self, coins: int):
+        if not self.unlimited:
+            self.balance -= coins
+            self.save()
+
+    def refund(self, coins: int):
+        if not self.unlimited:
+            self.balance += coins
+            self.save()

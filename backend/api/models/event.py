@@ -131,6 +131,9 @@ class Event(models.Model):
     did_organizer_marking = models.BooleanField(
         _("Организатор отметил присутствие"), default=False
     )
+
+    organizer_will_pay = models.BooleanField(_("Организатор оплатит встречу"))
+
     tracker = FieldTracker()
     objects = EventQuerySet.as_manager()
 

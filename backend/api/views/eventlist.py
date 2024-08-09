@@ -225,11 +225,3 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             response_data["event_rules_applied"] = user.event_rules_applied
 
         return Response(response_data)
-
-    def perform_create(self, serializer):
-        event = serializer.save()
-
-        # Создание организатора
-        EventParticipant.objects.create(
-            event=event, user=self.request.user, is_organizer=True, has_confirmed=True
-        )
