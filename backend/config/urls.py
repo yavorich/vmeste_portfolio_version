@@ -14,6 +14,7 @@ urlpatterns = [
                 path("", include("chat.urls", namespace="chat")),
                 path("", include("notifications.urls", namespace="notifications")),
                 path("coins/", include("coins.urls")),
+                path("payment/", include("payment.urls")),
             ]
         ),
     ),

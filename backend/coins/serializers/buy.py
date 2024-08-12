@@ -3,10 +3,11 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import Serializer, ChoiceField, IntegerField
 
 from coins.models import CoinOffer, CoinSubscription
+from payment.models import ProductType
 
 
 class BuyCoinsSerializer(Serializer):
-    product_type = ChoiceField(choices=("coins", "subscription"))
+    product_type = ChoiceField(choices=ProductType.choices)
     product_id = IntegerField()
 
     def validate(self, attrs):

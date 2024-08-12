@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "chat",
     "notifications",
     "coins",
+    "payment",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
@@ -232,3 +233,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
 FCM_TOKEN = os.environ.get("FCM_TOKEN")
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+
+TINKOFF_BASE_URL = os.environ.get("TINKOFF_BASE_URL")
+TINKOFF_TERMINAL_KEY = os.environ.get("TINKOFF_TERMINAL_KEY")
+TINKOFF_PASSWORD = os.environ.get("TINKOFF_PASSWORD")
