@@ -42,20 +42,15 @@ CSRF_TRUSTED_ORIGINS = ["http://" + host + ":8000" for host in ALLOWED_HOSTS] + 
 ]
 
 # Application definition
+LOCAL_APPS = [
+    "apps.api",
+    "apps.chat",
+    "apps.notifications",
+    "apps.coins",
+    "apps.payment",
+]
 
-INSTALLED_APPS = [
-    "daphne",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "api",
-    "chat",
-    "notifications",
-    "coins",
-    "payment",
+THIRD_PARTY_APPS = [
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
@@ -67,7 +62,22 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "solo",
     "adminsortable2",
+    "django_eventstream",
 ]
+
+INSTALLED_APPS = (
+    [
+        "daphne",
+        "django.contrib.admin",
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "django.contrib.sessions",
+        "django.contrib.messages",
+        "django.contrib.staticfiles",
+    ]
+    + THIRD_PARTY_APPS
+    + LOCAL_APPS
+)
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -182,7 +192,7 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    "api.backends.auth.PhoneAuthBackend",
+    "apps.api.backends.auth.PhoneAuthBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 

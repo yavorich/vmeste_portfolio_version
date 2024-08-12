@@ -10,11 +10,11 @@ urlpatterns = [
         "api/v1/",
         include(
             [
-                path("", include("api.urls", namespace="api")),
-                path("", include("chat.urls", namespace="chat")),
-                path("", include("notifications.urls", namespace="notifications")),
-                path("coins/", include("coins.urls")),
-                path("payment/", include("payment.urls")),
+                path("", include("apps.api.urls", namespace="api")),
+                path("", include("apps.chat.urls", namespace="chat")),
+                path("", include("apps.notifications.urls", namespace="notifications")),
+                path("coins/", include("apps.coins.urls")),
+                path("payment/", include("apps.payment.urls")),
             ]
         ),
     ),
