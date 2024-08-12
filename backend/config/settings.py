@@ -41,6 +41,9 @@ CSRF_TRUSTED_ORIGINS = ["http://" + host + ":8000" for host in ALLOWED_HOSTS] + 
     "https://" + host for host in ALLOWED_HOSTS
 ]
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # Application definition
 LOCAL_APPS = [
     "apps.api",
