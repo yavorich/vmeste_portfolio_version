@@ -2,6 +2,8 @@
 
 from django.db import migrations, models
 
+import apps.api.models.media
+
 
 class Migration(migrations.Migration):
     dependencies = [

@@ -3,6 +3,8 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+import apps.api.models.media
+
 
 class Migration(migrations.Migration):
     dependencies = [

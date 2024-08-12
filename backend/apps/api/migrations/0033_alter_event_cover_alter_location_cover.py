@@ -2,6 +2,9 @@
 
 from django.db import migrations, models
 
+import apps.api.models.event
+import apps.api.models.location
+
 
 class Migration(migrations.Migration):
     dependencies = [
