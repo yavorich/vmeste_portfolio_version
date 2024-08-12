@@ -34,5 +34,5 @@ class CoinOffer(ProductMixin, Model):
         return self.price_with_discount
 
     def buy(self, user):
-        user.wallet.coins += self.coins
+        user.wallet.balance += self.coins
         user.wallet.save()

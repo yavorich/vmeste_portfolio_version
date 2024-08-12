@@ -38,6 +38,9 @@ class CoinSubscription(ProductMixin, Model):
 
     def buy(self, user):
         today = timezone.now().date()
+        if user.wallet.unlimited_until is not None:  # если подписка уже активирована
+            today = max(user.wallet.unlimited_until, today)
+
         match self.period_type:
             case self.PeriodType.YEAR:
                 unlimited_until = today.replace(year=today.year + self.quantity)
