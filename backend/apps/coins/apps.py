@@ -7,4 +7,4 @@ class CoinsConfig(AppConfig):
     verbose_name = "Монеты"
 
     def ready(self):
-        from . import signals
+        import apps.coins.signals
