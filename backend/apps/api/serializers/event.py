@@ -144,7 +144,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     are_there_free_places = serializers.SerializerMethodField()
     am_i_confirmed = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
-    sign_price = serializers.IntegerField()
+    sign_price = serializers.IntegerField(allow_null=True)
     sign_and_edit = serializers.SerializerMethodField()
     unread_messages = serializers.SerializerMethodField()
 

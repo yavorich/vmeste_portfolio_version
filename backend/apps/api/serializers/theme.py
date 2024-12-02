@@ -12,7 +12,9 @@ class ThemeCategoriesSerializer(ModelSerializer):
         fields = ["id", "title", "categories"]
 
     def get_categories(self, obj):
-        categories = obj.categories.filter(pk__in=self.context["categories"])
+        categories = obj.categories.filter(pk__in=self.context["categories"]).order_by(
+            "title"
+        )
         if categories:
             return CategorySerializer(categories, many=True).data
         return None

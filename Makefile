@@ -46,7 +46,7 @@ celery-logs:
 	$(docker_compose) logs --tail=1000 -f celery $(c)
 
 app-bash:
-	docker exec -it $(app_name)_backend bash $(c)
+	docker exec -it $(app_name)_backend /bin/sh $(c)
 
 db-bash:
 	docker exec -it $(app_name)_db bash $(c)
