@@ -20,4 +20,4 @@ class Theme(models.Model):
 
     @property
     def categories_ordering(self):
-        return self.categoreis.order_by("title")
+        return self.categories.order_by("title")
