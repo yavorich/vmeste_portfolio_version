@@ -4,10 +4,7 @@ from django.utils.timezone import localtime, datetime, timedelta
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import (
-    Serializer,
-    ModelSerializer,
-)
+from rest_framework.serializers import Serializer, ModelSerializer, Field
 
 from apps.api.documents import EventDocument
 from apps.api.enums import EventState
@@ -268,7 +265,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "is_draft",
             "organizer_will_pay",
         ]
-        extra_kwargs = {f: {"required": True} for f in fields}
+        extra_kwargs = {
+            f: {"required": True} for f in fields if f not in ("organizer_will_pay",)
+        }
         extra_kwargs["cover"].update({"read_only": False})
 
     @staticmethod
@@ -359,20 +358,34 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         user = self.context["user"]
         if self.instance is None:  # create
-            if not attrs["is_draft"] and attrs["organizer_will_pay"]:
-                price = attrs["theme"].organizer_price
-                if not user.wallet.has_coin(price):
-                    raise NoCoinsError
+            if not attrs["is_draft"]:
+                if attrs.get("organizer_will_pay") is None:
+                    raise ValidationError(
+                        {"organizer_will_pay": Field.default_error_messages["required"]}
+                    )
+
+                if attrs["organizer_will_pay"]:
+                    price = attrs["theme"].organizer_price
+                    if not user.wallet.has_coin(price):
+                        raise NoCoinsError
 
         else:  # update
             if (
                 not attrs.get("is_draft", self.instance.is_draft)
-                and attrs.get("organizer_will_pay", self.instance.organizer_will_pay)
-                and not self.instance.is_draft
+                and self.instance.is_draft
             ):
-                price = attrs.get("theme", self.instance.theme).organizer_price
-                if not user.wallet.has_coin(price):
-                    raise NoCoinsError
+                if (
+                    attrs.get("organizer_will_pay", self.instance.organizer_will_pay)
+                    is None
+                ):
+                    raise ValidationError(
+                        {"organizer_will_pay": Field.default_error_messages["required"]}
+                    )
+
+                if attrs.get("organizer_will_pay", self.instance.organizer_will_pay):
+                    price = attrs.get("theme", self.instance.theme).organizer_price
+                    if not user.wallet.has_coin(price):
+                        raise NoCoinsError
 
         return attrs
 
