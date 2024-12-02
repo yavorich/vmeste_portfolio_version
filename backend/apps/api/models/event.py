@@ -198,6 +198,8 @@ class Event(models.Model):
     def sign_price(self):
         if self.organizer_will_pay:
             return 0
+        elif self.organizer_will_pay is None:
+            return 0
         else:
             return self.theme.participant_price
 
