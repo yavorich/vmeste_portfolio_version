@@ -34,7 +34,7 @@ def send_info_message(instance: EventParticipant, join: bool):
     if join:
         GroupNotification.objects.create(
             type=GroupNotification.Type.CHAT_JOIN,
-            event=instance,
+            event=instance.event,
             related_id=instance.user_id,
             body=text,
         )
