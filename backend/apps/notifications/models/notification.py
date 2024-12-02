@@ -8,6 +8,7 @@ class GroupNotification(models.Model):
         EVENT_REMIND = "EVENT_REMIND", "Напоминание о событии"
         EVENT_CANCELED = "EVENT_CANCELED", "Событие отменено"
         EVENT_CHANGED = "EVENT_CHANGED", "Событие изменено"
+        EVENT_ADDED = "EVENT_ADDED", "Новое событие"
         EVENT_REC = "EVENT_REC", "Рекомендованное событие"
         ADMIN = "ADMIN", "От администрации"
 
@@ -36,11 +37,23 @@ class GroupNotification(models.Model):
         users = User.objects.filter(is_active=True, is_staff=False, sending_push=True)
         if self.type == GroupNotification.Type.ADMIN:
             return users
-        if self.type == GroupNotification.Type.EVENT_REC:
+
+        elif self.type == GroupNotification.Type.EVENT_REC:
             return users.filter(receive_recs=True)
-        if self.type == GroupNotification.Type.EVENT_REMIND:
+
+        elif self.type == GroupNotification.Type.EVENT_REMIND:
             participants = self.event.participants.all()
             return users.filter(events__in=participants)
+
+        elif self.type == GroupNotification.Type.EVENT_ADDED:
+            categories = self.event.categories.all()
+            organizer_user = self.event.organizer
+
+            if organizer_user is not None:
+                users = users.exclude(pk=organizer_user.pk)
+
+            return users.filter(categories__in=categories)
+
         else:
             participants = self.event.participants.filter(is_organizer=False)
             return users.filter(events__in=participants)
