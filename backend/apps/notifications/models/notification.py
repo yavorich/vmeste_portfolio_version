@@ -11,6 +11,7 @@ class GroupNotification(models.Model):
         EVENT_ADDED = "EVENT_ADDED", "Новое событие"
         EVENT_REC = "EVENT_REC", "Рекомендованное событие"
         ADMIN = "ADMIN", "От администрации"
+        CHAT_JOIN = "CHAT_JOIN", "Пользователь присоединился к чату"
 
     type = models.CharField(_("Тип"), choices=Type.choices)
     created_at = models.DateTimeField(_("Время создания"), auto_now_add=True)
@@ -28,6 +29,8 @@ class GroupNotification(models.Model):
     remind_hours = models.PositiveSmallIntegerField(
         _("Кол-во часов до начала"), blank=True, null=True
     )
+
+    related_id = models.PositiveBigIntegerField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Уведомление"
@@ -53,6 +56,13 @@ class GroupNotification(models.Model):
                 users = users.exclude(pk=organizer_user.pk)
 
             return users.filter(categories__in=categories)
+
+        elif self.type == GroupNotification.Type.CHAT_JOIN:
+            participants = self.event.participants.all()
+            if self.related_id is not None:
+                users = users.exclude(pk=self.related_id)
+
+            return users.filter(events__in=participants)
 
         else:
             participants = self.event.participants.filter(is_organizer=False)

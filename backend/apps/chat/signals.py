@@ -10,14 +10,16 @@ from apps.chat.utils import (
     send_ws_unread_messages,
 )
 from apps.chat.serializers import MessageSerializer, ChatListSerializer
+from apps.notifications.models import GroupNotification
 
 
 def send_info_message(instance: EventParticipant, join: bool):
     text_sample = "присоединился к чату" if join else "покинул чат"
+    text = f"{instance.user.get_full_name()} {text_sample}"
     message = Message.objects.create(
         chat=instance.event.chat,
         sender=instance.user,
-        text=f"{instance.user.get_full_name()} {text_sample}",
+        text=text,
         is_info=True,
         is_incoming=join,
     )
@@ -28,6 +30,14 @@ def send_info_message(instance: EventParticipant, join: bool):
     send_ws_message(message_serializer.data, event_pk)
     for participant in instance.event.participants.all():
         message.read.get_or_create(user=participant.user)
+
+    if join:
+        GroupNotification.objects.create(
+            type=GroupNotification.Type.CHAT_JOIN,
+            event=instance,
+            related_id=instance.user_id,
+            body=text,
+        )
 
 
 @receiver(post_save, sender=EventParticipant)
