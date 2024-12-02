@@ -199,7 +199,7 @@ class Event(models.Model):
         if self.organizer_will_pay:
             return 0
         elif self.organizer_will_pay is None:
-            return 0
+            return
         else:
             return self.theme.participant_price
 
