@@ -17,3 +17,7 @@ class Theme(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    @property
+    def categories_ordering(self):
+        return self.categoreis.order_by("title")

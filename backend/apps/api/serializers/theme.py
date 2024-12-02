@@ -21,7 +21,7 @@ class ThemeCategoriesSerializer(ModelSerializer):
 
 
 class ThemeSerializer(ModelSerializer):
-    sub = CategorySerializer(source="categories", many=True)
+    sub = CategorySerializer(source="categories_ordering", many=True)
 
     class Meta:
         model = Theme
