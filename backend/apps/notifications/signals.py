@@ -72,8 +72,7 @@ def delete_existing_remind_notifications(instance: Event):
 
 def create_event_remind_notifications(instance: Event):
     GroupNotification.objects.create(
-        type=GroupNotification.Type.EVENT_ADDED,
-        event=instance,
+        type=GroupNotification.Type.EVENT_ADDED, event=instance, body=""
     )
 
     for hours in [24, 4, 1, 0]:

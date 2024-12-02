@@ -133,7 +133,10 @@ class UserNotification(models.Model):
             return self.generate_remind_body()
         if self.notification.type == GroupNotification.Type.ADMIN:
             return self.notification.body
-        if self.notification.type == GroupNotification.Type.EVENT_REC:
+        if self.notification.type in (
+            GroupNotification.Type.EVENT_REC,
+            GroupNotification.Type.EVENT_ADDED,
+        ):
             return (
                 "Новое интересное событие! "
                 + "Успейте записаться, пока есть свободные места."
