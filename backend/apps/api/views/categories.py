@@ -17,14 +17,14 @@ class CategoryListView(ListAPIView):
     search_fields = ["title"]
 
     def get_queryset(self):
-        queryset = Category.objects.filter(theme=self.kwargs["pk"])
+        queryset = Category.objects.filter(theme=self.kwargs["pk"]).order_by("title")
         return queryset
 
 
 class InterestListView(ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = CategorySerializer
-    queryset = Category.objects.all()
+    queryset = Category.objects.order_by("title")
 
 
 class OccupationListView(ListAPIView):
@@ -42,4 +42,4 @@ class ThemeListView(ListAPIView):
     filter_backends = [SearchFilter]
     search_fields = ["title"]
 
-    queryset = Theme.objects.all()
+    queryset = Theme.objects.order_by("title")
