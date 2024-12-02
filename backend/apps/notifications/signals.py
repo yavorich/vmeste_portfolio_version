@@ -125,7 +125,7 @@ def create_user_notifications_task(
             instance.task_id = task.id
             instance.save()
         else:
-            user_notifications_task.delay(instance.pk)
+            user_notifications_task.apply_async(args=[instance.pk], countdown=3)
 
 
 @receiver(pre_delete, sender=GroupNotification)
