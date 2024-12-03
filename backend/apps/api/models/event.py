@@ -26,7 +26,10 @@ class EventQuerySet(models.QuerySet):
     def get_free_places(self):
         participants_count = models.Count("participants")
         return self.annotate(
-            free_places=F("total_male") + F("total_female") - participants_count
+            free_places=models.Case(
+                models.When(Q(total_male=None) | Q(total_female=None), then=None),
+                default=F("total_male") + F("total_female") - participants_count,
+            )
         )
 
     def get_free_places_by_gender(self, gender: Gender):
@@ -35,12 +38,17 @@ class EventQuerySet(models.QuerySet):
             "participants",
             filter=Q(participants__user__gender=gender),
         )
-        return self.annotate(free_places=F(total_field) - participants_count)
+        return self.annotate(
+            free_places=models.Case(
+                models.When(**{total_field: None}, then=None),
+                default=F(total_field) - participants_count,
+            )
+        )
 
     def filter_has_free_places(self, gender: Gender | None = None):
         if gender is not None:
             return self.get_free_places_by_gender(gender).filter(free_places__gt=0)
-        return self.get_free_places().filter(free_places__gt=0)
+        return self.get_free_places().filter(Q(free_places__gt=0) | Q(free_places=None))
 
     def filter_past(self, hours=0, days=90):
         return self.filter(
@@ -126,8 +134,12 @@ class Event(models.Model):
     )
     is_draft = models.BooleanField(_("Черновик"))
     is_active = models.BooleanField(_("Активное"), default=True)
-    total_male = models.PositiveSmallIntegerField(_("Всего мужчин"))
-    total_female = models.PositiveSmallIntegerField(_("Всего женщин"))
+    total_male = models.PositiveSmallIntegerField(
+        _("Всего мужчин"), null=True, blank=True
+    )
+    total_female = models.PositiveSmallIntegerField(
+        _("Всего женщин"), null=True, blank=True
+    )
     did_organizer_marking = models.BooleanField(
         _("Организатор отметил присутствие"), default=False
     )
@@ -208,7 +220,7 @@ class Event(models.Model):
         participants = EventParticipant.objects.filter(event=self, user__gender=gender)
         total = getattr(self, total_field)
         count = participants.count()
-        return f"{count}/{total}"
+        return f"{count}/{total}" if total is not None else str(count)
 
     def get_participants(self) -> BaseManager[EventParticipant]:
         return self.participants.all()
@@ -227,10 +239,14 @@ class Event(models.Model):
     def get_free_places(self, gender: Gender | None = None) -> bool:
         if gender:
             total_field = "total_" + gender
-            return (
-                getattr(self, total_field)
-                - self.get_participants_by_gender(gender).count()
-            )
+            total_field_value = getattr(self, total_field)
+            if total_field_value is None:
+                return
+
+            return total_field_value - self.get_participants_by_gender(gender).count()
+        if self.total_male is None or self.total_female is None:
+            return
+
         return self.total_male + self.total_female - self.get_participants().count()
 
     def is_valid_sign_and_edit_time(self) -> bool:

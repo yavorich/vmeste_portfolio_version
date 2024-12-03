@@ -73,7 +73,9 @@ class EventMixin:
         user = self.context.get("user")
         if not user.is_authenticated:
             return False
-        return obj.get_free_places(gender=user.gender) > 0
+
+        free_places_count = obj.get_free_places(gender=user.gender)
+        return free_places_count is None or free_places_count > 0
 
     def get_participants(self, obj: Event):
         participants = obj.participants.all()
@@ -266,7 +268,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "organizer_will_pay",
         ]
         extra_kwargs = {
-            f: {"required": True} for f in fields if f not in ("organizer_will_pay",)
+            f: {"required": True}
+            for f in fields
+            if f not in ("organizer_will_pay", "total_male", "total_female")
         }
         extra_kwargs["cover"].update({"read_only": False})
 

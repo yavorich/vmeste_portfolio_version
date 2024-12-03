@@ -150,13 +150,23 @@ class EventDocument(Document):
         return {
             "user": [{"id": p.user.id, "gender": p.user.gender} for p in participants],
             "stats": {
-                "men": f"{male}/{instance.total_male}",
-                "women": f"{female}/{instance.total_female}",
+                "men": f"{male}/{instance.total_male}"
+                if instance.total_male is not None
+                else str(male),
+                "women": f"{female}/{instance.total_female}"
+                if instance.total_female is not None
+                else str(female),
             },
             "free_places": {
-                "male": instance.total_male - male,
-                "female": instance.total_female - female,
-                "total": instance.total_male + instance.total_female - total,
+                "male": instance.total_male - male
+                if instance.total_male is not None
+                else None,
+                "female": instance.total_female - female
+                if instance.total_female is not None
+                else None,
+                "total": instance.total_male + instance.total_female - total
+                if instance.total_male is not None and instance.total_female is not None
+                else None,
             },
         }
 
