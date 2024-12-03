@@ -13,8 +13,8 @@ services:
       - static:/app/backend/static/
       - media:/app/backend/media/
       - /var/certbot/conf:/etc/letsencrypt/:ro
-    expose:
-      - 8000
+    ports:
+      - 8000:8000
     env_file:
       - .env
     depends_on:

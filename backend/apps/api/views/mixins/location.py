@@ -5,8 +5,7 @@ from apps.api.models import Event
 
 
 class LocationMixin:
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def check_filter(self):
         _filter = self.request.query_params.get("filter")
         if _filter is None:
             raise ParseError("Параметр filter должен быть указан")
@@ -14,7 +13,11 @@ class LocationMixin:
         if not isinstance(_filter, bool):
             raise ParseError("Параметр filter должен иметь значение true/false")
 
-        if isinstance(_filter, bool) and _filter:
+        return isinstance(_filter, bool) and _filter
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.check_filter():
             gender = getattr(self.request.user, "gender", None)
             actual_events = (
                 Event.objects.filter(is_close_event=False)

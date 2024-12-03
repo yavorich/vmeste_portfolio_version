@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.core.management import call_command
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
 from django_elasticsearch_dsl_drf.filter_backends import (
@@ -19,6 +20,7 @@ from apps.api.serializers import (
     CitySerializer,
 )
 from apps.api.models import Country, City, Location
+from core.cache.functools import get_or_cache
 from .mixins import LocationMixin
 
 
@@ -68,7 +70,7 @@ class CountryListView(LocationMixin, ListAPIView):
     filter_backends = [SearchFilter]
     search_fields = ["name"]
 
-    queryset = Country.objects.all()
+    queryset = Country.objects.order_by("name")
 
 
 class CityListView(LocationMixin, ListAPIView):
@@ -77,4 +79,16 @@ class CityListView(LocationMixin, ListAPIView):
     filter_backends = [SearchFilter]
     search_fields = ["name"]
 
-    queryset = City.objects.all()
+    queryset = City.objects.order_by("name")
+
+    def get(self, request, *args, **kwargs):
+        if self.check_filter():
+            return super().get(request, *args, **kwargs)
+
+        return get_or_cache(f"country_cities_{self.kwargs['pk']}", 60 * 60 * 24)(
+            super().get
+        )(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(country_id=self.kwargs["pk"])

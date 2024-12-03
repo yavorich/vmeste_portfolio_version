@@ -4,14 +4,24 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django_elasticsearch_dsl.registries import registry
 
-from apps.api.models import EventParticipant, Event, User, Location, EventMedia
+from apps.api.models import (
+    EventParticipant,
+    Event,
+    User,
+    Location,
+    EventMedia,
+    City,
+    Country,
+)
 from apps.api.services import generate_video_preview
 from apps.api.services.payment import (
     do_payment_on_update,
     do_payment_refund,
 )
 from apps.chat.models import Chat
+from core.cache.functools import delete_cache
 from core.utils import delete_file, delete_file_on_update
+from core.utils.old_instance import get_old_instance
 
 
 @receiver(post_delete, sender=EventParticipant)
@@ -106,3 +116,21 @@ def do_payment(sender, instance: Event, **kwargs):
 def refund_payment(sender, instance, **kwargs):
     if timezone.now() < instance.start_datetime:
         do_payment_refund(instance)
+
+
+@receiver(post_delete, sender=City)
+def delete_cities_cache_city_delete(instance, **kwargs):
+    delete_cache(f"country_cities_{instance.country_id}")
+
+
+@receiver(pre_save, sender=City)
+def delete_cities_cache_city_save(instance, **kwargs):
+    delete_cache(f"country_cities_{instance.country_id}")
+    old_instance = get_old_instance(instance)
+    if old_instance is not None:
+        delete_cache(f"country_cities_{old_instance.country_id}")
+
+
+@receiver(post_delete, sender=Country)
+def delete_cities_cache_country_deletion(instance, **kwargs):
+    delete_cache(f"country_cities_{instance.pk}")
