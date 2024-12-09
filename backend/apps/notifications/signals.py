@@ -71,6 +71,9 @@ def delete_existing_remind_notifications(instance: Event):
 
 
 def create_event_remind_notifications(instance: Event):
+    GroupNotification.objects.delete(
+        type=GroupNotification.Type.EVENT_ADDED, event=instance
+    )
     GroupNotification.objects.create(
         type=GroupNotification.Type.EVENT_ADDED, event=instance, body=""
     )

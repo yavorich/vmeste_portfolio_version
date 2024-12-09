@@ -469,9 +469,7 @@ class EventSignSerializer(ModelSerializer):
     def update(self, instance: Event, validated_data):
         user = self.context["user"]
         if not instance.is_valid_sign_and_edit_time():
-            raise ValidationError(
-                {"error": "Время вступления на событие истекло."}
-            )
+            raise ValidationError({"error": "Время вступления на событие истекло."})
 
         if instance.get_free_places(gender=user.gender) == 0:
             raise ValidationError(
