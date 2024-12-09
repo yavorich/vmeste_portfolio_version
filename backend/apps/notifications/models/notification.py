@@ -55,7 +55,10 @@ class GroupNotification(models.Model):
             if organizer_user is not None:
                 users = users.exclude(pk=organizer_user.pk)
 
-            return users.filter(categories__in=categories)
+            participants = self.event.participants.all()
+            return users.filter(categories__in=categories).exclude(
+                events__in=participants
+            ).distinct()
 
         elif self.type == GroupNotification.Type.CHAT_JOIN:
             participants = self.event.participants.all()
