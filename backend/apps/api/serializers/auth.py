@@ -82,6 +82,8 @@ class PhoneAuthSerializer(Serializer):
         code = validated_data["confirmation_code"]
         if code != ("11111" if DEBUG else user.confirmation_code):
             raise ValidationError({"error": "Неверный код подтверждения"})
+        user.is_registered = True
+        user.save()
         login(
             request,
             user,
@@ -117,6 +119,7 @@ class EmailAuthSerializer(Serializer):
     def create(self, validated_data):
         user = self.context["user"]
         user.email_is_confirmed = True
+        user.is_registered = True
         user.save()
         return user
 

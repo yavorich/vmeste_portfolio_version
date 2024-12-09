@@ -136,6 +136,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     receive_recs = models.BooleanField(default=True)
 
     uuid = models.UUIDField(default=uuid4)
+    is_registered = models.BooleanField(default=False)
 
     USERNAME_FIELD = "phone_number"
 

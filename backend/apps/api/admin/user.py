@@ -85,6 +85,9 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     search_fields = ["first_name", "last_name", "phone_number", "email"]
     actions = ["block_users", "unblock_users"]
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_registered=True)
+
     @admin.display(description="Интересы")
     def get_interests(self, obj):
         return self.links_to_objects(obj.categories.all())

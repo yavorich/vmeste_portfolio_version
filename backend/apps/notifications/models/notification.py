@@ -165,8 +165,8 @@ class UserNotification(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        if self.title is None:
+        if self.title in (None, ""):
             self.title = self.get_title()
-        if self.body is None:
+        if self.body in (None, ""):
             self.body = self.get_body()
         return super().save(*args, **kwargs)
