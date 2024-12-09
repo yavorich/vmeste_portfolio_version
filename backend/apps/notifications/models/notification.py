@@ -134,7 +134,7 @@ class UserNotification(models.Model):
         if self.notification.remind_hours > 1:
             body += (
                 f" Вы можете {event_remind_sample} встречу. Успейте принять решение"
-                + " не позднее, чем за час до начала мероприятия!"
+                + " не позднее, чем за 3 часа до начала мероприятия!"
             )
         return body
 
@@ -165,8 +165,8 @@ class UserNotification(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        if not self.title:
+        if self.title is None:
             self.title = self.get_title()
-        if not self.body:
+        if self.body is None:
             self.body = self.get_body()
         return super().save(*args, **kwargs)
