@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.utils.timezone import timedelta, localtime
 from asgiref.sync import async_to_sync
@@ -12,6 +12,7 @@ from apps.notifications.tasks import (
 )
 from apps.notifications.serializers import UserNotificationMessageSerializer
 from apps.notifications.services import send_ws_notification
+from core.utils.old_instance import get_old_instance
 
 
 @receiver([post_save], sender=EventParticipant)
@@ -58,10 +59,43 @@ def create_event_group_notifications(sender, instance: Event, created: bool, **k
         was_active = instance.tracker.previous("is_active") and not was_draft
         delete_existing_remind_notifications(instance)
         if is_active:
-            create_event_change_notification(instance)
             create_event_remind_notifications(instance)
         elif was_active:
             create_event_cancel_notification(instance)
+
+
+@receiver([pre_save], sender=Event)
+def create_event_change_notification(instance: Event, **kwargs):
+    if instance.pk is None or not instance.is_active or instance.is_draft:
+        return
+
+    old_instance = get_old_instance(instance)
+    if old_instance is None:
+        return
+
+    for field in (
+        "title",
+        "location",
+        "date",
+        "start_time",
+        "end_time",
+        "max_age",
+        "min_age",
+        "theme",
+        "total_male",
+        "total_female",
+        "short_description",
+        "description",
+        "is_close_event",
+    ):
+        if getattr(instance, field) != getattr(old_instance, field):
+            create_event_change_notification(instance)
+            return
+
+    if instance.categories.values_list(
+        "id", flat=True
+    ) != old_instance.categories.values_list("id", flat=True):
+        create_event_change_notification(instance)
 
 
 def delete_existing_remind_notifications(instance: Event):
