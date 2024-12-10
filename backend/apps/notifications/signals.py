@@ -87,14 +87,15 @@ def create_event_change_notification(instance: Event, **kwargs):
         "short_description",
         "description",
         "is_close_event",
+        "organizer_will_pay",
     ):
         if getattr(instance, field) != getattr(old_instance, field):
             create_event_change_notification(instance)
             return
 
-    if instance.categories.values_list(
-        "id", flat=True
-    ) != old_instance.categories.values_list("id", flat=True):
+    if instance.categories.values_list("id", flat=True).order_by(
+        "id"
+    ) != old_instance.categories.values_list("id", flat=True).order_by("id"):
         create_event_change_notification(instance)
 
 
