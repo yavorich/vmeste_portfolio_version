@@ -158,6 +158,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def age(self) -> int:
         return relativedelta(localtime().date(), self.date_of_birth).years
 
+    @property
+    def categories_ordering(self):
+        return self.categories.order_by("title")
+
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"

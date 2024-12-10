@@ -76,7 +76,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
     country = CountrySerializer(allow_null=True)
     city = CitySerializer(allow_null=True)
     occupation = serializers.CharField(source="occupation.title", allow_null=True)
-    categories = CategorySerializer(many=True)
+    categories = CategorySerializer(many=True, source="categories_ordering")
     stats = serializers.SerializerMethodField()
 
     class Meta:
