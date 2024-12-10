@@ -22,7 +22,11 @@ def send_join_event_notification(
     if created:
         title = instance.event.title
         if instance.is_organizer:
-            body = f'Вы успешно создали событие: "{title}"'
+            body = (
+                f'Вы успешно создали событие: "{title}"'
+                if not instance.event.is_draft
+                else f'Событие сохранено в черновиках: "{title}"'
+            )
         else:
             body = f'Вы успешно записались на событие: "{title}"'
         notification = UserNotification.objects.create(
