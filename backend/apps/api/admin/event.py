@@ -124,6 +124,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     ]
     actions = ["block_events", "unblock_events"]
     date_hierarchy = "date"
+    ordering = ("-id",)
 
     @admin.display(description="Уведомления")
     def get_notifications(self, obj):
