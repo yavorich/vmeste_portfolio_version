@@ -93,9 +93,9 @@ def create_event_change_notification(instance: Event, **kwargs):
             create_event_change_notification(instance)
             return
 
-    if instance.categories.values_list("id", flat=True).order_by(
-        "id"
-    ) != old_instance.categories.values_list("id", flat=True).order_by("id"):
+    if set(instance.categories.values_list("id", flat=True).iterator()) != set(
+        old_instance.categories.values_list("id", flat=True).iterator()
+    ):
         create_event_change_notification(instance)
 
 
