@@ -396,7 +396,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 and not self.instance.is_draft
                 and not self.instance.is_valid_sign_and_edit_time()
             ):
-                raise ValidationError({"error": "Время отмены события истекло."})
+                raise ValidationError(
+                    {"error": "До начала события осталось менее 3 часов"}
+                )
 
         return attrs
 
@@ -515,23 +517,19 @@ class EventCancelSerializer(ModelSerializer):
     def update(self, instance: Event, validated_data):
         user = self.context["user"]
         participant = instance.get_participant(user=user)
-        valid_time = instance.is_valid_sign_and_edit_time()
 
         if not participant:
             raise ValidationError(
                 {"error": "Пользователь не является участником/организатором события"}
             )
 
+        if not instance.is_valid_sign_and_edit_time():
+            raise ValidationError({"error": "До начала события осталось менее 3 часов"})
+
         if participant.is_organizer:
-            if not valid_time:
-                raise ValidationError({"error": "Время отмены события истекло."})
             instance.is_draft = True  # возврат организатору в сигнале
             instance.save()
         else:
-            if not valid_time:
-                raise ValidationError(
-                    {"error": "Время отмены участия в событии истекло."}
-                )
             if participant.payed > 0:  # возврат за событие для участника
                 participant.user.wallet.refund(participant.payed)
             participant.delete()
