@@ -391,6 +391,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                     if not user.wallet.has_coin(price):
                         raise NoCoinsError
 
+            if (
+                attrs.get("is_draft", False)
+                and not self.instance.is_draft
+                and not self.instance.is_valid_sign_and_edit_time()
+            ):
+                raise ValidationError({"error": "Время отмены события истекло."})
+
         return attrs
 
     def create(self, validated_data):
