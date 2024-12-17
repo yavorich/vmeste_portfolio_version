@@ -131,7 +131,7 @@ class UserNotification(models.Model):
         body = hours_sample[str(self.notification.remind_hours)]
         organizer = self.user == self.event.organizer
         event_remind_sample = "отменить" if organizer else "не пойти на"
-        if self.notification.remind_hours > 1:
+        if self.notification.remind_hours > 3:
             body += (
                 f" Вы можете {event_remind_sample} встречу. Успейте принять решение"
                 + " не позднее, чем за 3 часа до начала мероприятия!"
