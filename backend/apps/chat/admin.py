@@ -31,7 +31,10 @@ class ChatStatusFilter(SimpleListFilter):
 
 class ChatMessagesInline(admin.TabularInline):
     model = Message
-    exclude = ["is_info", "is_incoming"]
+    fields = ("sender", "text", "sent_at")
+    readonly_fields = ("sent_at",)
+    extra = 0
+    ordering = ("sent_at",)
 
     def get_queryset(self, request):
         qs = super(ChatMessagesInline, self).get_queryset(request)
