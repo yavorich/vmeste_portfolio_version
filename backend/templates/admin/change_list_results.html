@@ -1,0 +1,181 @@
+{% load i18n %}
+{% if result_hidden_fields %}
+
+<div class="hiddenfields">{# DIV for HTML validation #}
+{% for item in result_hidden_fields %}{{ item }}{% endfor %}
+</div>
+{% endif %}
+{% if results %}
+<style>
+#double_scroll_top, #double_scroll_bottom {
+    width: auto;
+    overflow-x: scroll;
+}
+
+#scroll_top {
+    background-color: var(--body-bg);
+    height: 1px;
+}
+
+.sticky_header {
+    position: fixed;
+}
+
+.no_border {
+    border-top: none;
+    border-bottom: none
+}
+
+.head_col {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+</style>
+
+<div id="sticky_height_top"></div>
+<div id="double_scroll_top">
+    <div id="scroll_top">
+    </div>
+</div>
+<div id="head_sticky_div" style="overflow-x: hidden;"></div>
+<div class="results" id="double_scroll_bottom">
+<table id="result_list">
+<thead id="result_list_head">
+<tr>
+{% for header in result_headers %}
+<th scope="col"{{ header.class_attrib }} class="no_border">
+   {% if header.sortable and header.sort_priority > 0 %}
+       <div class="sortoptions">
+         <a class="sortremove" href="{{ header.url_remove }}" title="{% translate "Remove from sorting" %}"></a>
+         {% if num_sorted_fields > 1 %}<span class="sortpriority" title="{% blocktranslate with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktranslate %}">{{ header.sort_priority }}</span>{% endif %}
+         <a href="{{ header.url_toggle }}" class="toggle {{ header.ascending|yesno:'ascending,descending' }}" title="{% translate "Toggle sorting" %}"></a>
+       </div>
+   {% endif %}
+   <div class="text">{% if header.sortable %}<a href="{{ header.url_primary }}">{{ header.text|capfirst }}</a>{% else %}<span>{{ header.text|capfirst }}</span>{% endif %}</div>
+   <div class="clear"></div>
+</th>{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for result in results %}
+{% if result.form and result.form.non_field_errors %}
+    <tr><td colspan="{{ result|length }}">{{ result.form.non_field_errors }}</td></tr>
+{% endif %}
+<tr>{% for item in result %}{{ item }}{% endfor %}</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+<div id="sticky_height_bottom"></div>
+
+<script>
+    function add_class(elem, _class) {
+        if (!elem.classList.contains(_class)) elem.classList.add(_class)
+    }
+
+    function remove_class(elem, _class) {
+        if (elem.classList.contains(_class)) elem.classList.remove(_class)
+    }
+
+    function set_double_scroll() {
+        let scroll_top_inner = document.getElementById('scroll_top');
+
+        if (double_scroll_bottom.scrollWidth > double_scroll_bottom.clientWidth) {
+            let head_sticky_div = document.getElementById("head_sticky_div");
+
+            scroll_top_inner.style.width = `${result_list_width}px`;
+
+            double_scroll_top.onscroll = function() {
+                double_scroll_bottom.scrollLeft = double_scroll_top.scrollLeft;
+                head_sticky_div.scrollLeft = double_scroll_top.scrollLeft;
+            };
+            double_scroll_bottom.onscroll = function() {
+                double_scroll_top.scrollLeft = double_scroll_bottom.scrollLeft;
+                head_sticky_div.scrollLeft = double_scroll_bottom.scrollLeft;
+            };
+        } else {
+            double_scroll_top.hidden = true;
+        }
+    }
+
+    function set_action_toggle(head, head_sticky) {
+        let head_input = head.children[0].children[0].children[0].children[0].children[0]
+        let head_sticky_input = head_sticky.children[0].children[0].children[0].children[0].children[0]
+
+        head_sticky_input.id = "action-toggle-sticky";
+        head_sticky_input.checked = head_input.checked;
+
+        head_sticky_input.onclick = function (event) {
+            head_input.checked = head_sticky_input.checked;
+            head_input.dispatchEvent(new Event('click'));
+        };
+
+        let action_checkboxes = document.getElementsByName("_selected_action")
+        action_checkboxes.forEach(elem => {
+            elem.onclick = function () {
+                const sel = Array.from(action_checkboxes).filter(el => {return el.checked;}).length;
+                head_sticky_input.checked = sel === action_checkboxes.length;
+            }
+        })
+
+    }
+
+    function header_fixed() {
+        let head = document.getElementById("result_list_head");
+
+        if (window.pageYOffset > sticky_height_top.offsetTop & window.pageYOffset < sticky_height_bottom.offsetTop) {
+            let head_sticky_div = document.getElementById("head_sticky_div");
+
+            let table_width = double_scroll_bottom.clientWidth;
+
+            add_class(double_scroll_top, "sticky_header");
+            double_scroll_top.style.top = "0";
+            double_scroll_top.style.width = `${table_width}px`;
+
+            let head_sticky = document.getElementById("result_list_head_sticky");
+            if (head_sticky == null) {
+                head_sticky = head.cloneNode(true);
+                head_sticky.id = "result_list_head_sticky";
+
+                head_sticky_div.append(head_sticky);
+                add_class(head_sticky_div, "sticky_header");
+                let head_sticky_cols = head_sticky.querySelectorAll('th');
+                head.querySelectorAll('th').forEach((col, index) => {
+                    let new_col = head_sticky_cols[index];
+                    new_col.classList.add("head_col");
+                    new_col.style.paddingRight = `${col.offsetWidth - new_col.offsetWidth + 10}px`;
+                    new_col.onclick = col.onclick
+                });
+
+                set_action_toggle(head, head_sticky);
+            }
+
+            head_sticky_div.scrollLeft = double_scroll_bottom.scrollLeft;
+            head_sticky_div.style.top = `${double_scroll_top.offsetHeight}px`;
+            head_sticky_div.style.width = `${table_width}px`;
+
+        } else {
+            remove_class(double_scroll_top, "sticky_header");
+            double_scroll_top.style.top = "";
+            double_scroll_top.style.width = "";
+
+            let head_sticky = document.getElementById("result_list_head_sticky");
+            if (head_sticky != null) head_sticky.remove();
+        }
+    }
+
+    let double_scroll_top = document.getElementById('double_scroll_top');
+    let double_scroll_bottom = document.getElementById('double_scroll_bottom');
+
+    let result_list = document.getElementById('result_list');
+
+    let sticky_height_top = document.getElementById("sticky_height_top");
+    let sticky_height_bottom = document.getElementById("sticky_height_bottom");
+    const result_list_width = result_list.scrollWidth;
+
+    set_double_scroll();
+    window.onscroll = header_fixed;
+    window.onresize = header_fixed;
+</script>
+{% endif %}
