@@ -215,8 +215,8 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            serializer = EventDocumentFullImageSerializer(page, many=True)
+            return {"events": self.get_paginated_response(serializer.data).data}
 
         serializer = EventDocumentFullImageSerializer(queryset, many=True)
         return {"events": serializer.data}
