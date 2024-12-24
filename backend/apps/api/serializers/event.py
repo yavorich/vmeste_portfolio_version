@@ -226,6 +226,14 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
 
     def get_cover(self, obj):
         request = self.context.get("request")
+        return (
+            request.build_absolute_uri(obj.cover_medium) if obj.cover_medium else None
+        )
+
+
+class EventDocumentFullImageSerializer(EventDocumentSerializer):
+    def get_cover(self, obj):
+        request = self.context.get("request")
         return request.build_absolute_uri(obj.cover) if obj.cover else None
 
 

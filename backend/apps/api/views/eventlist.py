@@ -26,6 +26,7 @@ from apps.api.permissions import StatusPermissions
 from apps.api.enums import EventStatus
 from apps.api.documents import EventDocument
 from apps.api.models import EventFastFilter
+from apps.api.serializers.event import EventDocumentFullImageSerializer
 from core.pagination import PageNumberSetPagination
 from core.utils import humanize_date
 
@@ -209,10 +210,23 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
         response_data["filters"] = serializer.data
         return response_data
 
+    def _list_popular(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = EventDocumentFullImageSerializer(queryset, many=True)
+        return {"events": serializer.data}
+
     def list(self, request, *args, **kwargs):
         status = request.query_params.get("status", None)
         if status == EventStatus.PUBLISHED:
             response_data = self._list_published(request)
+        elif status == EventStatus.POPULAR:
+            response_data = self._list_popular(request)
         else:
             response = super().list(request, *args, **kwargs)
             response_data = {"events": response.data}

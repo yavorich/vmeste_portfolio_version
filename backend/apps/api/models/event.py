@@ -105,8 +105,8 @@ class Event(models.Model):
     )
     cover_medium = CompressedImageField(
         _("Обложка"),
-        max_width=200,
-        max_height=200,
+        max_width=240,
+        max_height=240,
         upload_to=get_upload_path_medium,
         default="defaults/cover.jpg",
     )

@@ -57,5 +57,8 @@ migrations:
 migrate:
 	docker exec -it $(app_name)_backend python backend/manage.py migrate
 
+el-rebuild:
+	docker exec -it $(app_name)_backend python backend/manage.py search_index --rebuild -f
+
 psql:
 	docker exec -it $(app_name)_db psql -U postgres

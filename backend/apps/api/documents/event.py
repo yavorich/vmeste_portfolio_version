@@ -45,7 +45,8 @@ class EventDocument(Document):
     title = TextField(fields={"raw": KeywordField()}, analyzer=edge_ngram_completion)
     max_age = IntegerField()
     min_age = IntegerField()
-    cover = FileField(attr="cover_medium")
+    cover = FileField()
+    cover_medium = FileField()
     short_description = TextField(
         fields={"raw": KeywordField()}, analyzer=edge_ngram_completion
     )
