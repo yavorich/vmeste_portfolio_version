@@ -39,7 +39,7 @@ class CompressedImageFieldFile(ImageFieldFile):
                 orientation = _orientation
                 break
 
-        exif = img._getexif()
+        exif = img.getexif()
         if exif is not None:
             orientation_value = exif.get(orientation)
 
