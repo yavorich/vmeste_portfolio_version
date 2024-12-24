@@ -146,7 +146,10 @@ class UserNotification(models.Model):
     def get_body(self):
         if self.notification.type == GroupNotification.Type.EVENT_REMIND:
             return self.generate_remind_body()
-        if self.notification.type == GroupNotification.Type.ADMIN:
+        if self.notification.type in (
+            GroupNotification.Type.ADMIN,
+            GroupNotification.Type.CHAT_JOIN,
+        ):
             return self.notification.body
         if self.notification.type in (
             GroupNotification.Type.EVENT_REC,
