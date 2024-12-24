@@ -11,7 +11,7 @@ from apps.notifications.models import GroupNotification, UserNotification
 
 
 class NotificationEventSerializer(ModelSerializer):
-    cover = CustomFileField()
+    cover = CustomFileField(source="cover_medium")
 
     class Meta:
         model = Event

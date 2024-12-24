@@ -25,6 +25,7 @@ class ChatListSerializer(serializers.ModelSerializer):
             "unread_messages",
             "am_i_organizer",
         ]
+        extra_kwargs = {"cover": {"source": "cover_medium"}}
 
     def get_address(self, obj: Event):
         address = obj.location.address
@@ -53,6 +54,7 @@ class ChatEventSerializer(serializers.ModelSerializer):
             "cover",
             "am_i_organizer",
         ]
+        extra_kwargs = {"cover": {"source": "cover_medium"}}
 
     def get_total_will_come(self, obj: Event):
         return obj.participants.count()

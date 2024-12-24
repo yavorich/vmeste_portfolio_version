@@ -13,6 +13,7 @@ import os
 import uuid as _uuid
 
 from apps.api.enums import Gender
+from core.model_fields import CompressedImageField
 from .location import Location
 from .theme import Theme
 from .category import Category
@@ -81,6 +82,10 @@ def get_upload_path(instance, filename):
     return os.path.join("events", str(instance.pk), "cover", filename)
 
 
+def get_upload_path_medium(instance, filename):
+    return os.path.join("events", str(instance.pk), "cover_medium", filename)
+
+
 class Event(models.Model):
     is_close_event = models.BooleanField(_("Закрытое мероприятие"))
     uuid = models.UUIDField(default=_uuid.uuid4, unique=True, editable=False)
@@ -91,8 +96,19 @@ class Event(models.Model):
     min_age = models.PositiveSmallIntegerField(
         _("Мин. возраст"), validators=[MinValueValidator(12), MaxValueValidator(99)]
     )
-    cover = models.ImageField(
-        _("Обложка"), upload_to=get_upload_path, default="defaults/cover.jpg"
+    cover = CompressedImageField(
+        _("Обложка"),
+        max_width=720,
+        max_height=720,
+        upload_to=get_upload_path,
+        default="defaults/cover.jpg",
+    )
+    cover_medium = CompressedImageField(
+        _("Обложка"),
+        max_width=200,
+        max_height=200,
+        upload_to=get_upload_path_medium,
+        default="defaults/cover.jpg",
     )
     short_description = models.CharField(_("Краткое описание"), max_length=80)
     description = models.CharField(_("Полное описание"), max_length=500)

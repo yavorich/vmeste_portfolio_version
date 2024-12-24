@@ -38,6 +38,7 @@ def delete_organized_events(sender, instance: EventParticipant, **kwargs):
 @receiver(post_delete, sender=Event)
 def delete_event_cover_and_media(sender, instance: Event, **kwargs):
     delete_file(instance, "cover")
+    delete_file(instance, "cover_medium")
     for media in instance.media.all():
         delete_file(media, "file")
         delete_file(media, "preview")
@@ -51,6 +52,7 @@ def delete_event_notifications(sender, instance: Event, **kwargs):
 @receiver(pre_save, sender=Event)
 def update_event_cover(sender, instance, **kwargs):
     delete_file_on_update(sender, instance, "cover", **kwargs)
+    delete_file_on_update(sender, instance, "cover_medium", **kwargs)
 
 
 @receiver(post_delete, sender=Location)
@@ -97,6 +99,23 @@ def add_media_info(sender, instance: EventMedia, created: bool, **kwargs):
         if instance.mimetype == "video":
             instance.preview = generate_video_preview(instance)
         instance.save()
+
+
+@receiver(pre_save, sender=Event)
+def set_cover_medium(instance, **kwargs):
+    if not instance.cover:
+        return
+
+    old_instance = get_old_instance(instance)
+    if (
+        old_instance is None or instance.cover != old_instance.cover_medium
+    ) and instance.cover:
+        try:
+            instance.cover_medium.save(
+                instance.cover.name.split("/")[-1], instance.cover.file, save=False
+            )
+        except FileNotFoundError:
+            pass
 
 
 @receiver(pre_save, sender=Event)

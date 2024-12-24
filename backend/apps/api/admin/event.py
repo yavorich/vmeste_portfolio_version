@@ -58,6 +58,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "country",
                     "city",
                     "cover",
+                    "cover_medium",
                     "location",
                     "date",
                     "start_time",
