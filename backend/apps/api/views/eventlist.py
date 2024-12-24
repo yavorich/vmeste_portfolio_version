@@ -78,10 +78,10 @@ class CustomFilteringFilterBackend(FilteringFilterBackend):
         # все события опубликованы, если статус не DRAFT
         qs = qs.filter(Q("term", is_draft=status == EventStatus.DRAFT))
 
-        # PAST включает в себя начавшиеся и прошедшие события, все др. статусы - будущие
+        # PAST включает в себя начавшиеся и прошедшие события
         if status == EventStatus.PAST:
             qs = qs.filter(Q("range", start_datetime={"lte": localtime()}))
-        else:
+        elif status != EventStatus.DRAFT:  # все др. статусы - будущие, кроме DRAFT
             qs = qs.filter(Q("range", start_datetime={"gt": localtime()}))
 
         # все события гл. страницы фильтруются на наличие свободных мест и открытость
