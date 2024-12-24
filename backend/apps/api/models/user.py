@@ -14,6 +14,7 @@ from dateutil.relativedelta import relativedelta
 from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.api.enums import Gender
+from core.model_fields import CompressedImageField
 from .country import Country
 from .city import City
 from .category import Category
@@ -69,8 +70,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     gender = models.CharField(
         _("Пол"), choices=Gender.choices, max_length=6, blank=True, null=True
     )
-    avatar = models.ImageField(
-        _("Аватар"), upload_to=get_upload_path, default="defaults/avatar.png"
+    avatar = CompressedImageField(
+        _("Аватар"),
+        max_width=360,
+        max_height=360,
+        upload_to=get_upload_path,
+        default="defaults/avatar.png",
     )
     is_active = models.BooleanField(_("Активен"), default=True)
     is_staff = models.BooleanField(default=False)
