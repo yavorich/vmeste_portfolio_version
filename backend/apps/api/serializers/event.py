@@ -337,7 +337,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 tzinfo=localtime().tzinfo,
             )
             if not validated_data.get(
-                "is_draft", instance.is_draft
+                "is_draft", getattr(instance, "is_draft", False)
             ) and start_datetime < localtime() + timedelta(hours=hours):
                 raise ValidationError(
                     {
