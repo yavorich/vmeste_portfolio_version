@@ -328,7 +328,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return validated_data
 
     @staticmethod
-    def validate_start_datetime(validated_data, hours):
+    def validate_start_datetime(validated_data, hours, instance=None):
         date_fields = ("date", "start_time")
         if all((field in validated_data for field in date_fields)):
             start_datetime = datetime.combine(
@@ -336,7 +336,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 validated_data["start_time"],
                 tzinfo=localtime().tzinfo,
             )
-            if start_datetime < localtime() + timedelta(hours=hours):
+            if not validated_data.get(
+                "is_draft", instance.is_draft
+            ) and start_datetime < localtime() + timedelta(hours=hours):
                 raise ValidationError(
                     {
                         "error": f"Минимальное время до начала мероприятия - {hours} часов"
@@ -432,7 +434,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data = self.prepare_location(validated_data)
-        self.validate_start_datetime(validated_data, hours=2)
+        self.validate_start_datetime(validated_data, hours=2, instance=instance)
         self.validate_age(validated_data)
         if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):
             validated_data.pop("cover", None)
