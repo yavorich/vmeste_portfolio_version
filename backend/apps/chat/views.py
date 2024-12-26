@@ -1,3 +1,4 @@
+from django.db.models import OuterRef, Exists
 from django.utils.timezone import localtime
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, CreateAPIView
@@ -61,9 +62,11 @@ class MessageListView(ListAPIView):
     serializer_class = MessageSerializer
 
     def get_queryset(self):
-        return Message.objects.filter(chat__event=self.kwargs["event_pk"]).order_by(
-            "sent_at"
+        queryset = Message.objects.filter(chat__event=self.kwargs["event_pk"]).order_by(
+            "-sent_at"
         )
+        self.read_all_messages(queryset)
+        return queryset
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -71,33 +74,20 @@ class MessageListView(ListAPIView):
         return context
 
     def read_all_messages(self, messages):
-        for message in messages:
-            ReadMessage.objects.get_or_create(user=self.request.user, message=message)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        event = get_object_or_404(Event, pk=self.kwargs["event_pk"], is_active=True)
-        event_serializer = ChatEventSerializer(event, context={"request": request})
-        grouped_messages = []
-        for date, messages in groupby(
-            queryset, lambda m: m.sent_at.astimezone(tz=localtime().tzinfo).date()
-        ):
-            messages_queryset = Message.objects.filter(id__in=[m.id for m in messages])
-            page = self.paginate_queryset(messages_queryset)
-            if page is not None and "page" in request.query_params:
-                serializer = self.get_serializer(
-                    page, many=True, context=self.get_serializer_context()
+        ReadMessage.objects.bulk_create(
+            [
+                ReadMessage(user=self.request.user, message_id=message_id)
+                for message_id in messages.annotate(
+                    is_read=Exists(
+                        ReadMessage.objects.filter(
+                            user=self.request.user, message_id=OuterRef("pk")
+                        )
+                    )
                 )
-                response = self.get_paginated_response(serializer.data)
-            else:
-                serializer = self.get_serializer(
-                    messages_queryset, many=True, context=self.get_serializer_context()
-                )
-                response = Response({"results": serializer.data})
-            grouped_messages.append({"date": date, **response.data})
-
-        self.read_all_messages(queryset)
-        return Response({"event": event_serializer.data, "messages": grouped_messages})
+                .filter(is_read=False)
+                .values_list("pk", flat=True)
+            ]
+        )
 
 
 class MessageSendView(CreateAPIView):
