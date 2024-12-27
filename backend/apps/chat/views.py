@@ -2,6 +2,7 @@ from django.db.models import OuterRef, Exists
 from django.utils.timezone import localtime
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.exceptions import ValidationError
@@ -22,7 +23,7 @@ from apps.chat.utils import send_ws_message
 from core.pagination import PageNumberSetPagination
 
 
-class ChatListView(ListAPIView):
+class ChatEventViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ChatListSerializer
 
@@ -41,6 +42,14 @@ class ChatListView(ListAPIView):
         queryset = getattr(queryset, f"filter_{status}")()
         return sorted(
             queryset, key=lambda x: x.chat.messages.latest().sent_at, reverse=True
+        )
+
+    def get_object(self):
+        return get_object_or_404(
+            Event.objects.filter_participant(self.request.user)
+            .distinct()
+            .filter(is_draft=False, is_active=True),
+            pk=self.kwargs["pk"],
         )
 
     def get_serializer_context(self):
