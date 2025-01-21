@@ -48,7 +48,11 @@ class Message(models.Model):
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
-        ReadMessage.objects.get_or_create(message=self, user=self.sender)
+        _, created = ReadMessage.objects.get_or_create(message=self, user=self.sender)
+        if created:
+            from apps.chat.utils import send_ws_unread_messages
+
+            send_ws_unread_messages(self.sender)
 
     def is_read_by(self, user):
         return ReadMessage.objects.filter(message=self, user=user).exists()

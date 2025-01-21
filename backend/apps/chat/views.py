@@ -19,7 +19,7 @@ from apps.chat.serializers import (
     MessageSendSerializer,
 )
 from apps.chat.models import Message, Chat, ReadMessage
-from apps.chat.utils import send_ws_message
+from apps.chat.utils import send_ws_message, send_ws_unread_messages
 from core.pagination import PageNumberSetPagination
 
 
@@ -83,20 +83,20 @@ class MessageListView(ListAPIView):
         return context
 
     def read_all_messages(self, messages):
+        user = self.request.user
         ReadMessage.objects.bulk_create(
             [
-                ReadMessage(user=self.request.user, message_id=message_id)
+                ReadMessage(user=user, message_id=message_id)
                 for message_id in messages.annotate(
                     is_read=Exists(
-                        ReadMessage.objects.filter(
-                            user=self.request.user, message_id=OuterRef("pk")
-                        )
+                        ReadMessage.objects.filter(user=user, message_id=OuterRef("pk"))
                     )
                 )
                 .filter(is_read=False)
                 .values_list("pk", flat=True)
             ]
         )
+        send_ws_unread_messages(user)
 
 
 class MessageSendView(CreateAPIView):

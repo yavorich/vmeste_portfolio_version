@@ -6,7 +6,7 @@ from django.db.models import Q
 
 from apps.chat.models import ReadMessage, Message, Chat
 from apps.chat.serializers import MessageSendSerializer, MessageSerializer
-from apps.chat.utils import send_ws_message
+from apps.chat.utils import send_ws_message, send_ws_unread_messages
 from apps.notifications.models import UserNotification
 from apps.api.models import Event
 
@@ -139,7 +139,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         send_serializer.is_valid(raise_exception=True)
         message = send_serializer.save()
-        ReadMessage.objects.get_or_create(message=message, user=message.sender)
+        _, created = ReadMessage.objects.get_or_create(
+            message=message, user=message.sender
+        )
 
         headers = dict(self.scope["headers"])
         message_serializer = MessageSerializer(
@@ -149,6 +151,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             f.write(f"Sending message from consumer: {message_serializer.data}\n")
 
         send_ws_message(message_serializer.data, chat.pk)
+        if created:
+            send_ws_unread_messages(message.sender)
 
     async def join_chat(self, data):
         group_name = "chat_%s" % data["event_id"]
@@ -173,10 +177,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = Message.objects.get(id=data["message_id"])
         except Message.DoesNotExist:
             return
-        ReadMessage.objects.get_or_create(
+        _, created = ReadMessage.objects.get_or_create(
             user=self.user,
             message=message,
         )
+        if created:
+            send_ws_unread_messages(self.user)
 
     @database_sync_to_async
     def read_notification(self, data):
