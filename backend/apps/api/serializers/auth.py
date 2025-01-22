@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login
 from django.utils.timezone import localtime
 from phonenumber_field.serializerfields import PhoneNumberField
 
-from apps.api.models import User, Subscription
+from apps.api.models import User, Subscription, DeletedUser
 from apps.api.services import generate_confirmation_code
 from apps.api.tasks import send_mail_confirmation_code, send_phone_confirmation_code
 from config.settings import DEBUG
@@ -25,12 +25,21 @@ class PhoneAuthSendCodeSerializer(Serializer):
             self.context["request"], phone_number=validated_data["phone_number"]
         )
         if not user:
-            subscription, created = Subscription.objects.get_or_create(is_trial=True)
-            user = User.objects.create_user(
-                phone_number=validated_data["phone_number"],
-                subscription=subscription,
-                subscription_expires=localtime() + subscription.duration,
-            )
+            user = DeletedUser.objects.filter(
+                phone_number=validated_data["phone_number"]
+            ).first()
+            if user is not None:
+                user.restore()
+            else:
+                subscription, created = Subscription.objects.get_or_create(
+                    is_trial=True
+                )
+                user = User.objects.create_user(
+                    phone_number=validated_data["phone_number"],
+                    subscription=subscription,
+                    subscription_expires=localtime() + subscription.duration,
+                )
+
         user.confirmation_code = validated_data["confirmation_code"]
         user.save()
         if not DEBUG:

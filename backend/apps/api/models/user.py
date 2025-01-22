@@ -27,8 +27,18 @@ def get_upload_path(instance, filename):
     return os.path.join("users", str(instance.pk), "avatar", filename)
 
 
+class SoftDeleteQuerySet(models.QuerySet):
+    def delete(self):
+        return self.update(is_deleted=True), {}
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
+
+    def get_queryset(self):
+        return SoftDeleteQuerySet(self.model, using=self._db, hints=self._hints).filter(
+            is_deleted=False
+        )
 
     @staticmethod
     def normalize_phone_number(phone_number):
@@ -142,6 +152,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     uuid = models.UUIDField(default=uuid4)
     is_registered = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
     USERNAME_FIELD = "phone_number"
 
@@ -167,6 +178,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     def categories_ordering(self):
         return self.categories.order_by("title")
 
+    def delete(self, using=None, keep_parents=False):
+        self.is_deleted = True
+        self.save(using=using)
+        return 1, {}
+
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+
+
+class DeletedUserManager(UserManager):
+    def get_queryset(self):
+        return super(UserManager, self).get_queryset().filter(is_deleted=True)
+
+
+class DeletedUser(User):
+    objects = DeletedUserManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Удалённые пользователи"
+
+    def restore(self):
+        self.is_deleted = False
+        self.save()
