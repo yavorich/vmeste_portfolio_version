@@ -63,6 +63,10 @@ class GroupNotification(models.Model):
                 .distinct()
             )
 
+        elif self.type == GroupNotification.Type.EVENT_CHANGED:
+            participants = self.event.participants.all()
+            return users.filter(events__in=participants)
+
         elif self.type == GroupNotification.Type.CHAT_JOIN:
             participants = self.event.participants.all()
             if self.related_id is not None:
