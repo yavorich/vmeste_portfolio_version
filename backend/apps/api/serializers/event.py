@@ -29,6 +29,7 @@ from apps.coins.exceptions import NoCoinsError
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
 from .support import SupportMessageCreateSerializer
+from ...notifications.models import GroupNotification
 
 
 class CharacterSeparatedField(serializers.ListField):
@@ -543,6 +544,12 @@ class EventCancelSerializer(ModelSerializer):
             if participant.payed > 0:  # возврат за событие для участника
                 participant.user.wallet.refund(participant.payed)
             participant.delete()
+
+            GroupNotification.objects.create(
+                type=GroupNotification.Type.EVENT_REJECT,
+                event=instance,
+                related_id=participant.user_id,
+            )
 
         return instance
 

@@ -7,6 +7,7 @@ class GroupNotification(models.Model):
     class Type(models.TextChoices):
         EVENT_REMIND = "EVENT_REMIND", "Напоминание о событии"
         EVENT_CANCELED = "EVENT_CANCELED", "Событие отменено"
+        EVENT_REJECT = "EVENT_REJECT", "Пользователь отписался от события"
         EVENT_CHANGED = "EVENT_CHANGED", "Событие изменено"
         EVENT_ADDED = "EVENT_ADDED", "Новое событие"
         EVENT_REC = "EVENT_REC", "Рекомендованное событие"
@@ -68,6 +69,9 @@ class GroupNotification(models.Model):
                 users = users.exclude(pk=self.related_id)
 
             return users.filter(events__in=participants)
+
+        elif self.type == GroupNotification.Type.EVENT_REJECT:
+            return users.filter(pk=self.related_id)
 
         else:
             participants = self.event.participants.filter(is_organizer=False)
@@ -166,6 +170,8 @@ class UserNotification(models.Model):
                 "Событие изменилось! "
                 + "Проверьте актуальную информацию на странице события"
             )
+        if self.notification.type == GroupNotification.Type.EVENT_REJECT:
+            return "Вы отписались от события"
 
     def save(self, *args, **kwargs):
         if self.title in (None, ""):
