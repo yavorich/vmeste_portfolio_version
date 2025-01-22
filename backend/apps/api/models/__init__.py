@@ -3,7 +3,7 @@
 from .category import Category
 from .city import City
 from .country import Country
-from .event import Event
+from .event import Event, EventAdminProxy
 from .participant import EventParticipant
 from .location import Location
 from .occupation import Occupation

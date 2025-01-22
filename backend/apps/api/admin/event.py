@@ -7,7 +7,7 @@ from django.db.models import Q
 from rangefilter.filters import DateRangeFilterBuilder
 
 from core.admin import ManyToManyMixin
-from apps.api.models import Event, EventParticipant, User, EventMedia
+from apps.api.models import Event, EventParticipant, User, EventMedia, EventAdminProxy
 
 
 class EventParticipantInline(admin.TabularInline):
@@ -161,3 +161,10 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     @admin.action(description="Разблокировать выбранные события")
     def unblock_events(self, request, queryset):
         queryset.update(is_active=True)
+
+
+@admin.register(EventAdminProxy)
+class EventAdminProxyAdmin(EventAdmin):
+    list_display = ("id", "start_datetime", "title")
+    list_display_links = list_display
+    ordering = ("-start_datetime",)

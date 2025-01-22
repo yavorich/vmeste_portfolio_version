@@ -4,7 +4,7 @@ from django.utils.timezone import timedelta, localtime
 from asgiref.sync import async_to_sync
 
 from config.celery import celery_app
-from apps.api.models import Event, EventParticipant
+from apps.api.models import Event, EventParticipant, EventAdminProxy
 from apps.notifications.models import GroupNotification, UserNotification
 from apps.notifications.tasks import (
     user_notifications_task,
@@ -54,6 +54,7 @@ def send_kick_event_notification(sender, instance: EventParticipant, **kwargs):
 
 
 @receiver([post_save], sender=Event)
+@receiver([post_save], sender=EventAdminProxy)
 def create_event_group_notifications(sender, instance: Event, created: bool, **kwargs):
     is_active = instance.is_active and not instance.is_draft
     if created and is_active:
@@ -69,6 +70,7 @@ def create_event_group_notifications(sender, instance: Event, created: bool, **k
 
 
 @receiver([pre_save], sender=Event)
+@receiver([pre_save], sender=EventAdminProxy)
 def create_event_change_notification(instance: Event, **kwargs):
     if instance.pk is None or not instance.is_active or instance.is_draft:
         return

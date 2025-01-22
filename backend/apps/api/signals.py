@@ -12,6 +12,7 @@ from apps.api.models import (
     EventMedia,
     City,
     Country,
+    EventAdminProxy,
 )
 from apps.api.services import generate_video_preview
 from apps.api.services.payment import (
@@ -36,6 +37,7 @@ def delete_organized_events(sender, instance: EventParticipant, **kwargs):
 
 
 @receiver(post_delete, sender=Event)
+@receiver(post_delete, sender=EventAdminProxy)
 def delete_event_cover_and_media(sender, instance: Event, **kwargs):
     delete_file(instance, "cover")
     delete_file(instance, "cover_medium")
@@ -45,11 +47,13 @@ def delete_event_cover_and_media(sender, instance: Event, **kwargs):
 
 
 @receiver(post_delete, sender=Event)
+@receiver(post_delete, sender=EventAdminProxy)
 def delete_event_notifications(sender, instance: Event, **kwargs):
     instance.notifications.all().delete()
 
 
 @receiver(pre_save, sender=Event)
+@receiver(pre_save, sender=EventAdminProxy)
 def update_event_cover(sender, instance, **kwargs):
     delete_file_on_update(sender, instance, "cover", **kwargs)
     delete_file_on_update(sender, instance, "cover_medium", **kwargs)
@@ -81,6 +85,7 @@ def delete_user_events(sender, instance: User, **kwargs):
 
 
 @receiver(post_save, sender=Event)
+@receiver(post_save, sender=EventAdminProxy)
 def create_event_chat(sender, instance: Event, created, **kwargs):
     if created:
         Chat.objects.create(event=instance)
@@ -102,6 +107,7 @@ def add_media_info(sender, instance: EventMedia, created: bool, **kwargs):
 
 
 @receiver(pre_save, sender=Event)
+@receiver(pre_save, sender=EventAdminProxy)
 def set_cover_medium(instance, **kwargs):
     if not instance.cover:
         return
@@ -119,6 +125,7 @@ def set_cover_medium(instance, **kwargs):
 
 
 @receiver(pre_save, sender=Event)
+@receiver(pre_save, sender=EventAdminProxy)
 def do_payment(sender, instance: Event, **kwargs):
     if instance._state.adding or not instance.pk:
         return
@@ -132,6 +139,7 @@ def do_payment(sender, instance: Event, **kwargs):
 
 
 @receiver(pre_delete, sender=Event)
+@receiver(pre_delete, sender=EventAdminProxy)
 def refund_payment(sender, instance, **kwargs):
     if timezone.now() < instance.start_datetime:
         do_payment_refund(instance)

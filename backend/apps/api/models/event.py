@@ -122,7 +122,7 @@ class Event(models.Model):
     date = models.DateField(_("Дата"))
     start_time = models.TimeField(_("Время начала"))
     end_time = models.TimeField(_("Время завершения"))
-    start_datetime = models.DateTimeField(blank=True, null=True)
+    start_datetime = models.DateTimeField("Время начала", blank=True, null=True)
     end_datetime = models.DateTimeField(blank=True, null=True)
     theme = models.ForeignKey(
         verbose_name=_("Тема"),
@@ -286,3 +286,10 @@ class Event(models.Model):
             tzinfo=localtime().tzinfo,
         )
         return super().save(*args, **kwargs)
+
+
+class EventAdminProxy(Event):
+    class Meta:
+        proxy = True
+        verbose_name = "Событие"
+        verbose_name_plural = "Старт событий"

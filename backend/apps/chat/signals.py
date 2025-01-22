@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.dispatch import receiver
 
-from apps.api.models import Event, EventParticipant, User
+from apps.api.models import Event, EventParticipant, User, EventAdminProxy
 from apps.chat.models import Message, Chat
 from apps.chat.serializers import MessageSerializer
 from apps.chat.utils import (
@@ -63,6 +63,7 @@ def send_leave_message(sender, instance: EventParticipant, **kwargs):
 
 
 @receiver(post_delete, sender=Event)
+@receiver(post_delete, sender=EventAdminProxy)
 def delete_chat_group(sender, instance: Event, **kwargs):
     remove_user_from_group(instance)
 
