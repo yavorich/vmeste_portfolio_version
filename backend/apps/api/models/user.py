@@ -69,6 +69,11 @@ class UserManager(BaseUserManager):
         return user
 
 
+class AllUserManager(UserManager):
+    def get_queryset(self):
+        return super(UserManager, self).get_queryset()
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     username = None
     phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
@@ -157,6 +162,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "phone_number"
 
     objects = UserManager()
+    all_objects = AllUserManager()
 
     def __str__(self) -> str:
         return self.get_full_name()

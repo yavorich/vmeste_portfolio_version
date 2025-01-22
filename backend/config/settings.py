@@ -188,7 +188,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.api.auth.DeletedUserJWTAuthentication",
         "rest_framework.authentication.BasicAuthentication",
     ],
 }
