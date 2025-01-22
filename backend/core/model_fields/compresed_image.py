@@ -28,6 +28,9 @@ class CompressedImageFieldFile(ImageFieldFile):
             if img.mode == "RGBA":
                 extension = "PNG"
 
+            elif img.mode == "P":
+                extension = "GIF"
+
             with BytesIO() as buffer:
                 img.save(buffer, extension)
                 return ContentFile(buffer.getvalue())
