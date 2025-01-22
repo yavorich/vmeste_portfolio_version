@@ -60,3 +60,22 @@ class SupportRequestMessage(models.Model):
     class Meta:
         verbose_name = "Обращение"
         verbose_name_plural = "Обращения"
+
+    def __str__(self):
+        return f"Обращение №{self.pk}"
+
+
+class SupportAnswer(models.Model):
+    support = models.OneToOneField(
+        SupportRequestMessage, on_delete=models.CASCADE, related_name="answer"
+    )
+
+    text = models.TextField(_("Текст"))
+    sent = models.BooleanField("Отправлен", default=False)
+
+    class Meta:
+        verbose_name = "Ответ на обращение"
+        verbose_name_plural = "Ответы на обращения"
+
+    def __str__(self):
+        return ""

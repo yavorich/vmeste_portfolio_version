@@ -16,5 +16,16 @@ def send_mail_confirmation_code(email, code):
 
 
 @shared_task
+def send_email_support_answer(email, support_id, text):
+    msg_data = {
+        "subject": f"VMESTE - Ответ на обращение №{support_id}",
+        "from_email": EMAIL_HOST_USER,
+        "recipient_list": [email],
+        "message": text,
+    }
+    return send_mail(**msg_data)
+
+
+@shared_task
 def send_phone_confirmation_code(phone, code):
     pass
