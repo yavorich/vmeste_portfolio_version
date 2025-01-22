@@ -34,7 +34,7 @@
 </style>
 
 <div id="sticky_height_top"></div>
-<div id="double_scroll_top">
+<div id="double_scroll_top" hidden="hidden">
     <div id="scroll_top">
     </div>
 </div>
@@ -82,9 +82,10 @@
         let scroll_top_inner = document.getElementById('scroll_top');
 
         if (double_scroll_bottom.scrollWidth > double_scroll_bottom.clientWidth) {
+            double_scroll_top.hidden = false;
             let head_sticky_div = document.getElementById("head_sticky_div");
 
-            scroll_top_inner.style.width = `${result_list_width}px`;
+            scroll_top_inner.style.width = `${result_list.scrollWidth}px`;
 
             double_scroll_top.onscroll = function() {
                 double_scroll_bottom.scrollLeft = double_scroll_top.scrollLeft;
@@ -97,6 +98,7 @@
         } else {
             double_scroll_top.hidden = true;
         }
+        header_fixed();
     }
 
     function set_action_toggle(head, head_sticky) {
@@ -143,12 +145,20 @@
                 let head_sticky_cols = head_sticky.querySelectorAll('th');
                 head.querySelectorAll('th').forEach((col, index) => {
                     let new_col = head_sticky_cols[index];
+                    head_sticky_widths[index] = new_col.offsetWidth
                     new_col.classList.add("head_col");
                     new_col.style.paddingRight = `${col.offsetWidth - new_col.offsetWidth + 10}px`;
                     new_col.onclick = col.onclick
                 });
 
                 set_action_toggle(head, head_sticky);
+
+            } else {
+                let head_sticky_cols = head_sticky.querySelectorAll('th');
+                head.querySelectorAll('th').forEach((col, index) => {
+                    let new_col = head_sticky_cols[index];
+                    new_col.style.paddingRight = `${col.offsetWidth - head_sticky_widths[index] + 10}px`;
+                });
             }
 
             head_sticky_div.scrollLeft = double_scroll_bottom.scrollLeft;
@@ -172,10 +182,10 @@
 
     let sticky_height_top = document.getElementById("sticky_height_top");
     let sticky_height_bottom = document.getElementById("sticky_height_bottom");
-    const result_list_width = result_list.scrollWidth;
+    let head_sticky_widths = [];
 
-    set_double_scroll();
+    window.onload = set_double_scroll;
     window.onscroll = header_fixed;
-    window.onresize = header_fixed;
+    window.onresize = set_double_scroll;
 </script>
 {% endif %}
