@@ -12,6 +12,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
+from apps.admin_history.models import HistoryLog, ActionFlag
+from apps.admin_history.utils import get_model_field_label
 from apps.api.serializers import (
     SelfProfileUpdateSerializer,
     SelfProfilePartialUpdateSerializer,
@@ -44,7 +46,6 @@ class SelfProfileViewSet(
         return context
 
     def get_object(self):
-        print(self.request.data)
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, pk=self.request.user.pk)
         self.check_object_permissions(self.request, obj)
@@ -52,13 +53,41 @@ class SelfProfileViewSet(
 
     def perform_update(self, serializer):
         result = serializer.save()
-        print(self.request.data)
         result.profile_is_completed = True
         result.save()
+        HistoryLog.objects.log_actions(
+            user_id=self.request.user.pk,
+            queryset=[result],
+            action_flag=ActionFlag.CHANGE,
+            change_message=[
+                {
+                    "changed": {
+                        "fields": [
+                            get_model_field_label(serializer.Meta.model, field)
+                            for field in serializer.validated_data.keys()
+                        ]
+                    }
+                }
+            ],
+            is_admin=False,
+        )
         return result
 
     def perform_destroy(self, instance):
-        instance.events.all().delete()
+        events = instance.events.all()
+        HistoryLog.objects.log_actions(
+            user_id=self.request.user.pk,
+            queryset=events,
+            action_flag=ActionFlag.DELETION,
+            is_admin=False,
+        )
+        HistoryLog.objects.log_actions(
+            user_id=self.request.user.pk,
+            queryset=[self.request.user],
+            action_flag=ActionFlag.DELETION,
+            is_admin=False,
+        )
+        events.delete()
         return super().perform_destroy(instance)
 
 

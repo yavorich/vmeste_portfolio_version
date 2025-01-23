@@ -1,3 +1,4 @@
+from django.contrib.admin.options import get_content_type_for_model
 from rest_framework.serializers import (
     Serializer,
     ModelSerializer,
@@ -10,6 +11,7 @@ from django.contrib.auth import authenticate, login
 from django.utils.timezone import localtime
 from phonenumber_field.serializerfields import PhoneNumberField
 
+from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.api.models import User, Subscription, DeletedUser
 from apps.api.services import generate_confirmation_code
 from apps.api.tasks import send_mail_confirmation_code, send_phone_confirmation_code
@@ -30,6 +32,14 @@ class PhoneAuthSendCodeSerializer(Serializer):
             ).first()
             if user is not None:
                 user.restore()
+                HistoryLog.objects.log_action(
+                    user_id=user.pk,
+                    content_type_id=get_content_type_for_model(User).pk,
+                    object_id=user.pk,
+                    object_repr=str(user),
+                    action_flag=ActionFlag.ADDITION,
+                    change_message="Восстановил",
+                )
             else:
                 subscription, created = Subscription.objects.get_or_create(
                     is_trial=True
@@ -38,6 +48,13 @@ class PhoneAuthSendCodeSerializer(Serializer):
                     phone_number=validated_data["phone_number"],
                     subscription=subscription,
                     subscription_expires=localtime() + subscription.duration,
+                )
+                HistoryLog.objects.log_actions(
+                    user_id=user.pk,
+                    queryset=[user],
+                    action_flag=ActionFlag.ADDITION,
+                    change_message=[{"added": {}}],
+                    is_admin=False,
                 )
 
         user.confirmation_code = validated_data["confirmation_code"]

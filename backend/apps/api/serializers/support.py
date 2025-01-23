@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.admin_history.models import ActionFlag, HistoryLog
 from apps.api.models import SupportRequestTheme, SupportRequestMessage
 
 
@@ -19,7 +20,16 @@ class SupportMessageCreateSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        validated_data["author"] = self.context.get("user")
+        user = self.context["user"]
+        validated_data["author"] = user
         validated_data["event"] = self.context.get("event")
         validated_data["profile"] = self.context.get("profile")
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        HistoryLog.objects.log_actions(
+            user_id=user.pk,
+            queryset=[instance],
+            action_flag=ActionFlag.ADDITION,
+            change_message=[{"added": {}}],
+            is_admin=False,
+        )
+        return instance

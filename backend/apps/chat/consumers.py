@@ -4,6 +4,7 @@ from channels.db import database_sync_to_async
 from django.db import transaction
 from django.db.models import Q
 
+from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.chat.models import ReadMessage, Message, Chat
 from apps.chat.serializers import MessageSendSerializer, MessageSerializer
 from apps.chat.utils import send_ws_message, send_ws_unread_messages
@@ -139,6 +140,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         send_serializer.is_valid(raise_exception=True)
         message = send_serializer.save()
+        HistoryLog.objects.log_actions(
+            user_id=self.user.pk,
+            queryset=[message],
+            action_flag=ActionFlag.ADDITION,
+            change_message=[{"added": {}}],
+            is_admin=False,
+        )
         _, created = ReadMessage.objects.get_or_create(
             message=message, user=message.sender
         )
@@ -183,6 +191,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         if created:
             send_ws_unread_messages(self.user)
+            HistoryLog.objects.log_actions(
+                user_id=self.user.pk,
+                queryset=[message],
+                action_flag=ActionFlag.CHANGE,
+                change_message=[{"changed": {"fields": ["Прочитано"]}}],
+                is_admin=False,
+            )
 
     @database_sync_to_async
     def read_notification(self, data):
@@ -192,6 +207,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         notification.read = True
         notification.save()
+        HistoryLog.objects.log_actions(
+            user_id=self.user.pk,
+            queryset=[notification],
+            action_flag=ActionFlag.CHANGE,
+            change_message=[{"changed": {"fields": ["Прочитано"]}}],
+            is_admin=False,
+        )
 
     @database_sync_to_async
     def chat_notifications(self, data):

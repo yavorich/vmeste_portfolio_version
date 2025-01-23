@@ -172,9 +172,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def clean(self):
         if self.age < 18:
-            raise ValidationError({"error": "Возраст должен быть не менее 18 лет"})
+            raise ValidationError(
+                {"date_of_birth": "Возраст должен быть не менее 18 лет"}
+            )
         elif self.age > 100:
-            raise ValidationError({"error": "Возраст должен быть не более 100 лет"})
+            raise ValidationError(
+                {"date_of_birth": "Возраст должен быть не более 100 лет"}
+            )
 
     @property
     def age(self) -> int:

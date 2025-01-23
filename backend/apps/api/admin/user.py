@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.contrib.admin.options import get_content_type_for_model
 
 from apps.admin_history.admin import site
+from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
 from apps.api.models import User, DeletedUser
@@ -155,7 +157,16 @@ class DeletedUserAdmin(ManyToManyMixin, admin.ModelAdmin):
 
     @admin.action(description="Восстановить")
     def restore_users(self, request, queryset):
-        queryset.update(is_deleted=False)
+        for user in queryset:
+            user.restore()
+            HistoryLog.objects.log_action(
+                user_id=request.user.pk,
+                content_type_id=get_content_type_for_model(User).pk,
+                object_id=user.pk,
+                object_repr=str(user),
+                action_flag=ActionFlag.ADDITION,
+                change_message="Восстановил",
+            )
 
     def has_add_permission(self, request):
         return False

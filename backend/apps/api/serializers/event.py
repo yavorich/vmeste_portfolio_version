@@ -29,6 +29,8 @@ from apps.coins.exceptions import NoCoinsError
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
 from .support import SupportMessageCreateSerializer
+from ...admin_history.models import HistoryLog, ActionFlag
+from ...admin_history.utils import get_model_field_label
 from ...notifications.models import GroupNotification
 
 
@@ -424,13 +426,21 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
 
         event = super().create(validated_data)
         # Создание организатора
+        user = self.context["user"]
         EventParticipant.objects.create(
             event=event,
-            user=self.context["user"],
+            user=user,
             is_organizer=True,
             has_confirmed=True,
         )
         do_payment_on_create(event)
+        HistoryLog.objects.log_actions(
+            user_id=user.pk,
+            queryset=[event],
+            action_flag=ActionFlag.ADDITION,
+            change_message=[{"added": {}}],
+            is_admin=False,
+        )
         return event
 
     def update(self, instance, validated_data):
@@ -439,7 +449,25 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         self.validate_age(validated_data)
         if not isinstance(validated_data.get("cover"), InMemoryUploadedFile):
             validated_data.pop("cover", None)
-        return super().update(instance, validated_data)
+
+        instance = super().update(instance, validated_data)
+        HistoryLog.objects.log_actions(
+            user_id=self.context["user"].pk,
+            queryset=[instance],
+            action_flag=ActionFlag.CHANGE,
+            change_message=[
+                {
+                    "changed": {
+                        "fields": [
+                            get_model_field_label(Event, field)
+                            for field in validated_data.keys()
+                        ]
+                    }
+                }
+            ],
+            is_admin=False,
+        )
+        return instance
 
     def to_representation(self, instance):
         return {"id": instance.id}
@@ -509,13 +537,22 @@ class EventSignSerializer(ModelSerializer):
             if not user.wallet.has_coin(price):
                 raise NoCoinsError
 
-        participant, _ = EventParticipant.objects.get_or_create(
+        participant, created = EventParticipant.objects.get_or_create(
             event=instance, user=user
         )
-        if price > 0:  # плата за вступление
+        if created and price > 0:  # плата за вступление
             user.wallet.spend(price)
             participant.payed = price
             participant.save()
+
+        if created:
+            HistoryLog.objects.log_actions(
+                user_id=user.pk,
+                queryset=[instance],
+                action_flag=ActionFlag.ADDITION,
+                change_message="Записался на событие",
+                is_admin=False,
+            )
 
         return instance
 
@@ -551,6 +588,14 @@ class EventCancelSerializer(ModelSerializer):
                 related_id=participant.user_id,
             )
 
+        HistoryLog.objects.log_actions(
+            user_id=user.pk,
+            queryset=[instance],
+            action_flag=ActionFlag.DELETION,
+            change_message="Покинул событие",
+            is_admin=False,
+        )
+
         return instance
 
 
@@ -580,11 +625,19 @@ class EventConfirmSerializer(ModelSerializer):
         fields = []
 
     def update(self, instance: Event, validated_data):
-        participant = instance.get_participant(user=self.context["user"])
+        user = self.context["user"]
+        participant = instance.get_participant(user=user)
         if not participant:
             raise ValidationError(
                 {"error": "Пользователь не является участником/организатором"}
             )
         participant.has_confirmed = True
         participant.save()
+        HistoryLog.objects.log_actions(
+            user_id=user.pk,
+            queryset=[instance],
+            action_flag=ActionFlag.CHANGE,
+            change_message="Подтвердил участие",
+            is_admin=False,
+        )
         return instance

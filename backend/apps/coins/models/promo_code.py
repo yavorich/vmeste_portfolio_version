@@ -10,6 +10,8 @@ from django.db.models import (
     F,
 )
 
+from apps.admin_history.models import HistoryLog, ActionFlag
+
 User = get_user_model()
 
 
@@ -46,3 +48,10 @@ class PromoCode(Model):
         self.save()
         user.wallet.balance += self.coins
         user.wallet.save()
+        HistoryLog.objects.log_actions(
+            user_id=user.pk,
+            queryset=[self],
+            action_flag=ActionFlag.ADDITION,
+            change_message="Активировал",
+            is_admin=False,
+        )

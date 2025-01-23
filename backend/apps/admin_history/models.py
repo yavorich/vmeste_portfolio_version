@@ -1,7 +1,6 @@
 import json
 
 from django.conf import settings
-from django.contrib.admin.models import LogEntryManager
 from django.contrib.admin.utils import quote
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import (
@@ -16,6 +15,7 @@ from django.db.models import (
     PositiveSmallIntegerField,
     IntegerChoices,
     ManyToManyField,
+    Manager,
 )
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
@@ -27,6 +27,62 @@ class ActionFlag(IntegerChoices):
     ADDITION = 1, _("Addition")
     CHANGE = 2, _("Change")
     DELETION = 3, _("Deletion")
+    OTHER = 4, "Другое"
+
+
+class HistoryLogManager(Manager):
+    use_in_migrations = True
+
+    def log_action(
+        self,
+        user_id,
+        content_type_id,
+        object_id,
+        object_repr,
+        action_flag,
+        change_message="",
+        *,
+        is_admin=True
+    ):
+        if isinstance(change_message, list):
+            change_message = json.dumps(change_message)
+        return self.model.objects.create(
+            user_id=user_id,
+            content_type_id=content_type_id,
+            object_id=str(object_id),
+            object_repr=object_repr[:200],
+            action_flag=action_flag,
+            change_message=change_message,
+            is_admin=is_admin,
+        )
+
+    def log_actions(
+        self, user_id, queryset, action_flag, change_message="", *, is_admin=True
+    ):
+        if isinstance(change_message, list):
+            change_message = json.dumps(change_message)
+
+        log_entry_list = [
+            self.model(
+                user_id=user_id,
+                content_type_id=ContentType.objects.get_for_model(
+                    obj, for_concrete_model=False
+                ).id,
+                object_id=obj.pk,
+                object_repr=str(obj)[:200],
+                action_flag=action_flag,
+                change_message=change_message,
+                is_admin=is_admin,
+            )
+            for obj in queryset
+        ]
+
+        if log_entry_list and len(log_entry_list) == 1:
+            instance = log_entry_list[0]
+            instance.save()
+            return instance
+
+        return self.model.objects.bulk_create(log_entry_list)
 
 
 class HistoryLog(Model):
@@ -37,8 +93,9 @@ class HistoryLog(Model):
     )
     user = ForeignKey(
         settings.AUTH_USER_MODEL,
-        CASCADE,
+        SET_NULL,
         verbose_name=_("user"),
+        null=True,
     )
     content_type = ForeignKey(
         ContentType,
@@ -61,7 +118,7 @@ class HistoryLog(Model):
         settings.AUTH_USER_MODEL, blank=True, related_name="read_history_logs"
     )
 
-    objects = LogEntryManager()
+    objects = HistoryLogManager()
 
     class Meta:
         verbose_name = _("log entry")
@@ -154,8 +211,10 @@ class HistoryLog(Model):
 
             change_message = " ".join(msg[0].upper() + msg[1:] for msg in messages)
             return change_message or gettext("No fields changed.")
-        else:
+        elif self.change_message != "":
             return self.change_message
+        else:
+            return self.get_action_flag_display()
 
     def get_edited_object(self):
         """Return the edited object represented by this log entry."""

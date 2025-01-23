@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from itertools import groupby
 
+from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.api.models import Event
 from apps.api.permissions import IsEventParticipant
 from apps.api.enums import EventStatus
@@ -84,19 +85,24 @@ class MessageListView(ListAPIView):
 
     def read_all_messages(self, messages):
         user = self.request.user
+
+        unread_messages_query = messages.annotate(
+            is_read=Exists(
+                ReadMessage.objects.filter(user=user, message_id=OuterRef("pk"))
+            )
+        ).filter(is_read=False)
+        unread_messages = list(unread_messages_query.iterator())
         ReadMessage.objects.bulk_create(
-            [
-                ReadMessage(user=user, message_id=message_id)
-                for message_id in messages.annotate(
-                    is_read=Exists(
-                        ReadMessage.objects.filter(user=user, message_id=OuterRef("pk"))
-                    )
-                )
-                .filter(is_read=False)
-                .values_list("pk", flat=True)
-            ]
+            [ReadMessage(user=user, message=message) for message in unread_messages]
         )
         send_ws_unread_messages(user)
+        HistoryLog.objects.log_actions(
+            user_id=user.pk,
+            queryset=unread_messages,
+            action_flag=ActionFlag.CHANGE,
+            change_message=[{"changed": {"fields": ["Прочитано"]}}],
+            is_admin=False,
+        )
 
 
 class MessageSendView(CreateAPIView):
@@ -118,3 +124,10 @@ class MessageSendView(CreateAPIView):
         )
         event_pk = self.kwargs["event_pk"]
         send_ws_message(message_serializer.data, event_pk)
+        HistoryLog.objects.log_actions(
+            user_id=self.request.user.pk,
+            queryset=[message],
+            action_flag=ActionFlag.ADDITION,
+            change_message=[{"added": {}}],
+            is_admin=False,
+        )

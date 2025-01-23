@@ -20,10 +20,13 @@
 {% block sidebar %}
 <div id="content-related">
     <div class="change-history" id="recent-actions-module" style="max-width: fit-content; margin-left: auto; margin-right: auto;">
-        {% if app_list %}
+        {% if app_list %}{% if has_user_history or has_admin_history %}
             <h2 style="width: 100%;">История действий</h2>
-            <h2 style="width: 100%;">Администратора</h2>
+
+            {% if has_user_history %}
+            <h2 style="width: 100%;">Пользователя</h2>
             {% for app in app_list %}
+            {% if app.has_user_history %}
             <div>
             <table style="width: 100%; margin-top: 10px; margin-bottom: 15px;">
                 <caption>
@@ -31,18 +34,47 @@
                 </caption>
                 <tbody>
                 {% for model in app.models %}
+                {% if model.has_user_history %}
                 <tr>
-                    <td><a href="{{ model.history_url }}">{{ model.name }}</a></td>
-                    <td style="width: 25px; text-align: right;">{% if model.history_notify_count > 0 %}{{ model.history_notify_count }}{% endif %}</td>
+                    <td><a href="{{ model.history_user_url }}">{{ model.name }}</a></td>
+                    <td style="width: 25px; text-align: right;">{% if model.history_user_notify_count > 0 %}{{ model.history_user_notify_count }}{% endif %}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
                 </tbody>
             </table>
             </div>
+            {% endif %}
             {% endfor %}
+            {% endif %}
+
+            {% if has_admin_history %}
+            <h2 style="width: 100%;">Администратора</h2>
+            {% for app in app_list %}
+            {% if app.has_admin_history %}
+            <div>
+            <table style="width: 100%; margin-top: 10px; margin-bottom: 15px;">
+                <caption>
+                  <p>{{ app.name }}</p>
+                </caption>
+                <tbody>
+                {% for model in app.models %}
+                {% if model.has_admin_history %}
+                <tr>
+                    <td><a href="{{ model.history_admin_url }}">{{ model.name }}</a></td>
+                    <td style="width: 25px; text-align: right;">{% if model.history_admin_notify_count > 0 %}{{ model.history_admin_notify_count }}{% endif %}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
         {% else %}
             <p>{% translate 'None available' %}</p>
-        {% endif %}
+        {% endif %}{% endif %}
     </div>
 </div>
 {% endblock %}

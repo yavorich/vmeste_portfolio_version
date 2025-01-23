@@ -22,6 +22,7 @@ from apps.api.serializers import (
 from apps.api.models import Country, City, Location
 from core.cache.functools import get_or_cache
 from .mixins import LocationMixin
+from ...admin_history.models import HistoryLog, ActionFlag
 
 
 class LocationListViewSet(CreateModelMixin, DocumentViewSet):
@@ -62,6 +63,16 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
 
     def get_serializer_class(self):
         return self.serializer_class[self.action]
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        HistoryLog.objects.log_actions(
+            user_id=self.request.user.pk,
+            queryset=[instance],
+            action_flag=ActionFlag.ADDITION,
+            change_message=[{"added": {}}],
+            is_admin=False,
+        )
 
 
 class CountryListView(LocationMixin, ListAPIView):

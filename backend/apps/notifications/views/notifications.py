@@ -2,6 +2,7 @@ from rest_framework_bulk import BulkUpdateModelMixin
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
+from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.notifications.models import UserNotification
 from apps.notifications.serializers import (
     UserNotificationSerializer,
@@ -26,3 +27,13 @@ class NotificationListUpdateApiView(BulkUpdateModelMixin, ListAPIView):
 
     def patch(self, request, *args, **kwargs):
         return self.partial_bulk_update(request, *args, **kwargs)
+
+    def perform_bulk_update(self, serializer):
+        objs = serializer.save()
+        HistoryLog.objects.log_actions(
+            user_id=self.request.user.pk,
+            queryset=objs,
+            action_flag=ActionFlag.CHANGE,
+            change_message=[{"changed": {"fields": ["Прочитано"]}}],
+            is_admin=False,
+        )
