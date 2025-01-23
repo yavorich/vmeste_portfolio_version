@@ -577,6 +577,7 @@ class EventCancelSerializer(ModelSerializer):
         if participant.is_organizer:
             instance.is_draft = True  # возврат организатору в сигнале
             instance.save()
+            change_message = "Отменил событие"
         else:
             if participant.payed > 0:  # возврат за событие для участника
                 participant.user.wallet.refund(participant.payed)
@@ -587,12 +588,13 @@ class EventCancelSerializer(ModelSerializer):
                 event=instance,
                 related_id=participant.user_id,
             )
+            change_message = "Покинул событие"
 
         HistoryLog.objects.log_actions(
             user_id=user.pk,
             queryset=[instance],
             action_flag=ActionFlag.DELETION,
-            change_message="Покинул событие",
+            change_message=change_message,
             is_admin=False,
         )
 
