@@ -1,9 +1,10 @@
 from django.contrib import admin
 
+from apps.admin_history.admin import site
 from apps.api.models import Category
 
 
-@admin.register(Category)
+@admin.register(Category, site=site)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ["id", "title", "theme", "events_count"]
 

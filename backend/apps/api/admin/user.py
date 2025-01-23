@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from apps.admin_history.admin import site
 from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
 from apps.api.models import User, DeletedUser
@@ -19,7 +20,7 @@ class InterestInline(admin.TabularInline):
     verbose_name_plural = "Интересы"
 
 
-@admin.register(User)
+@admin.register(User, site=site)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     inlines = [WalletInline, InterestInline]
     list_display = [
@@ -101,7 +102,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         queryset.update(is_active=True)
 
 
-@admin.register(DeletedUser)
+@admin.register(DeletedUser, site=site)
 class DeletedUserAdmin(ManyToManyMixin, admin.ModelAdmin):
     inlines = [WalletInline, InterestInline]
     fieldsets = [

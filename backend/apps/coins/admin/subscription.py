@@ -1,10 +1,11 @@
 from adminsortable2.admin import SortableAdminMixin
 from django.contrib import admin
 
+from apps.admin_history.admin import site
 from apps.coins.models import CoinSubscription
 
 
-@admin.register(CoinSubscription)
+@admin.register(CoinSubscription, site=site)
 class CoinSubscriptionAdmin(SortableAdminMixin, admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("price",)}),

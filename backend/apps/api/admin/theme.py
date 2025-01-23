@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from apps.admin_history.admin import site
 from apps.api.models import Theme, Category
 
 
@@ -7,7 +8,7 @@ class CategoryInline(admin.TabularInline):
     model = Category
 
 
-@admin.register(Theme)
+@admin.register(Theme, site=site)
 class ThemeAdmin(admin.ModelAdmin):
     inlines = [CategoryInline]
     list_display = ["title", "events_count", "organizer_price", "participant_price"]

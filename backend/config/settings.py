@@ -51,6 +51,7 @@ LOCAL_APPS = [
     "apps.notifications",
     "apps.coins",
     "apps.payment",
+    "apps.admin_history",
 ]
 
 THIRD_PARTY_APPS = [

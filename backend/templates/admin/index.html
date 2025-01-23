@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}">{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="change-history" id="recent-actions-module" style="max-width: fit-content; margin-left: auto; margin-right: auto;">
+        {% if app_list %}
+            <h2 style="width: 100%;">История действий</h2>
+            <h2 style="width: 100%;">Администратора</h2>
+            {% for app in app_list %}
+            <div>
+            <table style="width: 100%; margin-top: 10px; margin-bottom: 15px;">
+                <caption>
+                  <p>{{ app.name }}</p>
+                </caption>
+                <tbody>
+                {% for model in app.models %}
+                <tr>
+                    <td><a href="{{ model.history_url }}">{{ model.name }}</a></td>
+                    <td style="width: 25px; text-align: right;">{% if model.history_notify_count > 0 %}{{ model.history_notify_count }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>{% translate 'None available' %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

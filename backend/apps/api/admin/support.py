@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 
+from apps.admin_history.admin import site
 from apps.api.models import (
     SupportRequestTheme,
     SupportRequestMessage,
@@ -30,7 +31,7 @@ class SupportMessageInline(admin.TabularInline):
         return None
 
 
-@admin.register(SupportRequestTheme)
+@admin.register(SupportRequestTheme, site=site)
 class SupportThemeAdmin(admin.ModelAdmin):
     # inlines = [SupportMessageInline]
     list_display = [
@@ -51,7 +52,7 @@ class SupportAnswerInline(admin.StackedInline):
     extra = 0
 
 
-@admin.register(SupportRequestMessage)
+@admin.register(SupportRequestMessage, site=site)
 class SupportMessageAdmin(admin.ModelAdmin):
     inlines = (SupportAnswerInline,)
     fields = ("author", "status", "get_theme", "get_type", "get_subject", "text")

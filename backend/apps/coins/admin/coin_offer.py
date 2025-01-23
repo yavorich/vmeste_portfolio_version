@@ -1,9 +1,10 @@
 from django.contrib import admin
 
+from apps.admin_history.admin import site
 from apps.coins.models import CoinOffer
 
 
-@admin.register(CoinOffer)
+@admin.register(CoinOffer, site=site)
 class CoinOfferAdmin(admin.ModelAdmin):
     fields = ("coins", "discount")
     ordering = ("coins",)

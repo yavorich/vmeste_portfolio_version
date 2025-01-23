@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rangefilter.filters import DateRangeFilterBuilder
 
+from apps.admin_history.admin import site
 from core.admin import ManyToManyMixin
 from apps.api.models import Event, EventParticipant, User, EventMedia, EventAdminProxy
 
@@ -41,7 +42,7 @@ class EventStatusFilter(SimpleListFilter):
             return queryset.filter(Q(is_draft=True) | Q(is_active=False))
 
 
-@admin.register(Event)
+@admin.register(Event, site=site)
 class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     inlines = [EventParticipantInline, EventMediaInline]
     fieldsets = [
@@ -163,7 +164,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
         queryset.update(is_active=True)
 
 
-@admin.register(EventAdminProxy)
+@admin.register(EventAdminProxy, site=site)
 class EventAdminProxyAdmin(EventAdmin):
     list_display = ("id", "start_datetime", "title")
     list_display_links = list_display

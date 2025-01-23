@@ -3,6 +3,7 @@ from django.contrib.admin import SimpleListFilter
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 
+from apps.admin_history.admin import site
 from apps.chat.models import Chat, Message, Event
 
 
@@ -41,7 +42,7 @@ class ChatMessagesInline(admin.TabularInline):
         return qs.filter(is_info=False)
 
 
-@admin.register(Chat)
+@admin.register(Chat, site=site)
 class ChatAdmin(admin.ModelAdmin):
     inlines = [ChatMessagesInline]
     list_display = [
