@@ -99,6 +99,7 @@ class EventDocument(Document):
                 properties={
                     "men": TextField(),
                     "women": TextField(),
+                    "total": TextField(),
                 }
             ),
             "free_places": ObjectField(
@@ -147,7 +148,7 @@ class EventDocument(Document):
         participants = instance.participants.all()
         male = participants.filter(user__gender=Gender.MALE).count()
         female = participants.filter(user__gender=Gender.FEMALE).count()
-        total = male + female
+        total = participants.count()
         return {
             "user": [{"id": p.user.id, "gender": p.user.gender} for p in participants],
             "stats": {
@@ -157,6 +158,15 @@ class EventDocument(Document):
                 "women": f"{female}/{instance.total_female}"
                 if instance.total_female is not None
                 else str(female),
+                "total": f"{total}/{instance.total_people}"
+                if instance.total_people is not None
+                else f"{total}/{instance.total_male + instance.total_female}"
+                if instance.total_male is not None and instance.total_female is not None
+                else f"{total}/{instance.total_male}"
+                if instance.total_male is not None
+                else f"{total}/{instance.total_female}"
+                if instance.total_female is not None
+                else total,
             },
             "free_places": {
                 "male": instance.total_male - male
@@ -167,6 +177,8 @@ class EventDocument(Document):
                 else None,
                 "total": instance.total_male + instance.total_female - total
                 if instance.total_male is not None and instance.total_female is not None
+                else instance.total_people - total
+                if instance.total_people is not None
                 else None,
             },
         }

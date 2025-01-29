@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.filters import (
     SimpleListFilter,
 )
+from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rangefilter.filters import DateRangeFilterBuilder
@@ -42,9 +43,19 @@ class EventStatusFilter(SimpleListFilter):
             return queryset.filter(Q(is_draft=True) | Q(is_active=False))
 
 
+class EventForm(ModelForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("total_people") is not None:
+            cleaned_data["total_male"] = None
+            cleaned_data["total_female"] = None
+        return cleaned_data
+
+
 @admin.register(Event, site=site)
 class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     inlines = [EventParticipantInline, EventMediaInline]
+    form = EventForm
     fieldsets = [
         (
             None,
@@ -67,6 +78,7 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "categories",
                     "total_male",
                     "total_female",
+                    "total_people",
                     "min_age",
                     "max_age",
                     "did_organizer_marking",

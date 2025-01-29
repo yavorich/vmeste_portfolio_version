@@ -6,6 +6,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import Serializer, ModelSerializer, Field
 
+from apps.admin_history.models import HistoryLog, ActionFlag
+from apps.admin_history.utils import get_model_field_label
 from apps.api.documents import EventDocument
 from apps.api.enums import EventState
 from apps.api.models import (
@@ -26,12 +28,10 @@ from apps.api.serializers import (
 )
 from apps.api.services.payment import do_payment_on_create
 from apps.coins.exceptions import NoCoinsError
+from apps.notifications.models import GroupNotification
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
 from .support import SupportMessageCreateSerializer
-from ...admin_history.models import HistoryLog, ActionFlag
-from ...admin_history.utils import get_model_field_label
-from ...notifications.models import GroupNotification
 
 
 class CharacterSeparatedField(serializers.ListField):
@@ -168,8 +168,10 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "location",
             "total_male",
             "total_female",
+            "total_people",
             "stats_men",
             "stats_women",
+            "stats_people",
             "date_and_year",
             "day_and_time",
             "date",
@@ -208,6 +210,7 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
     am_i_organizer = serializers.SerializerMethodField()
     stats_men = serializers.CharField(source="participants.stats.men")
     stats_women = serializers.CharField(source="participants.stats.women")
+    stats_people = serializers.CharField(source="participants.stats.total")
     cover = serializers.SerializerMethodField()
 
     class Meta:
@@ -222,6 +225,7 @@ class EventDocumentSerializer(EventMixin, DocumentSerializer):
             "location",
             "stats_men",
             "stats_women",
+            "stats_people",
             "date_and_time",
             "am_i_organizer",
             "sign_price",
@@ -272,6 +276,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "categories",
             "total_male",
             "total_female",
+            "total_people",
             "short_description",
             "description",
             "is_close_event",
@@ -281,7 +286,8 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             f: {"required": True}
             for f in fields
-            if f not in ("organizer_will_pay", "total_male", "total_female")
+            if f
+            not in ("organizer_will_pay", "total_male", "total_female", "total_people")
         }
         extra_kwargs["cover"].update({"read_only": False})
 
@@ -375,6 +381,10 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         user = self.context["user"]
         if self.instance is None:  # create
+            if attrs.get("total_people") is not None:
+                attrs["total_male"] = None
+                attrs["total_female"] = None
+
             if not attrs["is_draft"]:
                 if attrs.get("organizer_will_pay") is None:
                     raise ValidationError(
@@ -387,6 +397,10 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                         raise NoCoinsError
 
         else:  # update
+            if attrs.get("total_people", self.instance.total_people) is not None:
+                attrs["total_male"] = None
+                attrs["total_female"] = None
+
             if (
                 not attrs.get("is_draft", self.instance.is_draft)
                 and self.instance.is_draft

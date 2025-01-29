@@ -90,6 +90,7 @@ def create_event_change_notification(instance: Event, **kwargs):
         "theme",
         "total_male",
         "total_female",
+        "total_people",
         "short_description",
         "description",
         "is_close_event",

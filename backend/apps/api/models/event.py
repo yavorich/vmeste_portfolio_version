@@ -28,6 +28,10 @@ class EventQuerySet(models.QuerySet):
         participants_count = models.Count("participants")
         return self.annotate(
             free_places=models.Case(
+                models.When(
+                    total_people__isnull=False,
+                    then=F("total_people") - participants_count,
+                ),
                 models.When(Q(total_male=None) | Q(total_female=None), then=None),
                 default=F("total_male") + F("total_female") - participants_count,
             )
@@ -41,6 +45,10 @@ class EventQuerySet(models.QuerySet):
         )
         return self.annotate(
             free_places=models.Case(
+                models.When(
+                    total_people__isnull=False,
+                    then=F("total_people") - participants_count,
+                ),
                 models.When(**{total_field: None}, then=None),
                 default=F(total_field) - participants_count,
             )
@@ -156,6 +164,9 @@ class Event(models.Model):
     total_female = models.PositiveSmallIntegerField(
         _("Всего женщин"), null=True, blank=True
     )
+    total_people = models.PositiveSmallIntegerField(
+        _("Всего участников"), null=True, blank=True
+    )
     did_organizer_marking = models.BooleanField(
         _("Организатор отметил присутствие"), default=False
     )
@@ -192,6 +203,20 @@ class Event(models.Model):
     @property
     def stats_women(self):
         return self.get_stats(Gender.FEMALE)
+
+    @property
+    def stats_people(self):
+        count = EventParticipant.objects.filter(event=self).count()
+        total = self.total_people
+        if total is None:
+            if self.total_male is not None and self.total_female is not None:
+                total = self.total_male + self.total_female
+            elif self.total_male is not None:
+                total = self.total_male
+            elif self.total_female is not None:
+                total = self.total_female
+
+        return f"{count}/{total}" if total is not None else str(count)
 
     @property
     def date_and_time(self):
@@ -253,6 +278,9 @@ class Event(models.Model):
             return None
 
     def get_free_places(self, gender: Gender | None = None) -> bool:
+        if self.total_people is not None:
+            return self.total_people - self.participants.count()
+
         if gender:
             total_field = "total_" + gender
             total_field_value = getattr(self, total_field)
