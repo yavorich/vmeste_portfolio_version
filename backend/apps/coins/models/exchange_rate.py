@@ -3,7 +3,7 @@ from django.db.models import PositiveIntegerField
 
 
 class ExchangeRate(SingletonModel):
-    rate = PositiveIntegerField("1 В, рублей", default=100)
+    rate = PositiveIntegerField("1*, рублей", default=100)
 
     class Meta:
         verbose_name = "Номинал"
