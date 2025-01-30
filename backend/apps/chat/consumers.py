@@ -232,7 +232,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_user_groups(self):
         events = (
-            Event.objects.filter_participant(self.user).filter(is_draft=False, is_active=True).filter_not_expired().distinct()
+            Event.objects.filter_participant(self.user)
+            .filter(is_draft=False, is_active=True)
+            .filter_not_expired()
+            .distinct()
         )
         groups = ["chat_%s" % id for id in events.values_list("id")]
         groups += [f"user_{self.user.id}"]
