@@ -39,13 +39,3 @@ class SupportMessageCreateView(CreateAPIView):
         context = super().get_serializer_context()
         context["user"] = self.request.user
         return context
-
-    def perform_create(self, serializer):
-        instance = serializer.save()
-        HistoryLog.objects.log_actions(
-            user_id=self.request.user.pk,
-            queryset=[instance],
-            action_flag=ActionFlag.ADDITION,
-            change_message=[{"added": {}}],
-            is_admin=False,
-        )
