@@ -140,15 +140,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         send_serializer.is_valid(raise_exception=True)
         message = send_serializer.save()
+        _, created = ReadMessage.objects.get_or_create(
+            message=message, user=message.sender
+        )
         HistoryLog.objects.log_actions(
             user_id=self.user.pk,
             queryset=[message],
             action_flag=ActionFlag.ADDITION,
             change_message=[{"added": {}}],
             is_admin=False,
-        )
-        _, created = ReadMessage.objects.get_or_create(
-            message=message, user=message.sender
         )
 
         headers = dict(self.scope["headers"])
@@ -232,7 +232,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_user_groups(self):
         events = (
-            Event.objects.filter_participant(self.user).distinct().filter_not_expired()
+            Event.objects.filter_participant(self.user).filter(is_draft=False, is_active=True).filter_not_expired().distinct()
         )
         groups = ["chat_%s" % id for id in events.values_list("id")]
         groups += [f"user_{self.user.id}"]

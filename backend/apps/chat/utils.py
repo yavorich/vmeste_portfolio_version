@@ -33,8 +33,9 @@ async def send_ws_unread_messages(user):
 async def asend_ws_unread_messages(user, _channel_layer):
     events = (
         Event.objects.filter_participant(user)
-        .distinct()
         .filter(is_draft=False, is_active=True)
+        .filter_not_expired()
+        .distinct()
     )
 
     unread = sum(

@@ -37,8 +37,9 @@ class ChatEventViewSet(ReadOnlyModelViewSet):
 
         queryset = (
             Event.objects.filter_participant(user)
-            .distinct()
             .filter(is_draft=False, is_active=True)
+            .filter_not_expired()
+            .distinct()
         )
         queryset = getattr(queryset, f"filter_{status}")()
         return sorted(
