@@ -148,6 +148,9 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
 
     search_fields = ("title", "short_description")
 
+    def get_queryset(self):
+        return super().get_queryset().filter("term", is_active=True)
+
     def get_permissions(self):
         permission_classes = {
             "list": [StatusPermissions],
