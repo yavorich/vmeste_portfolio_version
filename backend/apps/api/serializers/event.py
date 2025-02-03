@@ -172,6 +172,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "stats_men",
             "stats_women",
             "stats_people",
+            "max_people",
             "date_and_year",
             "day_and_time",
             "date",

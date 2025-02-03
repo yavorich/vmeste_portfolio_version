@@ -207,16 +207,21 @@ class Event(models.Model):
     @property
     def stats_people(self):
         count = EventParticipant.objects.filter(event=self).count()
+        total = self.max_people
+        return f"{count}/{total}" if total is not None else str(count)
+
+    @property
+    def max_people(self):
         total = self.total_people
         if total is None:
             if self.total_male is not None and self.total_female is not None:
-                total = self.total_male + self.total_female
+                return self.total_male + self.total_female
             elif self.total_male is not None:
-                total = self.total_male
+                return self.total_male
             elif self.total_female is not None:
-                total = self.total_female
+                return self.total_female
 
-        return f"{count}/{total}" if total is not None else str(count)
+        return total
 
     @property
     def date_and_time(self):
