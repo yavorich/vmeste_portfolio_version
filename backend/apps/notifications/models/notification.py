@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.api.models import User, Event
+from core.utils.short_text import short_text
 
 
 class GroupNotification(models.Model):
@@ -120,11 +121,7 @@ class UserNotification(models.Model):
 
     @property
     def short_text(self):
-        max_length = 50
-        if len(self.title) <= max_length:
-            return self.title
-        else:
-            return f"{self.title[:max_length-3]}..."
+        return short_text(self.title, 50)
 
     def __str__(self) -> str:
         return f"{self.title}: для {self.user.get_full_name()}"

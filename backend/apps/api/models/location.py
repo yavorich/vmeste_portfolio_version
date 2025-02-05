@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 import os
 
+from .user import User
 from .country import Country
 from .city import City
 
@@ -22,22 +23,36 @@ class Location(models.Model):
     )
     name = models.CharField(_("Название"), max_length=255)
     latitude = models.FloatField(
-        validators=[MinValueValidator(-90), MaxValueValidator(90)]
+        _("Широта"), validators=[MinValueValidator(-90), MaxValueValidator(90)]
     )
     longitude = models.FloatField(
-        validators=[MinValueValidator(-180), MaxValueValidator(180)]
+        _("Долгота"), validators=[MinValueValidator(-180), MaxValueValidator(180)]
     )
     address = models.CharField(_("Адрес"), max_length=255)
     country = models.ForeignKey(
-        Country, related_name="locations", on_delete=models.CASCADE
+        Country,
+        related_name="locations",
+        on_delete=models.CASCADE,
+        verbose_name=_("Страна"),
     )
-    city = models.ForeignKey(City, related_name="locations", on_delete=models.CASCADE)
-    status = models.CharField(choices=Status.choices, max_length=11)
+    city = models.ForeignKey(
+        City,
+        related_name="locations",
+        on_delete=models.CASCADE,
+        verbose_name=_("Город"),
+    )
+    status = models.CharField(_("Статус"), choices=Status.choices, max_length=11)
     discount = models.IntegerField(_("Скидка"), default=0)
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Добавил"
+    )
 
     class Meta:
         verbose_name = "Локация"
         verbose_name_plural = "Локации"
+
+    def __str__(self):
+        return self.name
 
     @property
     def coords_field_indexing(self):

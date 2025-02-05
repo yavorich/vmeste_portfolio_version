@@ -1,28 +1,27 @@
-from django.core.cache import cache
 from django.core.management import call_command
-from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
 from django_elasticsearch_dsl_drf.filter_backends import (
     GeoSpatialOrderingFilterBackend,
     FilteringFilterBackend,
     CompoundSearchFilterBackend,
 )
+from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
 from elasticsearch.exceptions import NotFoundError
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import AllowAny
 from rest_framework.filters import SearchFilter
+from rest_framework.generics import ListAPIView
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.api.documents import LocationDocument
+from apps.api.models import Country, City, Location
 from apps.api.serializers import (
     LocationDocumentSerializer,
     LocationCreateSerializer,
     CountrySerializer,
     CitySerializer,
 )
-from apps.api.models import Country, City, Location
 from core.cache.functools import get_or_cache
 from .mixins import LocationMixin
-from ...admin_history.models import HistoryLog, ActionFlag
 
 
 class LocationListViewSet(CreateModelMixin, DocumentViewSet):
@@ -49,6 +48,12 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
         "coords": "coords",
     }
 
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsAuthenticated()]
+
+        return super().get_permissions()
+
     def get_queryset(self):
         try:
             qs = super().get_queryset().filter("term", status=Location.Status.VERIFIED)
@@ -65,7 +70,7 @@ class LocationListViewSet(CreateModelMixin, DocumentViewSet):
         return self.serializer_class[self.action]
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        instance = serializer.save(user=self.request.user)
         HistoryLog.objects.log_actions(
             user_id=self.request.user.pk,
             queryset=[instance],

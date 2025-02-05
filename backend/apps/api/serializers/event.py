@@ -292,8 +292,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         }
         extra_kwargs["cover"].update({"read_only": False})
 
-    @staticmethod
-    def prepare_location(validated_data: dict):
+    def prepare_location(self, validated_data: dict):
         location_fields = (
             "country_name",
             "city_name",
@@ -320,6 +319,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                     "latitude": validated_data.pop("latitude"),
                     "longitude": validated_data.pop("longitude"),
                     "status": Location.Status.UNKNOWN,
+                    "user": self.context["user"],
                 },
             )
         else:
