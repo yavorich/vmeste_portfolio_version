@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 from apps.admin_history.admin import site
 from apps.admin_history.models import HistoryLog, ActionFlag
+from apps.admin_history.utils import get_object_data_from_obj
 from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
 from apps.api.models import User, DeletedUser
@@ -167,6 +168,7 @@ class DeletedUserAdmin(ManyToManyMixin, admin.ModelAdmin):
                 object_repr=str(user),
                 action_flag=ActionFlag.ADDITION,
                 change_message="Восстановил",
+                object_data=get_object_data_from_obj(user),
             )
 
     def has_add_permission(self, request):

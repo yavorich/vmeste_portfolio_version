@@ -16,11 +16,14 @@ from django.db.models import (
     IntegerChoices,
     ManyToManyField,
     Manager,
+    JSONField,
 )
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 from django.utils.text import get_text_list
 from django.utils.translation import gettext_lazy as _, gettext
+
+from apps.admin_history.utils import get_object_data_from_obj
 
 
 class ActionFlag(IntegerChoices):
@@ -42,8 +45,12 @@ class HistoryLogManager(Manager):
         action_flag,
         change_message="",
         *,
-        is_admin=True
+        is_admin=True,
+        object_data=None,
     ):
+        if object_data is None:
+            object_data = {}
+
         if isinstance(change_message, list):
             change_message = json.dumps(change_message)
         return self.model.objects.create(
@@ -54,6 +61,7 @@ class HistoryLogManager(Manager):
             action_flag=action_flag,
             change_message=change_message,
             is_admin=is_admin,
+            object_data=object_data,
         )
 
     def log_actions(
@@ -73,6 +81,7 @@ class HistoryLogManager(Manager):
                 action_flag=action_flag,
                 change_message=change_message,
                 is_admin=is_admin,
+                object_data=get_object_data_from_obj(obj),
             )
             for obj in queryset
         ]
@@ -117,6 +126,8 @@ class HistoryLog(Model):
     read_users = ManyToManyField(
         settings.AUTH_USER_MODEL, blank=True, related_name="read_history_logs"
     )
+
+    object_data = JSONField(default=dict)
 
     objects = HistoryLogManager()
 

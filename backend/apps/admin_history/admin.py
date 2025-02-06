@@ -9,42 +9,7 @@ from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 
 from apps.admin_history.models import HistoryLog, ActionFlag
-
-
-class HistoryAdminMixin:
-    def log_addition(self, request, obj, message):
-        return HistoryLog.objects.log_actions(
-            user_id=request.user.pk,
-            queryset=[obj],
-            action_flag=ActionFlag.ADDITION,
-            change_message=message,
-            single_object=True,
-        )
-
-    def log_change(self, request, obj, message):
-        return HistoryLog.objects.log_actions(
-            user_id=request.user.pk,
-            queryset=[obj],
-            action_flag=ActionFlag.CHANGE,
-            change_message=message,
-            single_object=True,
-        )
-
-    def log_deletion(self, request, obj, object_repr):
-        return HistoryLog.objects.log_action(
-            user_id=request.user.pk,
-            content_type_id=get_content_type_for_model(obj).pk,
-            object_id=obj.pk,
-            object_repr=object_repr,
-            action_flag=ActionFlag.DELETION,
-        )
-
-    def log_deletions(self, request, queryset):
-        return HistoryLog.objects.log_actions(
-            user_id=request.user.pk,
-            queryset=queryset,
-            action_flag=ActionFlag.DELETION,
-        )
+from core.utils.short_text import short_text
 
 
 def bool_display(value: bool):
@@ -158,37 +123,39 @@ class HistoryAdminSite(AdminSite):
             page_obj = paginator.get_page(page_number)
             page_range = paginator.get_elided_page_range(page_obj.number)
 
-            additional_cols = ()
-            cols = (
-                ("action_time", "object_id", "object_repr")
-                + additional_cols
-                + ("user", "change_message", "is_new")
+            additional_cols = (
+                model._meta.history_fields
+                if hasattr(model._meta, "history_fields")
+                else {}
             )
 
             col_headers = (
-                (_("Date/time"), f"ID Объекта", "Объект")
-                + ()
-                + (_("User"), _("Action"), "Новое действие")
+                [_("Date/time"), f"ID Объекта", "Объект"]
+                + list(additional_cols.values())
+                + [_("User"), _("Action"), "Новое действие"]
             )
 
             for obj in page_obj.object_list:
                 is_new = not obj.is_read(request.user)
                 obj.read(request.user)
                 obj.display_values = (
-                    (
+                    [
                         obj.action_time.strftime("%d/%m/%yг. %H:%M"),
                         obj.object_id,
                         obj.object_repr,
-                    )
-                    + ()
-                    + (
+                    ]
+                    + [
+                        short_text(obj.object_data.get(field, "-"), 30)
+                        for field in additional_cols.keys()
+                    ]
+                    + [
                         f"{obj.user_id}. "
                         + f"{obj.user.get_full_name()} {obj.user.phone_number}".lstrip()
                         if obj.user is not None
                         else "-",
                         change_message_icon(obj.action_flag, obj.get_change_message()),
                         bool_display(is_new),
-                    )
+                    ]
                 )
 
             history_label_suffix = "администратора" if is_admin else "пользователя"

@@ -50,6 +50,7 @@ class Location(models.Model):
     class Meta:
         verbose_name = "Локация"
         verbose_name_plural = "Локации"
+        history_fields = {"address": "Адрес"}
 
     def __str__(self):
         return self.name
