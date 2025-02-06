@@ -19,10 +19,10 @@ class DocsSerializer(serializers.ModelSerializer):
         if name == Docs.Name.AGREEMENT and not user.agreement_applied_at:
             user.agreement_applied_at = localtime()
             field = "agreement_applied_at"
-        if name == Docs.Name.RULES:
+        if name == Docs.Name.RULES and not user.event_rules_applied:
             user.event_rules_applied = True
             field = "event_rules_applied"
-        if name == Docs.Name.OFFER:
+        if name == Docs.Name.OFFER and not user.offer_applied:
             user.offer_applied = True
             field = "offer_applied"
         user.save()
