@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.contrib.admin.options import get_content_type_for_model
+from django.utils.safestring import mark_safe
 
 from apps.admin_history.admin import site
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
 from apps.api.models import User, DeletedUser
+from core.utils.short_text import short_text
 
 
 class WalletInline(admin.StackedInline):
@@ -30,33 +32,20 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         "id",
         "phone_number",
         "email",
-        "avatar",
+        "_avatar",
         "first_name",
         "last_name",
         "gender",
         "country",
         "date_of_birth",
         "telegram",
+        "balance",
         "get_interests",
         "occupation",
         "agreement_applied_at",
     ]
     list_display_links = [
         "id",
-    ]
-    list_editable = [
-        "is_active",
-        "phone_number",
-        "email",
-        "avatar",
-        "first_name",
-        "last_name",
-        "gender",
-        "country",
-        "date_of_birth",
-        "telegram",
-        "occupation",
-        "agreement_applied_at",
     ]
     fieldsets = [
         (
@@ -90,6 +79,18 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_registered=True)
+
+    @admin.display(description="Баланс")
+    def balance(self, obj):
+        return obj.wallet.balance
+
+    @admin.display(description="Аватар")
+    def _avatar(self, obj):
+        if obj.avatar:
+            return mark_safe(
+                f'<a href="{obj.avatar.url}">{short_text(obj.avatar.name, 20)}</a>'
+            )
+        return ""
 
     @admin.display(description="Интересы")
     def get_interests(self, obj):

@@ -11,6 +11,7 @@ from django.db.models import (
 )
 
 from apps.admin_history.models import HistoryLog, ActionFlag
+from .history import WalletHistory
 
 User = get_user_model()
 
@@ -48,6 +49,11 @@ class PromoCode(Model):
         self.save()
         user.wallet.balance += self.coins
         user.wallet.save()
+        WalletHistory.objects.create(
+            operation_type=WalletHistory.OperationType.REPLENISHMENT,
+            value=self.coins,
+            wallet=user.wallet,
+        )
         HistoryLog.objects.log_actions(
             user_id=user.pk,
             queryset=[self],

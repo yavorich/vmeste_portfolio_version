@@ -3,3 +3,4 @@ from .exchange_rate import ExchangeRate
 from .coin_offer import CoinOffer
 from .promo_code import PromoCode
 from .subscription import CoinSubscription
+from .history import WalletHistory

@@ -8,6 +8,8 @@ from django.db.models import (
 )
 from django.utils import timezone
 
+from .history import WalletHistory
+
 User = get_user_model()
 
 
@@ -42,8 +44,18 @@ class Wallet(Model):
         if not self.unlimited:
             self.balance -= coins
             self.save()
+            WalletHistory.objects.create(
+                operation_type=WalletHistory.OperationType.SPEND,
+                value=coins,
+                wallet=self,
+            )
 
     def refund(self, coins: int):
         if not self.unlimited:
             self.balance += coins
             self.save()
+            WalletHistory.objects.create(
+                operation_type=WalletHistory.OperationType.REFUND,
+                value=coins,
+                wallet=self,
+            )

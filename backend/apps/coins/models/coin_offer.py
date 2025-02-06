@@ -1,7 +1,8 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import Model, PositiveIntegerField
 
-from apps.coins.models import ExchangeRate
+from .exchange_rate import ExchangeRate
+from .history import WalletHistory
 from .product import ProductMixin
 
 
@@ -36,3 +37,8 @@ class CoinOffer(ProductMixin, Model):
     def buy(self, user):
         user.wallet.balance += self.coins
         user.wallet.save()
+        WalletHistory.objects.create(
+            operation_type=WalletHistory.OperationType.REPLENISHMENT,
+            value=self.coins,
+            wallet=user.wallet,
+        )
