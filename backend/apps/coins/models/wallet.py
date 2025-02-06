@@ -28,7 +28,7 @@ class Wallet(Model):
         verbose_name_plural = "Кошельки"
 
     def __str__(self):
-        return ""
+        return str(self.balance)
 
     @property
     def unlimited(self):

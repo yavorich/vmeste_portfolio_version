@@ -69,6 +69,8 @@ THIRD_PARTY_APPS = [
     "solo",
     "adminsortable2",
     "django_eventstream",
+    "dal",
+    "dal_select2",
 ]
 
 INSTALLED_APPS = (

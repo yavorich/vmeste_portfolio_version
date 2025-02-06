@@ -77,7 +77,9 @@ class AllUserManager(UserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username = None
     phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
-    confirmation_code = models.CharField(max_length=5, blank=True, null=True)
+    confirmation_code = models.CharField(
+        _("Код подтверждения"), max_length=5, blank=True, null=True
+    )
     profile_is_completed = models.BooleanField(_("Профиль заполнен"), default=False)
     first_name = models.CharField(_("Имя"), blank=True, null=True)
     last_name = models.CharField(_("Фамилия"), blank=True, null=True)
@@ -113,7 +115,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
-    telegram = models.CharField(max_length=255, null=True, blank=True)
+    telegram = models.CharField(_("Телеграм"), max_length=255, null=True, blank=True)
     occupation = models.ForeignKey(
         Occupation,
         verbose_name=_("Профессия"),
@@ -150,13 +152,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     agreement_applied_at = models.DateTimeField(
         _("Дата принятия соглашения"), null=True
     )
-    event_rules_applied = models.BooleanField(default=False)
-    offer_applied = models.BooleanField(default=False)
-    sending_push = models.BooleanField(default=True)
-    receive_recs = models.BooleanField(default=True)
+    event_rules_applied = models.BooleanField(_("Правила сервиса"), default=False)
+    offer_applied = models.BooleanField(_("Оферта"), default=False)
+    sending_push = models.BooleanField(_("Отправка уведомлений"), default=True)
+    receive_recs = models.BooleanField(_("Рекомендовать события"), default=True)
 
     uuid = models.UUIDField(default=uuid4)
-    is_registered = models.BooleanField(default=False)
+    is_registered = models.BooleanField(_("Зарегистрирован"), default=False)
     is_deleted = models.BooleanField(default=False)
 
     USERNAME_FIELD = "phone_number"
@@ -165,7 +167,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     all_objects = AllUserManager()
 
     def __str__(self) -> str:
-        return self.get_full_name()
+        return f"{self.get_full_name()} {self.phone_number}".lstrip()
 
     def get_full_name(self) -> str:
         first_name = self.first_name if self.first_name is not None else ""

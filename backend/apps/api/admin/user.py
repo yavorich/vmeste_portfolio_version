@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin.options import get_content_type_for_model
+from django.forms import ModelForm
 from django.utils.safestring import mark_safe
+from dal.autocomplete import Select2, Select2Multiple
 
 from apps.admin_history.admin import site
 from apps.admin_history.models import HistoryLog, ActionFlag
@@ -25,9 +27,15 @@ class InterestInline(admin.TabularInline):
     verbose_name_plural = "Интересы"
 
 
+class UserForm(ModelForm):
+    class Meta:
+        widgets = {"theme": Select2(), "categories": Select2Multiple()}
+
+
 @admin.register(User, site=site)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    inlines = [WalletInline, InterestInline]
+    inlines = [WalletInline]
+    form = UserForm
     list_display = [
         "is_active",
         "id",
@@ -64,6 +72,8 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "date_of_birth",
                     "telegram",
                     "occupation",
+                    "theme",
+                    "categories",
                     "profile_is_completed",
                     "email_is_confirmed",
                     "subscription",

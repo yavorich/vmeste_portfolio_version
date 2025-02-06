@@ -19,6 +19,10 @@ services:
       - db
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   db:
     container_name: vmeste_db
@@ -32,6 +36,10 @@ services:
       - 5432:5432
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   nginx:
     container_name: vmeste_nginx
@@ -50,6 +58,10 @@ services:
       - backend
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   certbot:
     image: certbot/certbot:latest
@@ -60,6 +72,10 @@ services:
       - nginx
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   celery:
     container_name: vmeste_celery
@@ -78,6 +94,10 @@ services:
       - rabbit
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   rabbit:
     container_name: vmeste_rabbit
@@ -94,6 +114,10 @@ services:
       - rabbitmqdata:/var/lib/rabbitmq
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   elasticsearch:
     container_name: vmeste_elasticsearch
@@ -110,6 +134,10 @@ services:
       - 9200:9200
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
   redis:
     image: redis:7.0.10-alpine
@@ -119,6 +147,10 @@ services:
       - 6379
     networks:
       - vmeste_back_default
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5gb"
 
 volumes:
   rabbitmqdata:
