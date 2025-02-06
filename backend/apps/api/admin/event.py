@@ -3,6 +3,7 @@ from django.contrib.admin.filters import (
     SimpleListFilter,
 )
 from django.forms import ModelForm
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from rangefilter.filters import DateRangeFilterBuilder
@@ -10,6 +11,7 @@ from rangefilter.filters import DateRangeFilterBuilder
 from apps.admin_history.admin import site
 from core.admin import ManyToManyMixin
 from apps.api.models import Event, EventParticipant, User, EventMedia, EventAdminProxy
+from core.utils.short_text import short_text
 
 
 class EventParticipantInline(admin.TabularInline):
@@ -90,38 +92,24 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     readonly_fields = ["organizer_will_pay"]
     list_display = [
         "id",
-        "is_active",
+        "_is_active",
         "title",
-        "date",
-        "start_time",
-        "end_time",
+        "_date",
+        "_start_time",
+        "_end_time",
         "get_notifications",
         "city",
         "theme",
         "get_categories",
-        "cover",
+        "_cover",
         "location_name",
         "location_address",
-        "get_stats_men",
-        "get_stats_women",
+        "get_stats_people",
         "short_description",
         "min_age",
         "max_age",
         "will_come",
     ]
-    # list_editable = [
-    #     "is_active",
-    #     "title",
-    #     "city",
-    #     "date",
-    #     "start_time",
-    #     "end_time",
-    #     "theme",
-    #     "cover",
-    #     "short_description",
-    #     "min_age",
-    #     "max_age",
-    # ]
     list_filter = [
         EventStatusFilter,
         "city",
@@ -139,21 +127,41 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
     date_hierarchy = "date"
     ordering = ("-id",)
 
-    @admin.display(description="Уведомления")
+    @admin.display(description="Актив.", boolean=True)
+    def _is_active(self, obj):
+        return obj.is_active
+
+    @admin.display(description="Дата")
+    def _date(self, obj):
+        return obj.date.strftime("%d.%m.%y")
+
+    @admin.display(description="Начало")
+    def _start_time(self, obj):
+        return obj.start_time
+
+    @admin.display(description="Конец")
+    def _end_time(self, obj):
+        return obj.end_time
+
+    @admin.display(description="Увед.")
     def get_notifications(self, obj):
         return obj.notifications.count()
 
-    @admin.display(description="Название локации")
+    @admin.display(description="Обложка")
+    def _cover(self, obj):
+        if obj.cover:
+            return mark_safe(
+                f'<a href="{obj.cover.url}">{short_text(obj.cover.name, 20)}</a>'
+            )
+        return ""
+
+    @admin.display(description="Локация")
     def location_name(self, obj):
         return getattr(obj.location, "name", None)
 
-    @admin.display(description="Мужчины")
-    def get_stats_men(self, obj):
-        return obj.stats_men
-
-    @admin.display(description="Женщины")
-    def get_stats_women(self, obj):
-        return obj.stats_women
+    @admin.display(description="Участники")
+    def get_stats_people(self, obj):
+        return obj.stats_people
 
     @admin.display(description="Адрес")
     def location_address(self, obj):
