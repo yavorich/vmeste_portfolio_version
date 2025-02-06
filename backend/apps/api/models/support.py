@@ -60,9 +60,17 @@ class SupportRequestMessage(models.Model):
     class Meta:
         verbose_name = "Обращение"
         verbose_name_plural = "Обращения"
+        history_fields = {"theme": "Тема", "author_user": "Автор"}
 
     def __str__(self):
-        return f"Обращение №{self.pk}"
+        return self.theme.get_type_display()
+
+    @property
+    def author_user(self):
+        return (
+            f"{self.author.pk}. "
+            + f"{self.author.get_full_name()} {self.author.phone_number}".lstrip()
+        )
 
 
 class SupportAnswer(models.Model):
@@ -78,4 +86,4 @@ class SupportAnswer(models.Model):
         verbose_name_plural = "Ответы на обращения"
 
     def __str__(self):
-        return ""
+        return self.text
