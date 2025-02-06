@@ -107,7 +107,7 @@ class UserNotification(models.Model):
         on_delete=models.CASCADE,
     )
     title = models.CharField(_("Заголовок"), max_length=50, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(_("Дата отправки"), auto_now_add=True)
     event = models.ForeignKey(
         verbose_name=_("Событие"),
         to=Event,

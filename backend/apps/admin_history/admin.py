@@ -4,7 +4,9 @@ from django.contrib.admin.views.main import PAGE_VAR
 from django.core.paginator import Paginator
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
+from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
+from django.utils.translation import gettext_lazy as _
 
 from apps.admin_history.models import HistoryLog, ActionFlag
 
@@ -43,6 +45,26 @@ class HistoryAdminMixin:
             queryset=queryset,
             action_flag=ActionFlag.DELETION,
         )
+
+
+def bool_display(value: bool):
+    if value is None:
+        return "-"
+    if value:
+        return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True">')
+    else:
+        return mark_safe('<img src="/static/admin/img/icon-no.svg" alt="False">')
+
+
+def change_message_icon(action_flag, message):
+    match action_flag:
+        case ActionFlag.ADDITION:
+            return mark_safe(f'<slug class="addlink"></slug>{message}')
+        case ActionFlag.CHANGE:
+            return mark_safe(f'<slug class="changelink"></slug>{message}')
+        case ActionFlag.DELETION:
+            return mark_safe(f'<slug class="deletelink"</slug>{message}')
+    return message
 
 
 class HistoryAdminSite(AdminSite):
@@ -136,9 +158,38 @@ class HistoryAdminSite(AdminSite):
             page_obj = paginator.get_page(page_number)
             page_range = paginator.get_elided_page_range(page_obj.number)
 
+            additional_cols = ()
+            cols = (
+                ("action_time", "object_id", "object_repr")
+                + additional_cols
+                + ("user", "change_message", "is_new")
+            )
+
+            col_headers = (
+                (_("Date/time"), f"ID Объекта", "Объект")
+                + ()
+                + (_("User"), _("Action"), "Новое действие")
+            )
+
             for obj in page_obj.object_list:
-                obj.is_new = not obj.is_read(request.user)
+                is_new = not obj.is_read(request.user)
                 obj.read(request.user)
+                obj.display_values = (
+                    (
+                        obj.action_time.strftime("%d/%m/%yг. %H:%M"),
+                        obj.object_id,
+                        obj.object_repr,
+                    )
+                    + ()
+                    + (
+                        f"{obj.user_id}. "
+                        + f"{obj.user.get_full_name()} {obj.user.phone_number}".lstrip()
+                        if obj.user is not None
+                        else "-",
+                        change_message_icon(obj.action_flag, obj.get_change_message()),
+                        bool_display(is_new),
+                    )
+                )
 
             history_label_suffix = "администратора" if is_admin else "пользователя"
             context = {
@@ -150,6 +201,7 @@ class HistoryAdminSite(AdminSite):
                 "pagination_required": paginator.count > 100,
                 "page_range": page_range,
                 "page_var": PAGE_VAR,
+                "col_headers": col_headers,
             }
             return TemplateResponse(request, "admin_history.html", context)
 

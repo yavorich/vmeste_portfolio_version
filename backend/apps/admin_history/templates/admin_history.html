@@ -14,31 +14,33 @@
 <div id="content-main">
 <div id="change-history" class="module">
 
+<style>
+    .history-list table {
+        width: auto !important;
+    }
+</style>
+
 {% if action_list %}
-    <table>
-        <thead>
-        <tr>
-            <th scope="col">{% translate 'Date/time' %}</th>
-            <th scope="col">ID Объекта</th>
-            <th scope="col">Объект</th>
-            <th scope="col">{% translate 'User' %}</th>
-            <th scope="col">{% translate 'Action' %}</th>
-            <th scope="col">Новое действие</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for action in action_list %}
-        <tr>
-            <th scope="row">{{ action.action_time|date:"DATETIME_FORMAT" }}</th>
-            <td>{{ action.object_id }}</td>
-            <td>{{ action.object_repr }}</td>
-            <td>{{ action.user.get_username }}{% if action.user.get_full_name %} ({{ action.user.get_full_name }}){% endif %}</td>
-            <td><slug class="{% if action.is_addition %}addlink{% endif %}{% if action.is_change %}changelink{% endif %}{% if action.is_deletion %}deletelink{% endif %}"></slug>{{ action.get_change_message }}</td>
-            <td>{% if action.is_new %}<img src="/static/admin/img/icon-yes.svg" alt="True">{% else %}<img src="/static/admin/img/icon-no.svg" alt="False">{% endif %}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="history-list" style="overflow-x: auto">
+        <table>
+            <thead>
+            <tr>
+                {% for col_header in col_headers %}
+                <th scope="col">{{ col_header }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for action in action_list %}
+            <tr>
+                {% for value in action.display_values %}
+                <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <p class="paginator">
       {% if pagination_required %}
         {% for i in page_range %}

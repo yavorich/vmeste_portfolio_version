@@ -168,7 +168,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.get_full_name()
 
     def get_full_name(self) -> str:
-        return f"{self.first_name} {self.last_name}"
+        first_name = self.first_name if self.first_name is not None else ""
+        last_name = self.last_name if self.last_name is not None else ""
+        return f"{first_name} {last_name}".strip()
 
     def clean(self):
         if self.age < 18:

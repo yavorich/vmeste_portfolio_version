@@ -11,7 +11,7 @@ class Docs(models.Model):
     name = models.CharField(
         _("Тип документа"), choices=Name.choices, max_length=10, unique=True
     )
-    text = models.TextField()
+    text = models.TextField(_("Текст"))
 
     class Meta:
         verbose_name = "Документ"
