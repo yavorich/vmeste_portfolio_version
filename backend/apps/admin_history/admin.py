@@ -9,6 +9,7 @@ from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 
 from apps.admin_history.models import HistoryLog, ActionFlag
+from apps.api.models import SupportRequestMessage
 from core.utils.short_text import short_text
 
 
@@ -113,6 +114,18 @@ class HistoryAdminSite(AdminSite):
         return custom_urls + urlpatterns
 
     def history_view(self, model, is_admin):
+        additional_cols = (
+            model._meta.history_fields if hasattr(model._meta, "history_fields") else {}
+        )
+        if not is_admin and isinstance(model(), SupportRequestMessage):
+            additional_cols.pop("author_user", None)
+
+        col_headers = (
+            [_("Date/time"), f"ID Объекта", "Объект"]
+            + list(additional_cols.values())
+            + [_("User"), _("Action"), "Новое действие"]
+        )
+
         def _history_view(request):
             action_list = HistoryLog.objects.filter(
                 content_type=get_content_type_for_model(model), is_admin=is_admin
@@ -122,18 +135,6 @@ class HistoryAdminSite(AdminSite):
             page_number = request.GET.get(PAGE_VAR, 1)
             page_obj = paginator.get_page(page_number)
             page_range = paginator.get_elided_page_range(page_obj.number)
-
-            additional_cols = (
-                model._meta.history_fields
-                if hasattr(model._meta, "history_fields")
-                else {}
-            )
-
-            col_headers = (
-                [_("Date/time"), f"ID Объекта", "Объект"]
-                + list(additional_cols.values())
-                + [_("User"), _("Action"), "Новое действие"]
-            )
 
             for obj in page_obj.object_list:
                 is_new = not obj.is_read(request.user)

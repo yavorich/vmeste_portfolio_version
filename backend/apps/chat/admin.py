@@ -69,3 +69,19 @@ class ChatAdmin(admin.ModelAdmin):
         if messages.exists():
             return messages.latest().sent_at
         return None
+
+
+@admin.register(Message, site=site)
+class MessageAdmin(admin.ModelAdmin):
+    fields = ("chat", "sender", "text", "sent_at", "is_info")
+    readonly_fields = ("chat", "sender", "sent_at", "is_info")
+    list_display = ("chat", "sent_at", "sender", "text", "is_info")
+    list_display_links = list_display
+    list_filter = ("is_info",)
+    ordering = ("sent_at",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return obj is not None and not obj.is_incoming

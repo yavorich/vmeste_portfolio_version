@@ -37,7 +37,7 @@ class Message(models.Model):
     )
     text = models.CharField(_("Текст"), max_length=300)
     sent_at = models.DateTimeField(_("Время отправки"), auto_now_add=True)
-    is_info = models.BooleanField(default=False)
+    is_info = models.BooleanField(_("Информационное"), default=False)
     is_incoming = models.BooleanField(null=True)
 
     class Meta:
@@ -45,6 +45,13 @@ class Message(models.Model):
         verbose_name_plural = "Сообщения"
         get_latest_by = "sent_at"
         ordering = ["sent_at"]
+        history_fields = {"sender_user": "Отправитель", "text": "Текст"}
+
+    def __str__(self):
+        event = self.chat.event
+        if event is None:
+            return "-"
+        return f"{event.pk}. {event.title}"
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
@@ -56,6 +63,13 @@ class Message(models.Model):
 
     def is_read_by(self, user):
         return ReadMessage.objects.filter(message=self, user=user).exists()
+
+    @property
+    def sender_user(self):
+        return (
+            f"{self.sender.pk}. "
+            + f"{self.sender.get_full_name()} {self.sender.phone_number}".lstrip()
+        )
 
 
 class ReadMessage(models.Model):
