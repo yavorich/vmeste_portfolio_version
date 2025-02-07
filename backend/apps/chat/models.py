@@ -16,9 +16,21 @@ class Chat(models.Model):
     class Meta:
         verbose_name = "Чат"
         verbose_name_plural = "Чаты"
+        history_fields = {"organizer_user": "Организатор"}
 
     def __str__(self) -> str:
         return self.event.title
+
+    @property
+    def organizer_user(self):
+        organizer = self.event.organizer
+        if organizer is None:
+            return "-"
+
+        return (
+            f"{organizer.pk}. "
+            + f"{organizer.get_full_name()} {organizer.phone_number}".lstrip()
+        )
 
 
 class Message(models.Model):
