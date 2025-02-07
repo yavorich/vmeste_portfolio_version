@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.api.models import Event, User
+from core.utils.short_text import short_text
 
 
 class Chat(models.Model):
@@ -57,9 +58,13 @@ class Message(models.Model):
         verbose_name_plural = "Сообщения"
         get_latest_by = "sent_at"
         ordering = ["sent_at"]
-        history_fields = {"sender_user": "Отправитель", "text": "Текст"}
+        history_fields = {"sender_user": "Отправитель", "event_str": "Событие"}
 
     def __str__(self):
+        return short_text(self.text, 50)
+
+    @property
+    def event_str(self):
         event = self.chat.event
         if event is None:
             return "-"
