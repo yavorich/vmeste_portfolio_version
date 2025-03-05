@@ -186,6 +186,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def age(self) -> int:
+        if self.date_of_birth is None:
+            return
+
         return relativedelta(localtime().date(), self.date_of_birth).years
 
     @property

@@ -358,23 +358,30 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             for field in date_fields:
                 validated_data.pop(field, None)
 
-    @staticmethod
-    def validate_age(validated_data):
+    def validate_age(self, validated_data):
         age_fields = ("min_age", "max_age")
 
         if all((field in validated_data for field in age_fields)):
             if validated_data["min_age"] >= validated_data["max_age"]:
                 raise ValidationError(
-                    {"error": "Минимальный возраст должен быть меньше максимального"}
+                    "Минимальный возраст должен быть меньше максимального"
                 )
             if validated_data["min_age"] < 18:
-                raise ValidationError(
-                    {"error": "Минимальный возраст не может быть меньше 18"}
-                )
+                raise ValidationError("Минимальный возраст не может быть меньше 18")
             if validated_data["max_age"] > 100:
-                raise ValidationError(
-                    {"error": "Максимальный возраст не может быть больше 100"}
-                )
+                raise ValidationError("Максимальный возраст не может быть больше 100")
+
+            user = self.context["user"]
+            if user.age is not None:
+                if validated_data["min_age"] > user.age:
+                    raise ValidationError(
+                        "Минимальный возраст не может быть больше вашего возраста"
+                    )
+                if validated_data["max_age"] < user.age:
+                    raise ValidationError(
+                        "Максимальный возраст не может быть меньше вашего возраста"
+                    )
+
         else:
             for field in age_fields:
                 validated_data.pop(field, None)
