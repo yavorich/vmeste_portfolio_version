@@ -362,7 +362,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         age_fields = ("min_age", "max_age")
 
         if all((field in validated_data for field in age_fields)):
-            if validated_data["min_age"] >= validated_data["max_age"]:
+            if validated_data["min_age"] > validated_data["max_age"]:
                 raise ValidationError(
                     "Минимальный возраст должен быть меньше максимального"
                 )
