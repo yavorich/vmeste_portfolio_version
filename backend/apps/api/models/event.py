@@ -260,7 +260,7 @@ class Event(models.Model):
         #     return
         # else:
         #     return self.theme.participant_price
-        return
+        return 0
 
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
