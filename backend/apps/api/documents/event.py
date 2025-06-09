@@ -8,6 +8,7 @@ from django_elasticsearch_dsl.fields import (
     KeywordField,
     DateField,
     FileField,
+    FloatField,
 )
 from elasticsearch_dsl import analyzer
 from elasticsearch_dsl.analysis import token_filter
@@ -111,7 +112,7 @@ class EventDocument(Document):
             ),
         }
     )
-    sign_price = IntegerField()
+    sign_price = FloatField(attr="sign_price_with_commission")
 
     class Index:
         name = "event"

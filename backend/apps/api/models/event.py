@@ -13,6 +13,7 @@ import os
 import uuid as _uuid
 
 from apps.api.enums import Gender
+from core.defaults import DECIMAL_RUB
 from core.model_fields import CompressedImageField
 from .location import Location
 from .theme import Theme
@@ -171,8 +172,12 @@ class Event(models.Model):
         _("Организатор отметил присутствие"), default=False
     )
 
-    organizer_will_pay = models.BooleanField(
-        _("Организатор оплатит встречу"), null=True, blank=True
+    sign_price = models.DecimalField(
+        "Плата за вступление",
+        **DECIMAL_RUB,
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
     )
 
     tracker = FieldTracker()
@@ -253,14 +258,11 @@ class Event(models.Model):
             return None
 
     @property
-    def sign_price(self):
-        # if self.organizer_will_pay:
-        #     return 0
-        # elif self.organizer_will_pay is None:
-        #     return
-        # else:
-        #     return self.theme.participant_price
-        return 0
+    def sign_price_with_commission(self):
+        if self.theme.payment_type != Theme.PaymentType.PROF:
+            return 0
+
+        return round(self.sign_price * self.theme.get_commission_percent_factor(), 2)
 
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender

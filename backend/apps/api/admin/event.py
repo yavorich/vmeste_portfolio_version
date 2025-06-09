@@ -84,12 +84,12 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "min_age",
                     "max_age",
                     "did_organizer_marking",
-                    "organizer_will_pay",
+                    "sign_price",
                 ]
             },
         )
     ]
-    readonly_fields = ["organizer_will_pay"]
+    readonly_fields = ["sign_price"]
     list_display = [
         "id",
         "_is_active",
