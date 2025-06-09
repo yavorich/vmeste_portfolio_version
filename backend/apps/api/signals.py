@@ -1,7 +1,6 @@
 import mimetypes
 from django.db.models.signals import post_delete, pre_save, post_save, pre_delete
 from django.dispatch import receiver
-from django.utils import timezone
 from django_elasticsearch_dsl.registries import registry
 
 from apps.api.models import (
@@ -15,10 +14,6 @@ from apps.api.models import (
     EventAdminProxy,
 )
 from apps.api.services import generate_video_preview
-from apps.api.services.payment import (
-    do_payment_on_update,
-    do_payment_refund,
-)
 from apps.chat.models import Chat
 from core.cache.functools import delete_cache
 from core.utils import delete_file, delete_file_on_update
@@ -124,25 +119,25 @@ def set_cover_medium(instance, **kwargs):
             pass
 
 
-@receiver(pre_save, sender=Event)
-@receiver(pre_save, sender=EventAdminProxy)
-def do_payment(sender, instance: Event, **kwargs):
-    if instance._state.adding or not instance.pk:
-        return
+# @receiver(pre_save, sender=Event)
+# @receiver(pre_save, sender=EventAdminProxy)
+# def do_payment(sender, instance: Event, **kwargs):
+#     if instance._state.adding or not instance.pk:
+#         return
+#
+#     try:
+#         old_instance = sender.objects.get(pk=instance.pk)
+#     except sender.DoesNotExist:
+#         return
+#
+#     do_payment_on_update(old_instance, instance)
 
-    try:
-        old_instance = sender.objects.get(pk=instance.pk)
-    except sender.DoesNotExist:
-        return
 
-    do_payment_on_update(old_instance, instance)
-
-
-@receiver(pre_delete, sender=Event)
-@receiver(pre_delete, sender=EventAdminProxy)
-def refund_payment(sender, instance, **kwargs):
-    if timezone.now() < instance.start_datetime:
-        do_payment_refund(instance)
+# @receiver(pre_delete, sender=Event)
+# @receiver(pre_delete, sender=EventAdminProxy)
+# def refund_payment(sender, instance, **kwargs):
+#     if timezone.now() < instance.start_datetime:
+#         do_payment_refund(instance)
 
 
 @receiver(post_delete, sender=City)

@@ -254,12 +254,13 @@ class Event(models.Model):
 
     @property
     def sign_price(self):
-        if self.organizer_will_pay:
-            return 0
-        elif self.organizer_will_pay is None:
-            return
-        else:
-            return self.theme.participant_price
+        # if self.organizer_will_pay:
+        #     return 0
+        # elif self.organizer_will_pay is None:
+        #     return
+        # else:
+        #     return self.theme.participant_price
+        return
 
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender

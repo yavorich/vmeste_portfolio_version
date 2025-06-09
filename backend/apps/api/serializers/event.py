@@ -26,8 +26,6 @@ from apps.api.serializers import (
     ThemeSerializer,
     ThemeCategoriesSerializer,
 )
-from apps.api.services.payment import do_payment_on_create
-from apps.coins.exceptions import NoCoinsError
 from apps.notifications.models import GroupNotification
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
@@ -282,13 +280,18 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "description",
             "is_close_event",
             "is_draft",
-            "organizer_will_pay",
+            # "organizer_will_pay",
         ]
         extra_kwargs = {
             f: {"required": True}
             for f in fields
             if f
-            not in ("organizer_will_pay", "total_male", "total_female", "total_people")
+            not in (
+                # "organizer_will_pay",
+                "total_male",
+                "total_female",
+                "total_people",
+            )
         }
         extra_kwargs["cover"].update({"read_only": False})
 
@@ -393,38 +396,38 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 attrs["total_male"] = None
                 attrs["total_female"] = None
 
-            if not attrs["is_draft"]:
-                if attrs.get("organizer_will_pay") is None:
-                    raise ValidationError(
-                        {"organizer_will_pay": Field.default_error_messages["required"]}
-                    )
-
-                if attrs["organizer_will_pay"]:
-                    price = attrs["theme"].organizer_price
-                    if not user.wallet.has_coin(price):
-                        raise NoCoinsError
+            # if not attrs["is_draft"]:
+            #     if attrs.get("organizer_will_pay") is None:
+            #         raise ValidationError(
+            #             {"organizer_will_pay": Field.default_error_messages["required"]}
+            #         )
+            #
+            #     if attrs["organizer_will_pay"]:
+            #         price = attrs["theme"].organizer_price
+            #         if not user.wallet.has_coin(price):
+            #             raise NoCoinsError
 
         else:  # update
             if attrs.get("total_people", self.instance.total_people) is not None:
                 attrs["total_male"] = None
                 attrs["total_female"] = None
 
-            if (
-                not attrs.get("is_draft", self.instance.is_draft)
-                and self.instance.is_draft
-            ):
-                if (
-                    attrs.get("organizer_will_pay", self.instance.organizer_will_pay)
-                    is None
-                ):
-                    raise ValidationError(
-                        {"organizer_will_pay": Field.default_error_messages["required"]}
-                    )
-
-                if attrs.get("organizer_will_pay", self.instance.organizer_will_pay):
-                    price = attrs.get("theme", self.instance.theme).organizer_price
-                    if not user.wallet.has_coin(price):
-                        raise NoCoinsError
+            # if (
+            #     not attrs.get("is_draft", self.instance.is_draft)
+            #     and self.instance.is_draft
+            # ):
+            #     if (
+            #         attrs.get("organizer_will_pay", self.instance.organizer_will_pay)
+            #         is None
+            #     ):
+            #         raise ValidationError(
+            #             {"organizer_will_pay": Field.default_error_messages["required"]}
+            #         )
+            #
+            #     if attrs.get("organizer_will_pay", self.instance.organizer_will_pay):
+            #         price = attrs.get("theme", self.instance.theme).organizer_price
+            #         if not user.wallet.has_coin(price):
+            #             raise NoCoinsError
 
             if (
                 attrs.get("is_draft", False)
@@ -455,7 +458,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             is_organizer=True,
             has_confirmed=True,
         )
-        do_payment_on_create(event)
+        # do_payment_on_create(event)
         HistoryLog.objects.log_actions(
             user_id=user.pk,
             queryset=[event],
@@ -553,19 +556,19 @@ class EventSignSerializer(ModelSerializer):
         if instance.is_draft:
             raise ValidationError({"error": "Событие ещё не опубликовано."})
 
-        price = 0
-        if not instance.organizer_will_pay:
-            price = instance.theme.participant_price
-            if not user.wallet.has_coin(price):
-                raise NoCoinsError
+        # price = 0
+        # if not instance.organizer_will_pay:
+        #     price = instance.theme.participant_price
+        #     if not user.wallet.has_coin(price):
+        #         raise NoCoinsError
 
         participant, created = EventParticipant.objects.get_or_create(
             event=instance, user=user
         )
-        if created and price > 0:  # плата за вступление
-            user.wallet.spend(price)
-            participant.payed = price
-            participant.save()
+        # if created and price > 0:  # плата за вступление
+        #     user.wallet.spend(price)
+        #     participant.payed = price
+        #     participant.save()
 
         if created:
             HistoryLog.objects.log_actions(

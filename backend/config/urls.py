@@ -15,7 +15,7 @@ urlpatterns = [
                 path("", include("apps.api.urls", namespace="api")),
                 path("", include("apps.chat.urls", namespace="chat")),
                 path("", include("apps.notifications.urls", namespace="notifications")),
-                path("coins/", include("apps.coins.urls")),
+                # path("coins/", include("apps.coins.urls")), deprecated
                 path("payment/", include("apps.payment.urls")),
             ]
         ),

@@ -1,3 +1,8 @@
+"""
+Deprecated
+"""
+
+
 def do_payment_on_create(event):
     # если не черновик и организатор должен оплатить
     if not event.is_draft and event.organizer_will_pay:
