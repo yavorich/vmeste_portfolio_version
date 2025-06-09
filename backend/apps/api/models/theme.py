@@ -8,11 +8,14 @@ from core.defaults import DECIMAL_PERCENT, DECIMAL_RUB
 class Theme(models.Model):
     class PaymentType(models.TextChoices):
         FREE = "FREE", "Бесплатные"
-        MASTER = "MASTER", "Платные, платит организатор"
-        PROF = "PROF", "Платные, платят участники"
+        ORGANIZER_PAY = "ORGANIZER_PAY", "Платные, платит организатор"
+        PARTICIPANTS_PAY = "PARTICIPANTS_PAY", "Платные, платят участники"
 
     payment_type = models.CharField(
-        "Тип оплаты", choices=PaymentType.choices, default=PaymentType.FREE
+        "Тип оплаты",
+        max_length=16,
+        choices=PaymentType.choices,
+        default=PaymentType.FREE,
     )
 
     title = models.CharField(_("Название"), max_length=255, unique=True)
@@ -40,6 +43,6 @@ class Theme(models.Model):
 
     def get_commission_percent_factor(self):
         """Множитель для начисления комиссии"""
-        assert self.payment_type == self.PaymentType.PROF
+        assert self.payment_type == self.PaymentType.PARTICIPANTS_PAY
 
         return 1 + self.commission_percent / 100

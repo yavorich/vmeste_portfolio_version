@@ -25,7 +25,7 @@ class ThemeForm(ModelForm):
                 cleaned_data["commission_percent"] = None
                 cleaned_data["price"] = None
 
-            case Theme.PaymentType.MASTER:
+            case Theme.PaymentType.ORGANIZER_PAY:
                 if cleaned_data.get("price") is None:
                     raise ValidationError(
                         {"price": "Должна быть указана стоимость для организатора"}
