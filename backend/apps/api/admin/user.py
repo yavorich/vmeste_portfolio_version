@@ -34,7 +34,7 @@ class UserForm(ModelForm):
 
 @admin.register(User, site=site)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    inlines = [WalletInline]
+    # inlines = [WalletInline]
     form = UserForm
     list_display = [
         "is_active",
@@ -118,7 +118,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
 
 @admin.register(DeletedUser, site=site)
 class DeletedUserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    inlines = [WalletInline, InterestInline]
+    inlines = [InterestInline]
     fieldsets = [
         (
             None,
