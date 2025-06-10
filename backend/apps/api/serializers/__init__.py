@@ -44,3 +44,5 @@ from .participants import (
 from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
 from .occupations import OccupationSerializer
 from .media import EventMediaBulkCreateSerializer, EventMediaListSerializer
+from .verification import VerificationSerializer
+from .legal_entity import LegalEntitySerializer

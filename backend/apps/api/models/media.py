@@ -2,7 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 import os
 
-from apps.api.models import Event, User
+from .user import User
+from .event import Event
 
 
 def get_upload_path(instance, filename):

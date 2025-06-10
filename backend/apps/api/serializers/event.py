@@ -17,9 +17,8 @@ from apps.api.models import (
     City,
     Country,
     Theme,
-    User,
 )
-from apps.api.models import EventFastFilter
+from apps.api.models import EventFastFilter, User
 from apps.api.serializers import (
     LocationSerializer,
     CategorySerializer,

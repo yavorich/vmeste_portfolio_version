@@ -1,4 +1,6 @@
 import mimetypes
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, pre_save, post_save, pre_delete
 from django.dispatch import receiver
 from django_elasticsearch_dsl.registries import registry
@@ -6,13 +8,15 @@ from django_elasticsearch_dsl.registries import registry
 from apps.api.models import (
     EventParticipant,
     Event,
-    User,
     Location,
     EventMedia,
     City,
     Country,
     EventAdminProxy,
+    Verification,
+    LegalEntity,
 )
+from apps.api.models import User
 from apps.api.services import generate_video_preview
 from apps.chat.models import Chat
 from core.cache.functools import delete_cache

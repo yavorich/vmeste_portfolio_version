@@ -52,13 +52,13 @@ db-bash:
 	docker exec -it $(app_name)_db bash $(c)
 
 migrations:
-	docker exec -it $(app_name)_backend python backend/manage.py makemigrations
+	docker exec -it $(app_name)_backend python manage.py makemigrations
 
 migrate:
-	docker exec -it $(app_name)_backend python backend/manage.py migrate
+	docker exec -it $(app_name)_backend python manage.py migrate
 
 es-rebuild:
-	docker exec -it $(app_name)_backend python backend/manage.py search_index --rebuild -f
+	docker exec -it $(app_name)_backend python manage.py search_index --rebuild -f
 
 psql:
 	docker exec -it $(app_name)_db psql -U postgres

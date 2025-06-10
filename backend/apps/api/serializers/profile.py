@@ -5,7 +5,7 @@ from django.utils.timezone import localtime
 from dateutil.relativedelta import relativedelta
 from rest_framework.exceptions import ValidationError
 
-from apps.api.models import User, EventParticipant
+from apps.api.models import EventParticipant, User
 from apps.api.serializers import CategorySerializer, CitySerializer, CountrySerializer
 from apps.coins.serializers import WalletSerializer
 from core.utils import validate_file_size

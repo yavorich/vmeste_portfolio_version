@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.options import get_content_type_for_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm
 from django.utils.safestring import mark_safe
 from dal.autocomplete import Select2, Select2Multiple
@@ -9,8 +10,34 @@ from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.admin_history.utils import get_object_data_from_obj
 from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
-from apps.api.models import User, DeletedUser
+from apps.api.models import User, DeletedUser, Verification, LegalEntity
 from core.utils.short_text import short_text
+
+
+class LegalEntityInline(admin.StackedInline):
+    model = LegalEntity
+    fields = (
+        "company_name",
+        "legal_address",
+        "full_name",
+        "phone_number",
+        "director_full_name",
+        "director_phone_number",
+        "inn",
+        "ogrn",
+        "bic",
+        "bank_name",
+        "current_account",
+        "sites",
+        "confirmed",
+    )
+    extra = 0
+
+
+class VerificationInline(admin.StackedInline):
+    model = Verification
+    fields = ("document_file", "confirmed")
+    extra = 0
 
 
 class WalletInline(admin.StackedInline):
@@ -34,7 +61,7 @@ class UserForm(ModelForm):
 
 @admin.register(User, site=site)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    # inlines = [WalletInline]
+    inlines = [VerificationInline, LegalEntityInline]
     form = UserForm
     list_display = [
         "is_active",
@@ -61,6 +88,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
             None,
             {
                 "fields": [
+                    "status",
                     "phone_number",
                     "email",
                     "avatar",
@@ -84,7 +112,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
             },
         )
     ]
-    readonly_fields = []
+    readonly_fields = ["status"]
     search_fields = ["first_name", "last_name", "phone_number", "email"]
     actions = ["block_users", "unblock_users"]
 
@@ -114,6 +142,32 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     @admin.action(description="Разблокировать")
     def unblock_users(self, request, queryset):
         queryset.update(is_active=True)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+
+        user = form.instance
+
+        try:
+            verification_confirmed = Verification.objects.get(user=user).confirmed
+        except ObjectDoesNotExist:
+            verification_confirmed = False
+
+        if verification_confirmed:
+            try:
+                legal_entity_confirmed = LegalEntity.objects.get(user=user).confirmed
+            except ObjectDoesNotExist:
+                legal_entity_confirmed = False
+
+            if legal_entity_confirmed:
+                user.status = User.Status.PRO
+            else:
+                user.status = User.Status.MASTER
+
+        else:
+            user.status = User.Status.FREE
+
+        user.save()
 
 
 @admin.register(DeletedUser, site=site)

@@ -17,11 +17,11 @@ from apps.api.models import (
     Event,
     Location,
     EventParticipant,
-    User,
     Country,
     City,
     Category,
     Theme,
+    User,
 )
 from apps.api.enums import Gender
 

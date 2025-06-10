@@ -15,12 +15,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.api.enums import Gender
 from core.model_fields import CompressedImageField
-from .country import Country
-from .city import City
-from .category import Category
-from .theme import Theme
-from .occupation import Occupation
-from .subscription import Subscription
 
 
 def get_upload_path(instance, filename):
@@ -75,6 +69,15 @@ class AllUserManager(UserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class Status(models.TextChoices):
+        FREE = "FREE", "Free"
+        MASTER = "MASTER", "Master"
+        PRO = "PRO", "Profi"
+
+    status = models.CharField(
+        "Статус", max_length=8, choices=Status.choices, default=Status.FREE
+    )
+
     username = None
     phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
     confirmation_code = models.CharField(
@@ -100,7 +103,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("Почта"), blank=True, null=True)
     email_is_confirmed = models.BooleanField(_("Почта подтверждена"), default=False)
     country = models.ForeignKey(
-        Country,
+        "api.Country",
         verbose_name=_("Страна"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -108,7 +111,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     city = models.ForeignKey(
-        City,
+        "api.City",
         verbose_name=_("Город"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -117,7 +120,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     telegram = models.CharField(_("Телеграм"), max_length=255, null=True, blank=True)
     occupation = models.ForeignKey(
-        Occupation,
+        "api.Occupation",
         verbose_name=_("Профессия"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -125,7 +128,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     theme = models.ForeignKey(
-        Theme,
+        "api.Theme",
         verbose_name=_("Тема"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -133,14 +136,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
     categories = models.ManyToManyField(
-        Category,
+        "api.Category",
         verbose_name=_("Категории"),
         related_name="users",
         blank=True,
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
     subscription = models.ForeignKey(
-        Subscription,
+        "api.Subscription",
         verbose_name=_("Подписка"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -175,6 +178,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{first_name} {last_name}".strip()
 
     def clean(self):
+        if self.age is None:
+            return
+
         if self.age < 18:
             raise ValidationError(
                 {"date_of_birth": "Возраст должен быть не менее 18 лет"}

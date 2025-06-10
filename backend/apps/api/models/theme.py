@@ -27,7 +27,11 @@ class Theme(models.Model):
         blank=True
     )
     price = models.DecimalField(
-        "Стоимость", **DECIMAL_RUB, validators=[MinValueValidator(1)]
+        "Стоимость",
+        **DECIMAL_RUB,
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True
     )
 
     class Meta:

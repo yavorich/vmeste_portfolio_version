@@ -21,7 +21,7 @@ from .category import Category
 from .city import City
 from .country import Country
 from .participant import EventParticipant
-from .user import User
+from apps.api.models.user import User
 
 
 class EventQuerySet(models.QuerySet):

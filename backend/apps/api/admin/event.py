@@ -10,7 +10,7 @@ from rangefilter.filters import DateRangeFilterBuilder
 
 from apps.admin_history.admin import site
 from core.admin import ManyToManyMixin
-from apps.api.models import Event, EventParticipant, User, EventMedia, EventAdminProxy
+from apps.api.models import Event, EventParticipant, EventMedia, EventAdminProxy, User
 from core.utils.short_text import short_text
 
 
