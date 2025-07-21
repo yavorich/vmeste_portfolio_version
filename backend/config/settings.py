@@ -264,5 +264,7 @@ TINKOFF_BASE_URL = os.environ.get("TINKOFF_BASE_URL")
 TINKOFF_TERMINAL_KEY = os.environ.get("TINKOFF_TERMINAL_KEY")
 TINKOFF_PASSWORD = os.environ.get("TINKOFF_PASSWORD")
 
+TINKOFF_SAFE_PAYMENT_COMMISSION = 0.03
+
 # нужно, чтобы работало добавление history_fields для Meta в models
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("history_fields",)

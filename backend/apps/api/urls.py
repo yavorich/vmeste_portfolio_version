@@ -2,7 +2,7 @@ from django.urls import path, re_path
 from rest_framework.routers import DefaultRouter
 
 from . import views
-from .views import VerificationView, LegalEntityView
+from .views import VerificationView, LegalEntityView, EventPriceDetailsView
 
 app_name = "api"
 
@@ -102,4 +102,5 @@ urlpatterns = [
         views.EventFastFiltersListView.as_view(),
         name="fast-filter-list",
     ),
+    path("events/price-details/", EventPriceDetailsView.as_view(), name="event-price-details"),
 ] + router.urls

@@ -46,3 +46,4 @@ from .occupations import OccupationSerializer
 from .media import EventMediaBulkCreateSerializer, EventMediaListSerializer
 from .verification import VerificationSerializer
 from .legal_entity import LegalEntitySerializer
+from .event_prices import EventPriceDetailsSerializer
