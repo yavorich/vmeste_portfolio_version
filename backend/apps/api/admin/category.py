@@ -6,7 +6,7 @@ from apps.api.models import Category
 
 @admin.register(Category, site=site)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ["id", "title", "theme", "events_count"]
+    list_display = ["id", "title", "events_count"]
 
     @admin.display(description="Кол-во событий")
     def events_count(self, obj):

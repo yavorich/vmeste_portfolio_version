@@ -127,14 +127,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
         blank=True,
     )
-    theme = models.ForeignKey(
-        "api.Theme",
-        verbose_name=_("Тема"),
-        related_name="users",
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-    )
     categories = models.ManyToManyField(
         "api.Category",
         verbose_name=_("Категории"),

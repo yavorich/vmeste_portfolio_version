@@ -3,9 +3,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from apps.payment.models import TinkoffTransaction
+from apps.admin_history.models import HistoryLog, ActionFlag
+from apps.api.models import EventParticipant
+from apps.payment.models import TinkoffTransaction, ProductType
 from apps.payment.serializers import PaymentWebhookSerializer
-from apps.coins.services import buy_product
 
 
 class PaymentNotificationHookView(GenericAPIView):
@@ -48,8 +49,23 @@ class PaymentNotificationHookView(GenericAPIView):
             raise ValidationError
         return transaction
 
-    def confirm_payment(self, transaction):
+    def confirm_payment(self, transaction: TinkoffTransaction):
         transaction.status = TinkoffTransaction.Status.SUCCESS
-        buy_product(
-            transaction.product_type, transaction.product_id, user=transaction.user
-        )
+        if transaction.product_type == ProductType.ORGANIZATION:
+            event = transaction.event
+            event.paid_by_organizer = True
+            event.save()
+        elif transaction.product_type == ProductType.PARTICIPANCE:
+            event = transaction.event
+            user = transaction.user
+            participant, created = EventParticipant.objects.get_or_create(
+                event=event, user=user, payed=transaction.price
+            )
+            if created:
+                HistoryLog.objects.log_actions(
+                    user_id=user.pk,
+                    queryset=[event],
+                    action_flag=ActionFlag.ADDITION,
+                    change_message="Записался на событие",
+                    is_admin=False,
+                )

@@ -21,8 +21,7 @@ class ThemeCategoriesSerializer(ModelSerializer):
 
 
 class ThemeSerializer(ModelSerializer):
-    sub = CategorySerializer(source="categories_ordering", many=True)
 
     class Meta:
         model = Theme
-        fields = ["id", "title", "payment_type", "price", "commission_percent", "sub"]
+        fields = ["id", "title", "payment_type", "price", "commission_percent"]

@@ -8,7 +8,7 @@ from dal.autocomplete import Select2, Select2Multiple
 from apps.admin_history.admin import site
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.admin_history.utils import get_object_data_from_obj
-from apps.coins.models import Wallet
+# from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
 from apps.api.models import User, DeletedUser, Verification, LegalEntity
 from core.utils.short_text import short_text
@@ -40,12 +40,12 @@ class VerificationInline(admin.StackedInline):
     extra = 0
 
 
-class WalletInline(admin.StackedInline):
-    model = Wallet
-    fields = ("balance", "unlimited_until")
-    min_num = 1
-    max_num = 1
-    can_delete = False
+# class WalletInline(admin.StackedInline):
+#     model = Wallet
+#     fields = ("balance", "unlimited_until")
+#     min_num = 1
+#     max_num = 1
+#     can_delete = False
 
 
 class InterestInline(admin.TabularInline):
@@ -56,7 +56,7 @@ class InterestInline(admin.TabularInline):
 
 class UserForm(ModelForm):
     class Meta:
-        widgets = {"theme": Select2(), "categories": Select2Multiple()}
+        widgets = {"categories": Select2Multiple()}
 
 
 @admin.register(User, site=site)
@@ -75,7 +75,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         "country",
         "date_of_birth",
         "telegram",
-        "balance",
+        # "balance",
         "get_interests",
         "occupation",
         "agreement_applied_at",
@@ -100,7 +100,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "date_of_birth",
                     "telegram",
                     "occupation",
-                    "theme",
+                    # "theme",
                     "categories",
                     "profile_is_completed",
                     "email_is_confirmed",
@@ -119,9 +119,9 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_registered=True)
 
-    @admin.display(description="Баланс")
-    def balance(self, obj):
-        return obj.wallet.balance
+    # @admin.display(description="Баланс")
+    # def balance(self, obj):
+    #     return obj.wallet.balance
 
     @admin.display(description="Аватар")
     def _avatar(self, obj):

@@ -51,7 +51,7 @@ LOCAL_APPS = [
     "apps.api",
     "apps.chat",
     "apps.notifications",
-    "apps.coins",  # deprecated
+    # "apps.coins",  # deprecated
     "apps.payment",
     "apps.admin_history",
 ]

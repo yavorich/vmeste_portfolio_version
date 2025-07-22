@@ -179,6 +179,7 @@ class Event(models.Model):
         null=True,
         blank=True,
     )
+    paid_by_organizer = models.BooleanField(default=False)
 
     tracker = FieldTracker()
     objects = EventQuerySet.as_manager()

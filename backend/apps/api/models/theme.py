@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -40,10 +40,6 @@ class Theme(models.Model):
 
     def __str__(self) -> str:
         return self.title
-
-    @property
-    def categories_ordering(self):
-        return self.categories.order_by("title")
 
     def get_commission_percent_factor(self):
         """Множитель для начисления комиссии"""
