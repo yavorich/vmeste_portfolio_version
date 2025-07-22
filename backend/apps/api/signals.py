@@ -125,25 +125,25 @@ def set_cover_medium(instance, **kwargs):
             pass
 
 
-@receiver(pre_save, sender=Event)
-@receiver(pre_save, sender=EventAdminProxy)
-def do_payment(sender, instance: Event, **kwargs):
-    if instance._state.adding or not instance.pk:
-        return
+# @receiver(pre_save, sender=Event)
+# @receiver(pre_save, sender=EventAdminProxy)
+# def do_payment(sender, instance: Event, **kwargs):
+#     if instance._state.adding or not instance.pk:
+#         return
 
-    try:
-        old_instance = sender.objects.get(pk=instance.pk)
-    except sender.DoesNotExist:
-        return
+#     try:
+#         old_instance = sender.objects.get(pk=instance.pk)
+#     except sender.DoesNotExist:
+#         return
 
-    do_payment_on_update(old_instance, instance)
+#     do_payment_on_update(old_instance, instance)
 
 
-@receiver(pre_delete, sender=Event)
-@receiver(pre_delete, sender=EventAdminProxy)
-def refund_payment(sender, instance, **kwargs):
-    if timezone.now() < instance.start_datetime:
-        do_payment_refund(instance)
+# @receiver(pre_delete, sender=Event)
+# @receiver(pre_delete, sender=EventAdminProxy)
+# def refund_payment(sender, instance, **kwargs):
+#     if timezone.now() < instance.start_datetime:
+#         do_payment_refund(instance)
 
 
 @receiver(post_delete, sender=City)
