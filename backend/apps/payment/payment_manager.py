@@ -8,18 +8,18 @@ from apps.payment.payment_api import TinkoffPaymentApi
 class PaymentManager(metaclass=SingletonMeta):
     payment_api = TinkoffPaymentApi()
 
-    def buy(self, product_type, product_id, product, user, base_url):
+    def buy(self, event, user, product_type, amount, base_url):
         transaction = TinkoffTransaction(
-            product_type=product_type,
-            product_id=product_id,
-            price=product.price,
             user=user,
+            event=event,
+            product_type=product_type,
+            price=amount,
         )
         payment_data = self.payment_api.init_payment(
-            amount=product.price,
+            amount=amount,
             order_uuid=transaction.uuid,
-            product_name=product.name,
-            description=product.description,
+            product_name=transaction.product_name,
+            description=transaction.description,
             user_uuid=user.uuid,
             email=user.email,
             phone_number=user.phone_number.as_e164,
@@ -31,4 +31,5 @@ class PaymentManager(metaclass=SingletonMeta):
             setattr(transaction, attr, value)
 
         transaction.save()
-        return payment_data["payment_url"], transaction.uuid
+
+        return {"payment_url": payment_data["payment_url"], "payment_uuid": transaction.uuid}

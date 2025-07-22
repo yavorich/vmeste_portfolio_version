@@ -5,31 +5,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0074_eventadminproxy_alter_event_start_datetime'),
+        ("api", "0074_eventadminproxy_alter_event_start_datetime"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DeletedUser',
-            fields=[
-            ],
+            name="DeletedUser",
+            fields=[],
             options={
-                'verbose_name': 'Пользователь',
-                'verbose_name_plural': 'Удалённые пользователи',
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "Пользователь",
+                "verbose_name_plural": "Удалённые пользователи",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('api.user',),
+            bases=("api.user",),
             managers=[
-                ('objects', apps.api.models.user.DeletedUserManager()),
+                ("objects", apps.api.models.user.DeletedUserManager()),
             ],
         ),
         migrations.AddField(
-            model_name='user',
-            name='is_deleted',
+            model_name="user",
+            name="is_deleted",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 import os
 
-from .user import User
+from apps.api.models.user import User
 from .country import Country
 from .city import City
 

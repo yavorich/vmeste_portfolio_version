@@ -19,3 +19,5 @@ from .support import (
 )
 from .media import EventMedia
 from .filters import EventFastFilter
+from .verification import Verification
+from .legal_entity import LegalEntity

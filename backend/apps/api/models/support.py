@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .event import Event
-from .user import User
+from apps.api.models.user import User
 
 
 class SupportRequestType(models.TextChoices):

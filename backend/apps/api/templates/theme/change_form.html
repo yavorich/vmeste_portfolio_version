@@ -1,0 +1,63 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block field_sets %}
+{% for fieldset in adminform %}
+{% include "admin/includes/fieldset.html" %}
+{% endfor %}
+
+<script>
+    function hide_depended_fields() {
+        ["price", "commission_percent"].forEach(
+            name => {
+                document.getElementsByName(name).forEach(
+                    elem => {
+                        let parent_elem = elem.parentNode.parentNode.parentNode;
+                        if (!parent_elem.classList.contains("form-row")) {
+                            parent_elem = parent_elem.parentNode
+                        }
+
+                        parent_elem.hidden = true;
+                    }
+                )
+            }
+        )
+    }
+
+    function show_selected_field(choice) {
+        const choice_to_field = {
+            "FREE": null,
+            "MASTER": "price",
+            "PROF": "commission_percent",
+        };
+        const field_name = choice_to_field[choice];
+
+        if (field_name != null) {
+            document.getElementsByName(field_name).forEach(
+                elem => {
+                    let parent_elem = elem.parentNode.parentNode.parentNode;
+                    if (!parent_elem.classList.contains("form-row")) {
+                        parent_elem = parent_elem.parentNode
+                    }
+
+                    parent_elem.hidden = false;
+                }
+            )
+        }
+    }
+
+    hide_depended_fields();
+    document.querySelectorAll('input[type="radio"][name="payment_type"]').forEach(
+        radio_button => {
+            radio_button.addEventListener('change', () => {
+                hide_depended_fields();
+                show_selected_field(radio_button.value);
+            });
+            if (radio_button.checked) {
+                show_selected_field(radio_button.value);
+            }
+        }
+    );
+</script>
+
+{% endblock %}

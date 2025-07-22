@@ -6,15 +6,18 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0071_event_cover_medium_alter_event_cover'),
+        ("api", "0071_event_cover_medium_alter_event_cover"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='avatar',
-            field=core.model_fields.compresed_image.CompressedImageField(default='defaults/avatar.png', upload_to=apps.api.models.user.get_upload_path, verbose_name='Аватар'),
+            model_name="user",
+            name="avatar",
+            field=core.model_fields.compresed_image.CompressedImageField(
+                default="defaults/avatar.png",
+                upload_to=apps.api.models.user.get_upload_path,
+                verbose_name="Аватар",
+            ),
         ),
     ]

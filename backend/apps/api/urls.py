@@ -2,6 +2,7 @@ from django.urls import path, re_path
 from rest_framework.routers import DefaultRouter
 
 from . import views
+from .views import VerificationView, LegalEntityView, EventPriceDetailsView
 
 app_name = "api"
 
@@ -53,6 +54,8 @@ urlpatterns = [
         ),
         name="my-profile",
     ),
+    path("profile/verification/", VerificationView.as_view(), name="verification"),
+    path("profile/legal_entity/", LegalEntityView.as_view(), name="legal_entity"),
     path("token/", views.UserTokenObtainPairView.as_view(), name="token"),
     path("token/refresh/", views.UserTokenRefreshView.as_view(), name="refresh"),
     path("marking/", views.EventMarkingDetailView.as_view(), name="marking"),
@@ -99,4 +102,5 @@ urlpatterns = [
         views.EventFastFiltersListView.as_view(),
         name="fast-filter-list",
     ),
+    path("events/price-details/", EventPriceDetailsView.as_view(), name="event-price-details"),
 ] + router.urls
