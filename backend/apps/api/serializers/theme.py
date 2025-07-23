@@ -21,11 +21,12 @@ class ThemeCategoriesSerializer(ModelSerializer):
 
 
 class ThemeSerializer(ModelSerializer):
+    sub = CategorySerializer(source="categories_ordering", many=True)
     available_for_user = SerializerMethodField()
 
     class Meta:
         model = Theme
-        fields = ["id", "title", "payment_type", "price", "commission_percent", "available_for_user"]
+        fields = ["id", "title", "payment_type", "price", "commission_percent", "available_for_user", "sub"]
 
     def get_available_for_user(self, obj: Theme):
         user_status = self.context.get("request").user.status
