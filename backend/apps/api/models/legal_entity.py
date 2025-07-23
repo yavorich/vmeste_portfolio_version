@@ -22,7 +22,7 @@ class LegalEntity(Model):
 
     legal_address = TextField("Юридический адрес")
 
-    full_name = CharField("ФИО ответственного")
+    resp_full_name = CharField("ФИО ответственного")
     phone_number = PhoneNumberField("Номер телефона ответственного")
 
     director_full_name = CharField("ФИО директора")

@@ -84,6 +84,7 @@ class ProfileRetrieveSerializer(serializers.ModelSerializer):
             "unread_notify",
             "id",
             "avatar",
+            "status",
             "age",
             "gender",
             "country",
