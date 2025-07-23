@@ -10,7 +10,7 @@ class LegalEntitySerializer(ModelSerializer):
         fields = (
             "company_name",
             "legal_address",
-            "full_name",
+            "resp_full_name",
             "phone_number",
             "director_full_name",
             "director_phone_number",
