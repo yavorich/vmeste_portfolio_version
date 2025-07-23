@@ -17,14 +17,13 @@ from core.utils.short_text import short_text
 class LegalEntityInline(admin.StackedInline):
     model = LegalEntity
     fields = (
+        "image",
         "company_name",
         "legal_address",
         "resp_full_name",
-        "phone_number",
+        "resp_phone_number",
         "director_full_name",
-        "director_phone_number",
         "inn",
-        "ogrn",
         "bic",
         "bank_name",
         "current_account",

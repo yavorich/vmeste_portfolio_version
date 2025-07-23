@@ -1,21 +1,23 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, FileField
 from django.db import IntegrityError
 
 from apps.api.models import LegalEntity
+from core.utils import validate_file_size
 
 
 class LegalEntitySerializer(ModelSerializer):
+    image = FileField(validators=[validate_file_size], required=False, allow_null=True)
+
     class Meta:
         model = LegalEntity
         fields = (
+            "image",
             "company_name",
             "legal_address",
             "resp_full_name",
-            "phone_number",
+            "resp_phone_number",
             "director_full_name",
-            "director_phone_number",
             "inn",
-            "ogrn",
             "bic",
             "bank_name",
             "current_account",
@@ -23,7 +25,7 @@ class LegalEntitySerializer(ModelSerializer):
             "confirmed",
         )
         read_only_fields = ("confirmed",)
-        
+
     def create(self, validated_data):
         try:
             return super().create(validated_data)
