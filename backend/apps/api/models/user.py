@@ -72,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Status(models.TextChoices):
         FREE = "FREE", "Free"
         MASTER = "MASTER", "Master"
-        PRO = "PRO", "Profi"
+        PROFI = "PROFI", "Profi"
 
     status = models.CharField(
         "Статус", max_length=8, choices=Status.choices, default=Status.FREE
@@ -216,6 +216,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         from apps.payment.payment_manager import PaymentManager
 
         return PaymentManager().is_added_card(self)
+    
+    @property
+    def verification_confirmed(self):
+        return hasattr(self, "verification") and self.verification.confirmed
+    
+    @property
+    def legal_entity_confirmed(self):
+        return hasattr(self, "legal_entity") and self.legal_entity.confirmed
 
 
 class DeletedUserManager(UserManager):

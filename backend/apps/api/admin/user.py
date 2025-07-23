@@ -65,6 +65,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     form = UserForm
     list_display = [
         "is_active",
+        "status",
         "id",
         "phone_number",
         "email",
@@ -114,7 +115,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
             },
         )
     ]
-    readonly_fields = ["status", "is_added_bank_card"]
+    readonly_fields = ["is_added_bank_card", "status"]
     search_fields = ["first_name", "last_name", "phone_number", "email"]
     actions = ["block_users", "unblock_users"]
 
@@ -144,7 +145,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     @admin.action(description="Разблокировать")
     def unblock_users(self, request, queryset):
         queryset.update(is_active=True)
-    
+
     @admin.display(description="Привязана банковская карта", boolean=True)
     def is_added_bank_card(self, obj):
         return obj.is_added_bank_card
@@ -154,19 +155,9 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
 
         user = form.instance
 
-        try:
-            verification_confirmed = Verification.objects.get(user=user).confirmed
-        except ObjectDoesNotExist:
-            verification_confirmed = False
-
-        if verification_confirmed:
-            try:
-                legal_entity_confirmed = LegalEntity.objects.get(user=user).confirmed
-            except ObjectDoesNotExist:
-                legal_entity_confirmed = False
-
-            if legal_entity_confirmed:
-                user.status = User.Status.PRO
+        if user.verification_confirmed:
+            if user.legal_entity_confirmed or user.is_added_bank_card:
+                user.status = User.Status.PROFI
             else:
                 user.status = User.Status.MASTER
 

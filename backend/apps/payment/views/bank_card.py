@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 
+from apps.api.models import User
 from apps.admin_history.models import ActionFlag, HistoryLog
 from apps.payment.payment_manager import PaymentManager
 from apps.payment.serializers import URLSerializer, BankCardSerializer
@@ -24,6 +25,9 @@ class BankCardAddView(GenericAPIView):
             is_admin=False,
         )
         serializer = self.get_serializer({"url": payment_url})
+        if user.status == User.Status.MASTER:
+            user.status = User.Status.PROFI
+            user.save()
         return Response(serializer.data)
 
 
@@ -48,4 +52,7 @@ class BankCardView(RetrieveDestroyAPIView):
             change_message="Удалил банковскую карту",
             is_admin=False,
         )
+        if user.status == User.Status.PROFI and not user.legal_entity_confirmed:
+            user.status = User.Status.MASTER
+            user.save()
         return Response(status=HTTP_204_NO_CONTENT)
