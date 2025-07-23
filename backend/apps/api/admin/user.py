@@ -80,7 +80,6 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         "get_interests",
         "occupation",
         "agreement_applied_at",
-        "is_added_bank_card",
     ]
     list_display_links = [
         "id",
