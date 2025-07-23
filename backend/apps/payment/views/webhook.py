@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.api.models import EventParticipant
 from apps.payment.models import TinkoffTransaction, ProductType
+from apps.payment.payment_manager import PaymentManager
 from apps.payment.serializers import PaymentWebhookSerializer
 
 
@@ -69,3 +70,5 @@ class PaymentNotificationHookView(GenericAPIView):
                     change_message="Записался на событие",
                     is_admin=False,
                 )
+
+            PaymentManager().transfer_to_event_organizer(transaction)

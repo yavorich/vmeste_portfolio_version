@@ -1,11 +1,10 @@
 from hashlib import sha256
 
-from config.settings import TINKOFF_PASSWORD
-from core.singleton import SingletonMeta
+class TinkoffTokenEncrypter:
+    _password = None
 
-
-class TinkoffTokenEncrypter(metaclass=SingletonMeta):
-    _password = TINKOFF_PASSWORD
+    def __init__(self, password):
+        self._password = password
 
     @property
     def password(self):

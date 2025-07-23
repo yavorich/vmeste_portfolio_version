@@ -7,7 +7,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import localtime
 from dateutil.relativedelta import relativedelta
@@ -72,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Status(models.TextChoices):
         FREE = "FREE", "Free"
         MASTER = "MASTER", "Master"
-        PRO = "PRO", "Profi"
+        PROFI = "PROFI", "Profi"
 
     status = models.CharField(
         "Статус", max_length=8, choices=Status.choices, default=Status.FREE
@@ -201,6 +201,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+
+    @property
+    def bank_card(self):
+        try:
+            return self.payment_info
+        except ObjectDoesNotExist:
+            from apps.payment.models import PaymentInfo
+
+            return PaymentInfo.objects.create(user=self)
+
+    @property
+    def is_added_bank_card(self):
+        from apps.payment.payment_manager import PaymentManager
+
+        return PaymentManager().is_added_card(self)
+    
+    @property
+    def verification_confirmed(self):
+        return hasattr(self, "verification") and self.verification.confirmed
+    
+    @property
+    def legal_entity_confirmed(self):
+        return hasattr(self, "legal_entity") and self.legal_entity.confirmed
 
 
 class DeletedUserManager(UserManager):

@@ -8,7 +8,7 @@ from rest_framework.serializers import (
     BooleanField,
 )
 
-from config.settings import TINKOFF_TERMINAL_KEY
+from config.settings import TINKOFF_TERMINAL_KEY, SAFE_TINKOFF_TERMINAL_KEY
 
 
 class PaymentWebhookSerializer(Serializer):
@@ -29,7 +29,7 @@ class PaymentWebhookSerializer(Serializer):
 
     @staticmethod
     def validate_TerminalKey(value):
-        if value != TINKOFF_TERMINAL_KEY:
+        if value not in [TINKOFF_TERMINAL_KEY, SAFE_TINKOFF_TERMINAL_KEY]:
             raise ValidationError
 
         return value

@@ -41,7 +41,7 @@ def _init_organizer_payment(event: Event, request):
     # оплата организатором
     organizer_price = event.theme.price
 
-    return PaymentManager().buy(
+    return PaymentManager().init_event_creation_payment(
         event=event,
         user=event.participants.get(is_organizer=True).user,
         product_type=ProductType.ORGANIZATION,
@@ -54,7 +54,7 @@ def _init_participant_payment(event: Event, request):
     # оплата участником
     participant_price = event.sign_price
 
-    return PaymentManager().buy(
+    return PaymentManager().init_event_join_payment(
         event=event,
         user=request.user,
         product_type=ProductType.PARTICIPANCE,

@@ -391,20 +391,20 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 validated_data.pop(field, None)
 
     def validate(self, attrs):
+        user_status = self.context["user"].status
+
         if self.instance is None:  # create
+            theme = attrs.get("theme")
+            sign_price = attrs.get("sign_price")
+
             if attrs.get("total_people") is not None:
                 attrs["total_male"] = None
                 attrs["total_female"] = None
 
-            theme = attrs.get("theme")
-            if theme.payment_type == Theme.PaymentType.PROF and not attrs.get(
-                "sign_price"
-            ):
-                raise ValidationError(
-                    {"sign_price": "Необходимо указать стоимость участия"}
-                )
-
         else:  # update
+            theme = attrs.get("theme", self.instance.theme)
+            sign_price = attrs.get("sign_price", self.instance.sign_price)
+
             if attrs.get("total_people", self.instance.total_people) is not None:
                 attrs["total_male"] = None
                 attrs["total_female"] = None
@@ -418,12 +418,19 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                     {"error": "До начала события осталось менее 3 часов"}
                 )
 
-            theme = attrs.get("theme", self.instance.theme)
-            if theme.payment_type == Theme.PaymentType.PROF and not attrs.get(
-                "sign_price", self.instance.sign_price
-            ):
+        if theme.payment_type == Theme.PaymentType.PROF:
+            if not user_status == User.Status.PROFI:
+                raise ValidationError(
+                    {"theme": 'Категория недоступна для уровня аккаунта ниже "PROFI"'}
+                )
+            if not sign_price:
                 raise ValidationError(
                     {"sign_price": "Необходимо указать стоимость участия"}
+                )
+        if theme.payment_type == Theme.PaymentType.MASTER:
+            if not user_status in [User.Status.MASTER, User.Status.PROFI]:
+                raise ValidationError(
+                    {"theme": 'Категория недоступна для уровня аккаунта ниже "MASTER"'}
                 )
 
         return attrs
