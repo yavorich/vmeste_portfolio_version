@@ -162,3 +162,13 @@ def delete_cities_cache_city_save(instance, **kwargs):
 @receiver(post_delete, sender=Country)
 def delete_cities_cache_country_deletion(instance, **kwargs):
     delete_cache(f"country_cities_{instance.pk}")
+
+
+@receiver(post_delete, sender=LegalEntity)
+def delete_legal_entity_image(sender, instance: LegalEntity, **kwargs):
+    delete_file(instance, "image")
+
+
+@receiver(pre_save, sender=LegalEntity)
+def update_legal_entity_image(sender, instance, **kwargs):
+    delete_file_on_update(sender, instance, "image", **kwargs)
