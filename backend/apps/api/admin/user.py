@@ -79,6 +79,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         "get_interests",
         "occupation",
         "agreement_applied_at",
+        "is_added_bank_card",
     ]
     list_display_links = [
         "id",
@@ -108,11 +109,12 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "subscription_expires",
                     "agreement_applied_at",
                     "last_login",
+                    "is_added_bank_card",
                 ]
             },
         )
     ]
-    readonly_fields = ["status"]
+    readonly_fields = ["status", "is_added_bank_card"]
     search_fields = ["first_name", "last_name", "phone_number", "email"]
     actions = ["block_users", "unblock_users"]
 
@@ -142,6 +144,10 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     @admin.action(description="Разблокировать")
     def unblock_users(self, request, queryset):
         queryset.update(is_active=True)
+    
+    @admin.display(description="Привязана банковская карта", boolean=True)
+    def is_added_bank_card(self, obj):
+        return obj.is_added_bank_card
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
