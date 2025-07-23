@@ -7,6 +7,10 @@ from apps.admin_history.admin import site
 from apps.api.models import Theme, Category
 
 
+class CategoryInline(admin.TabularInline):
+    model = Category
+
+
 class ThemeForm(ModelForm):
     payment_type = ChoiceField(
         label="Тип оплаты",
@@ -46,7 +50,7 @@ class ThemeForm(ModelForm):
 @admin.register(Theme, site=site)
 class ThemeAdmin(admin.ModelAdmin):
     change_form_template = "theme/change_form.html"
-
+    inlines = [CategoryInline]
     form = ThemeForm
     list_display = ["title", "events_count", "commission_percent", "price"]
 
