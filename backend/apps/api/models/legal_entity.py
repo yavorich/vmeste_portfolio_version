@@ -55,7 +55,7 @@ class LegalEntity(Model):
         validators=[validate_only_digits],
     )
 
-    sites = ArrayField(URLField(), default=list)
+    sites = ArrayField(URLField(), default=list, blank=True, null=True)
 
     confirmed = BooleanField("Подтверждён", default=False)
 
