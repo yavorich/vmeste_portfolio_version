@@ -30,4 +30,4 @@ jobs:
     needs: deploy
     steps:
       - name: Migrations
-        run: docker exec -t vmeste_backend python3 backend/manage.py migrate --no-input
+        run: docker exec -t vmeste_backend python3 manage.py migrate --no-input
