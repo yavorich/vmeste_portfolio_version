@@ -224,7 +224,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return PaymentManager().is_added_card(self)
 
     @property
-    def verification_confirmed(self):
+    def verification_status(self):
         if not hasattr(self, "verification"):
             return ConfirmationStatus.NONE
         return (
@@ -234,7 +234,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         )
 
     @property
-    def legal_entity_confirmed(self):
+    def legal_entity_status(self):
         if not hasattr(self, "legal_entity"):
             return ConfirmationStatus.NONE
         return (

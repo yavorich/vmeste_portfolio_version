@@ -133,8 +133,8 @@ class SelfProfileRetrieveSerializer(ProfileRetrieveSerializer):
             "telegram",
             "subscription_days",
             "is_trial",
-            "verification_confirmed",
-            "legal_entity_confirmed",
+            "verification_status",
+            "legal_entity_status",
             # "wallet",
         ]
 
