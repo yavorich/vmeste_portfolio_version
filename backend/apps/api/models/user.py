@@ -68,6 +68,12 @@ class AllUserManager(UserManager):
         return super(UserManager, self).get_queryset()
 
 
+class ConfirmationStatus(models.TextChoices):
+    NONE = "none", "Нет данных"
+    PENDING = "pending", "Ожидание"
+    CONFIRMED = "confirmed", "Подтверждено"
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     class Status(models.TextChoices):
         FREE = "FREE", "Free"
@@ -216,14 +222,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         from apps.payment.payment_manager import PaymentManager
 
         return PaymentManager().is_added_card(self)
-    
+
     @property
     def verification_confirmed(self):
-        return hasattr(self, "verification") and self.verification.confirmed
-    
+        if not hasattr(self, "verification"):
+            return ConfirmationStatus.NONE
+        return (
+            ConfirmationStatus.CONFIRMED
+            if self.verification.confirmed
+            else ConfirmationStatus.PENDING
+        )
+
     @property
     def legal_entity_confirmed(self):
-        return hasattr(self, "legal_entity") and self.legal_entity.confirmed
+        if not hasattr(self, "legal_entity"):
+            return ConfirmationStatus.NONE
+        return (
+            ConfirmationStatus.CONFIRMED
+            if self.legal_entity.confirmed
+            else ConfirmationStatus.PENDING
+        )
 
 
 class DeletedUserManager(UserManager):
