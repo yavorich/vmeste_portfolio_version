@@ -114,7 +114,7 @@ urlpatterns = [
     ),
     path(
         "events/<int:event_pk>/scan/",
-        views.EventParticipantTicketView.as_view(),
+        views.EventTicketScanView.as_view(),
         name="event-ticket-scan",
     ),
     path(
