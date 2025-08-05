@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
 
 from apps.api.models import User, Theme
 from .category import CategorySerializer
@@ -22,11 +22,20 @@ class ThemeCategoriesSerializer(ModelSerializer):
 
 class ThemeSerializer(ModelSerializer):
     sub = CategorySerializer(source="categories_ordering", many=True)
+    payment_type = CharField(source="get_payment_type_display")
     available_for_user = SerializerMethodField()
 
     class Meta:
         model = Theme
-        fields = ["id", "title", "payment_type", "price", "commission_percent", "available_for_user", "sub"]
+        fields = [
+            "id",
+            "title",
+            "payment_type",
+            "price",
+            "commission_percent",
+            "available_for_user",
+            "sub",
+        ]
 
     def get_available_for_user(self, obj: Theme):
         user_status = self.context.get("request").user.status
