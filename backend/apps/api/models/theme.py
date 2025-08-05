@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -22,14 +22,14 @@ class Theme(models.Model):
     commission_percent = models.DecimalField(
         "Комиссия сервиса",
         **DECIMAL_PERCENT,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(0), MaxValueValidator(90)],
         null=True,
         blank=True
     )
     price = models.DecimalField(
         "Стоимость",
         **DECIMAL_RUB,
-        validators=[MinValueValidator(1)],
+        validators=[MinValueValidator(10)],
         null=True,
         blank=True
     )

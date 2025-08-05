@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.exceptions import ParseError, NotFound
 
 from core.singleton import SingletonMeta
-from apps.payment.models import TinkoffTransaction
+from apps.payment.models import TinkoffTransaction, TransactionType
 from apps.payment.tinkoff_api import TinkoffPaymentApi, SafeTinkoffPaymentApi
 
 
@@ -55,11 +55,12 @@ class PaymentManager(metaclass=SingletonMeta):
         self.safe_payment_api.remove_customer(user.uuid)
         bank_card_info.reset_bank_card()
 
-    def init_event_creation_payment(self, event, user, product_type, amount, base_url):
+    def init_event_payment(self, event, user, product_type, amount, base_url):
         transaction = TinkoffTransaction(
             user=user,
             event=event,
             product_type=product_type,
+            transaction_type=TransactionType.PAYMENT,
             price=amount,
         )
         payment_data = self.payment_api.init_payment(
@@ -84,36 +85,6 @@ class PaymentManager(metaclass=SingletonMeta):
             "payment_uuid": transaction.uuid,
         }
 
-    def init_event_join_payment(self, event, user, product_type, amount, base_url):
-        transaction = TinkoffTransaction(
-            user=user,
-            event=event,
-            product_type=product_type,
-            price=amount,
-        )
-        payment_data = self.safe_payment_api.init_payment(
-            amount=amount,
-            order_uuid=transaction.uuid,
-            product_name=transaction.product_name,
-            description=transaction.description,
-            user_uuid=user.uuid,
-            email=user.email,
-            phone_number=user.phone_number.as_e164,
-            notification_url=base_url + reverse("payment_webhook"),
-            success_url=base_url + reverse("payment_success"),
-            fail_url=base_url + reverse("payment_fail"),
-            receipt_data=None,
-        )
-        for attr, value in payment_data.items():
-            setattr(transaction, attr, value)
-
-        transaction.save()
-
-        return {
-            "payment_url": payment_data["payment_url"],
-            "payment_uuid": transaction.uuid,
-        }
-
     @staticmethod
     def _get_transfer_transaction(transaction_unique_data, price, deal_id):
         transfer_transaction = TinkoffTransaction.objects.filter(
@@ -122,6 +93,7 @@ class PaymentManager(metaclass=SingletonMeta):
         if transfer_transaction is None:
             transfer_transaction = TinkoffTransaction.objects.create(
                 **transaction_unique_data,
+                transaction_type=TransactionType.TRANSFER, 
                 price=price,
                 deal_id=deal_id,
             )
