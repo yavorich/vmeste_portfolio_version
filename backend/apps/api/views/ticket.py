@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.api.models import Event, EventParticipant, User
 from apps.api.serializers import EventParticipantTicketSerializer, UserShortSerializer
-from apps.api.permissions import IsEventOrganizer, IsTicketScanner
+from apps.api.permissions import IsEventOrganizerOrScanner
 
 
 class EventParticipantTicketView(RetrieveAPIView):
@@ -20,7 +20,7 @@ class EventParticipantTicketView(RetrieveAPIView):
 
 
 class EventTicketScanView(APIView):
-    permission_classes = [IsEventOrganizer, IsTicketScanner]
+    permission_classes = [IsEventOrganizerOrScanner]
 
     def get_object(self, ticket_id):
         return get_object_or_404(
