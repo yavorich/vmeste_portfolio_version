@@ -179,6 +179,14 @@ class Event(models.Model):
         null=True,
         blank=True,
     )
+    scanner_account = models.ForeignKey(
+        User,
+        related_name="events_to_scan",
+        verbose_name="Проверяющий сотрудник",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
     paid_by_organizer = models.BooleanField(default=False)
 
     tracker = FieldTracker()

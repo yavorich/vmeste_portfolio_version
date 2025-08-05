@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.api.models import EventParticipant, User
 from apps.api.serializers import CategorySerializer, CitySerializer, CountrySerializer
+
 # from apps.coins.serializers import WalletSerializer
 from core.utils import validate_file_size
 
@@ -148,3 +149,15 @@ class SelfProfileDestroySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id"]
+
+
+class UserShortSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "full_name"]
+
+    @staticmethod
+    def get_full_name(obj: User):
+        return obj.get_full_name()
