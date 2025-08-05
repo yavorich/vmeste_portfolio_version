@@ -267,7 +267,7 @@ class Event(models.Model):
             return None
 
     @property
-    def sign_price_with_commission(self):
+    def organizer_transfer_amount(self):
         if self.theme.payment_type != Theme.PaymentType.PROF:
             return 0
 

@@ -151,9 +151,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     am_i_confirmed = serializers.SerializerMethodField()
     am_i_scanner = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
-    sign_price = serializers.FloatField(
-        allow_null=True, source="sign_price_with_commission"
-    )
+    sign_price = serializers.FloatField(allow_null=True)
     sign_and_edit = serializers.SerializerMethodField()
     unread_messages = serializers.SerializerMethodField()
 

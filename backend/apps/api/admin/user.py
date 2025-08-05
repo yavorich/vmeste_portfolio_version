@@ -8,9 +8,16 @@ from dal.autocomplete import Select2, Select2Multiple
 from apps.admin_history.admin import site
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.admin_history.utils import get_object_data_from_obj
+
 # from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
-from apps.api.models import User, DeletedUser, Verification, LegalEntity
+from apps.api.models import (
+    User,
+    DeletedUser,
+    Verification,
+    LegalEntity,
+    ConfirmationStatus,
+)
 from core.utils.short_text import short_text
 
 
@@ -153,8 +160,11 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
 
         user = form.instance
 
-        if user.verification_confirmed:
-            if user.legal_entity_confirmed or user.is_added_bank_card:
+        if user.verification_status == ConfirmationStatus.CONFIRMED:
+            if (
+                user.legal_entity_status == ConfirmationStatus.CONFIRMED
+                or user.is_added_bank_card
+            ):
                 user.status = User.Status.PROFI
             else:
                 user.status = User.Status.MASTER

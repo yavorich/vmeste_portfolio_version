@@ -46,7 +46,7 @@ class Theme(models.Model):
         return self.categories.order_by("title")
 
     def get_commission_percent_factor(self):
-        """Множитель для начисления комиссии"""
+        """Множитель для списания комиссии"""
         assert self.payment_type == self.PaymentType.PROF
 
-        return 1 + self.commission_percent / 100
+        return 1 - self.commission_percent / 100
