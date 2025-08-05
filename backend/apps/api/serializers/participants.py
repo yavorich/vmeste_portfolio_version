@@ -143,4 +143,4 @@ class EventParticipantTicketSerializer(ModelSerializer):
 
     class Meta:
         model = EventParticipant
-        fields = ["user_id", "user_full_name", "ticket_id", "price", "qr_code"]
+        fields = ["user_id", "user_full_name", "ticket_id", "payed", "qr_code"]
