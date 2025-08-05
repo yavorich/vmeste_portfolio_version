@@ -75,8 +75,8 @@ class PaymentNotificationHookView(GenericAPIView):
                     )
 
                 transfer_unique_data = dict(
-                    user=transaction.user,
-                    event=transaction.event,
+                    user=event.organizer,
+                    event=event,
                     product_type=transaction.product_type,
                 )
                 transfer_transaction = PaymentManager()._get_transfer_transaction(
@@ -84,6 +84,7 @@ class PaymentNotificationHookView(GenericAPIView):
                     price=event.organizer_transfer_amount,
                     deal_id=transaction.deal_id,
                 )
-                success = PaymentManager().transfer_to_event_organizer(transfer_transaction)
-                if not success:
-                    raise ParseError("Ошибка перевода")
+                try:
+                    PaymentManager().transfer_to_event_organizer(transfer_transaction)
+                except ParseError as e:
+                    print(e)
