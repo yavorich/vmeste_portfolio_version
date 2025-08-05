@@ -85,13 +85,11 @@ class PaymentManager(metaclass=SingletonMeta):
         }
 
     def init_event_join_payment(self, event, user, product_type, amount, base_url):
-        deal_id = self.safe_payment_api.create_sp_deal()
         transaction = TinkoffTransaction(
             user=user,
             event=event,
             product_type=product_type,
             price=amount,
-            deal_id=deal_id,
         )
         payment_data = self.safe_payment_api.init_payment(
             amount=amount,
@@ -105,7 +103,6 @@ class PaymentManager(metaclass=SingletonMeta):
             success_url=base_url + reverse("payment_success"),
             fail_url=base_url + reverse("payment_fail"),
             receipt_data=None,
-            deal_id=deal_id,
         )
         for attr, value in payment_data.items():
             setattr(transaction, attr, value)
@@ -117,17 +114,31 @@ class PaymentManager(metaclass=SingletonMeta):
             "payment_uuid": transaction.uuid,
         }
 
+    @staticmethod
+    def _get_transfer_transaction(transaction_unique_data, price, deal_id):
+        transfer_transaction = TinkoffTransaction.objects.filter(
+            **transaction_unique_data
+        ).first()
+        if transfer_transaction is None:
+            transfer_transaction = TinkoffTransaction.objects.create(
+                **transaction_unique_data,
+                price=price,
+                deal_id=deal_id,
+            )
+        return transfer_transaction
+
     def transfer_to_event_organizer(self, transaction: TinkoffTransaction):
         if not transaction.event:
-            return
+            raise ParseError("Event does not exist")
 
         event_organizer_user = transaction.event.organizer
         if event_organizer_user is None:
-            return
+            raise ParseError("Event organizer user does not exist")
 
         organizer_bank_card_id = event_organizer_user.bank_card.bank_card_id
         if not organizer_bank_card_id:
-            return
+            raise ParseError("Event organizer user has no bank card")
+            # TODO: create transfer request for legal entity
 
         payment_id = self.safe_payment_api.transfer_init(
             order_uuid=transaction.uuid,
@@ -136,5 +147,8 @@ class PaymentManager(metaclass=SingletonMeta):
             card_id=organizer_bank_card_id,
             final=True,
         )
-        self.safe_payment_api.transfer_payment(payment_id=payment_id)
-        self.safe_payment_api.close_sp_deal(sp_accumulation_id=transaction.deal_id)
+        success = self.safe_payment_api.transfer_payment(payment_id=payment_id)
+        if success:
+            transaction.status = TinkoffTransaction.Status.SUCCESS
+            transaction.save()
+        return success

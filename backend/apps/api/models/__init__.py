@@ -7,7 +7,7 @@ from .event import Event, EventAdminProxy
 from .participant import EventParticipant
 from .location import Location
 from .occupation import Occupation
-from .user import User, DeletedUser
+from .user import User, DeletedUser, ConfirmationStatus
 from .theme import Theme
 from .subscription import Subscription
 from .docs import Docs

@@ -1,5 +1,5 @@
 from django_eventstream import send_event
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, ParseError
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
@@ -15,13 +15,14 @@ class PaymentNotificationHookView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            raise ValidationError
+        serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data
         transaction = self.get_transaction(
             validated_data["order_uuid"], validated_data["payment_id"]
         )
+        if validated_data.get("deal_id") is not None:
+            transaction.deal_id = validated_data["deal_id"]
         if validated_data["success"]:
             self.confirm_payment(transaction)
         else:
@@ -52,23 +53,37 @@ class PaymentNotificationHookView(GenericAPIView):
 
     def confirm_payment(self, transaction: TinkoffTransaction):
         transaction.status = TinkoffTransaction.Status.SUCCESS
-        if transaction.product_type == ProductType.ORGANIZATION:
-            event = transaction.event
-            event.paid_by_organizer = True
-            event.save()
-        elif transaction.product_type == ProductType.PARTICIPANCE:
-            event = transaction.event
-            user = transaction.user
-            participant, created = EventParticipant.objects.get_or_create(
-                event=event, user=user, payed=transaction.price
-            )
-            if created:
-                HistoryLog.objects.log_actions(
-                    user_id=user.pk,
-                    queryset=[event],
-                    action_flag=ActionFlag.ADDITION,
-                    change_message="Записался на событие",
-                    is_admin=False,
-                )
 
-            PaymentManager().transfer_to_event_organizer(transaction)
+        event = transaction.event
+
+        match transaction.product_type:
+            case ProductType.ORGANIZATION:
+                event.paid_by_organizer = True
+                event.save()
+            case ProductType.PARTICIPANCE:
+                user = transaction.user
+                participant, created = EventParticipant.objects.get_or_create(
+                    event=event, user=user, payed=transaction.price
+                )
+                if created:
+                    HistoryLog.objects.log_actions(
+                        user_id=user.pk,
+                        queryset=[event],
+                        action_flag=ActionFlag.ADDITION,
+                        change_message="Записался на событие",
+                        is_admin=False,
+                    )
+
+                transfer_unique_data = dict(
+                    user=transaction.user,
+                    event=transaction.event,
+                    product_type=transaction.product_type,
+                )
+                transfer_transaction = PaymentManager()._get_transfer_transaction(
+                    transaction_unique_data=transfer_unique_data,
+                    price=event.organizer_transfer_amount,
+                    deal_id=transaction.deal_id,
+                )
+                success = PaymentManager().transfer_to_event_organizer(transfer_transaction)
+                if not success:
+                    raise ParseError("Ошибка перевода")

@@ -112,7 +112,7 @@ class EventDocument(Document):
             ),
         }
     )
-    sign_price = FloatField(attr="sign_price_with_commission")
+    sign_price = FloatField()
 
     class Index:
         name = "event"

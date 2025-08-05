@@ -69,6 +69,10 @@ class EventMixin:
         participant = obj.get_participant(user=user)
         return getattr(participant, "has_confirmed", False)
 
+    def get_am_i_scanner(self, obj: Event):
+        user = self.context.get("user")
+        return user.is_ticket_scanner
+
     def get_are_there_free_places(self, obj: Event):
         user = self.context.get("user")
         if not user.is_authenticated:
@@ -145,10 +149,9 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     am_i_registered = serializers.SerializerMethodField()
     are_there_free_places = serializers.SerializerMethodField()
     am_i_confirmed = serializers.SerializerMethodField()
+    am_i_scanner = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
-    sign_price = serializers.FloatField(
-        allow_null=True, source="sign_price_with_commission"
-    )
+    sign_price = serializers.FloatField(allow_null=True)
     sign_and_edit = serializers.SerializerMethodField()
     unread_messages = serializers.SerializerMethodField()
 
@@ -186,6 +189,7 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "are_there_free_places",
             "did_organizer_marking",
             "am_i_confirmed",
+            "am_i_scanner",
             "media",
             "sign_and_edit",
             "sign_price",
@@ -282,12 +286,14 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "is_close_event",
             "is_draft",
             "sign_price",
+            "scanner_account",
         ]
         extra_kwargs = {
             f: {"required": True}
             for f in fields
             if f
             not in (
+                "scanner_account",
                 "sign_price",
                 "total_male",
                 "total_female",
@@ -396,6 +402,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         if self.instance is None:  # create
             theme = attrs.get("theme")
             sign_price = attrs.get("sign_price")
+            scanner_account = attrs.get("scanner_account")
 
             if attrs.get("total_people") is not None:
                 attrs["total_male"] = None
@@ -404,6 +411,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         else:  # update
             theme = attrs.get("theme", self.instance.theme)
             sign_price = attrs.get("sign_price", self.instance.sign_price)
+            scanner_account = attrs.get(
+                "scanner_account", self.instance.scanner_account
+            )
 
             if attrs.get("total_people", self.instance.total_people) is not None:
                 attrs["total_male"] = None
@@ -426,6 +436,10 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             if not sign_price:
                 raise ValidationError(
                     {"sign_price": "Необходимо указать стоимость участия"}
+                )
+            if not scanner_account:
+                raise ValidationError(
+                    {"scanner_account": "Необходимо указать проверяющего"}
                 )
         if theme.payment_type == Theme.PaymentType.MASTER:
             if not user_status in [User.Status.MASTER, User.Status.PROFI]:

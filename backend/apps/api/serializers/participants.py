@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, IntegerField, CharField
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
 
 from django.template.defaultfilters import date as _date
@@ -135,3 +135,12 @@ class EventParticipantDeleteSerializer(ModelSerializer):
     class Meta:
         model = EventParticipant
         fields = ["id"]
+
+
+class EventParticipantTicketSerializer(ModelSerializer):
+    user_full_name = CharField(source="user.full_name")
+    ticket_id = IntegerField(source="id")
+
+    class Meta:
+        model = EventParticipant
+        fields = ["user_id", "user_full_name", "ticket_id", "price", "qr_code"]

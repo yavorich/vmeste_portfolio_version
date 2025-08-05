@@ -102,5 +102,24 @@ urlpatterns = [
         views.EventFastFiltersListView.as_view(),
         name="fast-filter-list",
     ),
-    path("events/price-details/", EventPriceDetailsView.as_view(), name="event-price-details"),
+    path(
+        "events/price-details/",
+        EventPriceDetailsView.as_view(),
+        name="event-price-details",
+    ),
+    path(
+        "events/<int:event_pk>/ticket/",
+        views.EventParticipantTicketView.as_view(),
+        name="event-ticket-detail",
+    ),
+    path(
+        "events/<int:event_pk>/scan/",
+        views.EventParticipantTicketView.as_view(),
+        name="event-ticket-scan",
+    ),
+    path(
+        "accounts/scanner/",
+        views.ScannerAccountListView.as_view(),
+        name="scanner-accounts-list",
+    ),
 ] + router.urls
