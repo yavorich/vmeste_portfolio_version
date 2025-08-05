@@ -54,7 +54,7 @@ class TinkoffTransaction(Model):
         verbose_name_plural = "Транзакции"
 
     def __str__(self):
-        return self.uuid
+        return str(self.uuid)
 
     @property
     def product_name(self):
