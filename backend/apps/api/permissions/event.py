@@ -38,8 +38,8 @@ class IsMediaTimeValid(BasePermission):
         return event.is_valid_media_time()
 
 
-class IsTicketScanner(BasePermission):
-    message = "Пользователь не является проверяющим"
+class IsEventOrganizerOrScanner(BasePermission):
+    message = "Пользователь не является проверяющим или организатором"
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
@@ -47,5 +47,7 @@ class IsTicketScanner(BasePermission):
                 event = Event.objects.get(id=view.kwargs["event_pk"])
             except Event.DoesNotExist:
                 event = Event.objects.get(uuid=view.kwargs["event_pk"])
-            return event.scanner_account == request.user
+            return (
+                event.scanner_account == request.user or event.organizer == request.user
+            )
         return False
