@@ -1,1 +1,1 @@
-from .payment import OrgPaymentProxyAdmin, PartPaymentProxyAdmin
+from .payment import OrgPaymentProxyAdmin, PartPaymentProxyAdmin, TinkoffTransactionAdmin

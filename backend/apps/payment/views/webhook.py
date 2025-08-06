@@ -84,6 +84,10 @@ class PaymentNotificationHookView(GenericAPIView):
                     price=event.organizer_transfer_amount,
                     deal_id=transaction.deal_id,
                 )
+
+                transaction.ticket_id = participant.pk
+                transaction.service_reward = transaction.price - transfer_transaction.price
+
                 try:
                     PaymentManager().transfer_to_event_organizer(transfer_transaction)
                 except ParseError as e:

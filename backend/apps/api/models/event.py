@@ -175,7 +175,7 @@ class Event(models.Model):
     sign_price = models.DecimalField(
         "Плата за вступление",
         **DECIMAL_RUB,
-        validators=[MinValueValidator(1)],
+        validators=[MinValueValidator(10)],
         null=True,
         blank=True,
     )
