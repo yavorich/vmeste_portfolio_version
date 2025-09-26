@@ -3,13 +3,13 @@ services:
     container_name: vmeste_backend
     build:
       context: .
-      dockerfile: ./docker/backend/Dockerfile.dev
-    entrypoint: ./docker/backend/entrypoint.dev.sh
+      dockerfile: Dockerfile
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload
     restart: always
     volumes:
-      - .:/app
-      - static:/app/backend/static/
-      - media:/app/backend/media/
+      - ./backend:/backend
+      - static:/backend/static/
+      - media:/backend/media/
       - /var/certbot/conf:/etc/letsencrypt/:ro
     ports:
       - 8000:8000
@@ -82,12 +82,12 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: ./docker/backend/Dockerfile.dev
+      dockerfile: Dockerfile
     volumes:
-      - .:/app
+      - ./backend:/backend
     env_file:
       - .env
-    entrypoint: ./docker/backend/celery-entrypoint.sh
+    command: celery -A config.celery worker --beat --loglevel=info --concurrency 1 -E -B
     depends_on:
       - backend
       - db

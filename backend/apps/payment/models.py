@@ -38,8 +38,10 @@ class TinkoffTransaction(Model):
         "Тип продукта",
         max_length=16,
         choices=ProductType.choices,
+        null=True,
+        blank=True,
     )
-    product_id = PositiveIntegerField()
+    product_id = PositiveIntegerField(null=True, blank=True)
     price = PositiveIntegerField(
         "Сумма к оплате",
         default=0,

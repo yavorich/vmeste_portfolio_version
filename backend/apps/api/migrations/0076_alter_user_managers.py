@@ -5,17 +5,16 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0075_deleteduser_user_is_deleted'),
+        ("api", "0075_deleteduser_user_is_deleted"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='user',
+            name="user",
             managers=[
-                ('objects', apps.api.models.user.UserManager()),
-                ('all_objects', apps.api.models.user.AllUserManager()),
+                ("objects", apps.api.models.user.UserManager()),
+                ("all_objects", apps.api.models.user.AllUserManager()),
             ],
         ),
     ]
