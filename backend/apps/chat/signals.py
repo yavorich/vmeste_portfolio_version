@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.dispatch import receiver
 
-from apps.api.models import Event, EventParticipant, EventAdminProxy, User
+from apps.api.models import Event, EventParticipant, User, EventAdminProxy
 from apps.chat.models import Message, Chat
 from apps.chat.serializers import MessageSerializer
 from apps.chat.utils import (

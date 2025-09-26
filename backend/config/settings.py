@@ -16,9 +16,6 @@ from pathlib import Path
 from django.db.models import options
 from django.utils.timezone import timedelta
 
-from import_export.formats.base_formats import XLSX
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -54,7 +51,7 @@ LOCAL_APPS = [
     "apps.api",
     "apps.chat",
     "apps.notifications",
-    # "apps.coins",  # deprecated
+    "apps.coins",
     "apps.payment",
     "apps.admin_history",
 ]
@@ -74,7 +71,6 @@ THIRD_PARTY_APPS = [
     "django_eventstream",
     "dal",
     "dal_select2",
-    "import_export",
 ]
 
 INSTALLED_APPS = (
@@ -268,12 +264,5 @@ TINKOFF_BASE_URL = os.environ.get("TINKOFF_BASE_URL")
 TINKOFF_TERMINAL_KEY = os.environ.get("TINKOFF_TERMINAL_KEY")
 TINKOFF_PASSWORD = os.environ.get("TINKOFF_PASSWORD")
 
-SAFE_TINKOFF_TERMINAL_KEY = os.environ.get("SAFE_TINKOFF_TERMINAL_KEY")
-SAFE_TINKOFF_PASSWORD = os.environ.get("SAFE_TINKOFF_PASSWORD")
-
-TINKOFF_SAFE_PAYMENT_COMMISSION = 0.03
-
 # нужно, чтобы работало добавление history_fields для Meta в models
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + ("history_fields",)
-
-EXPORT_FORMATS = [XLSX]

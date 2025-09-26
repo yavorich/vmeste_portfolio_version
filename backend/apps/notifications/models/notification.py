@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from apps.api.models import Event, User
+from apps.api.models import User, Event
 from core.utils.short_text import short_text
 
 

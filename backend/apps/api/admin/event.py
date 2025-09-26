@@ -10,7 +10,7 @@ from rangefilter.filters import DateRangeFilterBuilder
 
 from apps.admin_history.admin import site
 from core.admin import ManyToManyMixin
-from apps.api.models import Event, EventParticipant, EventMedia, EventAdminProxy, User
+from apps.api.models import Event, EventParticipant, User, EventMedia, EventAdminProxy
 from core.utils.short_text import short_text
 
 
@@ -84,12 +84,12 @@ class EventAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "min_age",
                     "max_age",
                     "did_organizer_marking",
-                    "sign_price",
+                    "organizer_will_pay",
                 ]
             },
         )
     ]
-    readonly_fields = ["sign_price"]
+    readonly_fields = ["organizer_will_pay"]
     list_display = [
         "id",
         "_is_active",

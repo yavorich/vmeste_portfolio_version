@@ -15,7 +15,7 @@ class BuyCoinsView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         product_type = serializer.validated_data["product_type"]
         product = serializer.validated_data["product"]
-        payment_url, uuid = PaymentManager().init_event_payment(
+        payment_url, uuid = PaymentManager().buy(
             product_type=product_type,
             product_id=product.pk,
             product=product,

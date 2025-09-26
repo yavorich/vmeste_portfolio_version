@@ -7,7 +7,7 @@ from .event import Event, EventAdminProxy
 from .participant import EventParticipant
 from .location import Location
 from .occupation import Occupation
-from .user import User, DeletedUser, ConfirmationStatus
+from .user import User, DeletedUser
 from .theme import Theme
 from .subscription import Subscription
 from .docs import Docs
@@ -19,5 +19,3 @@ from .support import (
 )
 from .media import EventMedia
 from .filters import EventFastFilter
-from .verification import Verification
-from .legal_entity import LegalEntity

@@ -4,7 +4,7 @@ from django.utils.timezone import localtime, datetime, timedelta
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import Serializer, ModelSerializer
+from rest_framework.serializers import Serializer, ModelSerializer, Field
 
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.admin_history.utils import get_model_field_label
@@ -17,14 +17,17 @@ from apps.api.models import (
     City,
     Country,
     Theme,
+    User,
 )
-from apps.api.models import EventFastFilter, User
+from apps.api.models import EventFastFilter
 from apps.api.serializers import (
     LocationSerializer,
     CategorySerializer,
     ThemeSerializer,
     ThemeCategoriesSerializer,
 )
+from apps.api.services.payment import do_payment_on_create
+from apps.coins.exceptions import NoCoinsError
 from apps.notifications.models import GroupNotification
 from core.serializers import CustomFileField
 from core.utils import validate_file_size
@@ -68,10 +71,6 @@ class EventMixin:
             return False
         participant = obj.get_participant(user=user)
         return getattr(participant, "has_confirmed", False)
-
-    def get_am_i_scanner(self, obj: Event):
-        user = self.context.get("user")
-        return user.is_ticket_scanner
 
     def get_are_there_free_places(self, obj: Event):
         user = self.context.get("user")
@@ -149,9 +148,8 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
     am_i_registered = serializers.SerializerMethodField()
     are_there_free_places = serializers.SerializerMethodField()
     am_i_confirmed = serializers.SerializerMethodField()
-    am_i_scanner = serializers.SerializerMethodField()
     media = serializers.SerializerMethodField()
-    sign_price = serializers.FloatField(allow_null=True)
+    sign_price = serializers.IntegerField(allow_null=True)
     sign_and_edit = serializers.SerializerMethodField()
     unread_messages = serializers.SerializerMethodField()
 
@@ -189,7 +187,6 @@ class EventDetailSerializer(EventMixin, ModelSerializer):
             "are_there_free_places",
             "did_organizer_marking",
             "am_i_confirmed",
-            "am_i_scanner",
             "media",
             "sign_and_edit",
             "sign_price",
@@ -285,20 +282,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             "description",
             "is_close_event",
             "is_draft",
-            "sign_price",
-            "scanner_account",
+            "organizer_will_pay",
         ]
         extra_kwargs = {
             f: {"required": True}
             for f in fields
             if f
-            not in (
-                "scanner_account",
-                "sign_price",
-                "total_male",
-                "total_female",
-                "total_people",
-            )
+            not in ("organizer_will_pay", "total_male", "total_female", "total_people")
         }
         extra_kwargs["cover"].update({"read_only": False})
 
@@ -397,27 +387,44 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 validated_data.pop(field, None)
 
     def validate(self, attrs):
-        user_status = self.context["user"].status
-
+        user = self.context["user"]
         if self.instance is None:  # create
-            theme = attrs.get("theme")
-            sign_price = attrs.get("sign_price")
-            scanner_account = attrs.get("scanner_account")
-
             if attrs.get("total_people") is not None:
                 attrs["total_male"] = None
                 attrs["total_female"] = None
 
-        else:  # update
-            theme = attrs.get("theme", self.instance.theme)
-            sign_price = attrs.get("sign_price", self.instance.sign_price)
-            scanner_account = attrs.get(
-                "scanner_account", self.instance.scanner_account
-            )
+            if not attrs["is_draft"]:
+                if attrs.get("organizer_will_pay") is None:
+                    raise ValidationError(
+                        {"organizer_will_pay": Field.default_error_messages["required"]}
+                    )
 
+                if attrs["organizer_will_pay"]:
+                    price = attrs["theme"].organizer_price
+                    if not user.wallet.has_coin(price):
+                        raise NoCoinsError
+
+        else:  # update
             if attrs.get("total_people", self.instance.total_people) is not None:
                 attrs["total_male"] = None
                 attrs["total_female"] = None
+
+            if (
+                not attrs.get("is_draft", self.instance.is_draft)
+                and self.instance.is_draft
+            ):
+                if (
+                    attrs.get("organizer_will_pay", self.instance.organizer_will_pay)
+                    is None
+                ):
+                    raise ValidationError(
+                        {"organizer_will_pay": Field.default_error_messages["required"]}
+                    )
+
+                if attrs.get("organizer_will_pay", self.instance.organizer_will_pay):
+                    price = attrs.get("theme", self.instance.theme).organizer_price
+                    if not user.wallet.has_coin(price):
+                        raise NoCoinsError
 
             if (
                 attrs.get("is_draft", False)
@@ -426,25 +433,6 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             ):
                 raise ValidationError(
                     {"error": "До начала события осталось менее 3 часов"}
-                )
-
-        if theme.payment_type == Theme.PaymentType.PROF:
-            if not user_status == User.Status.PROFI:
-                raise ValidationError(
-                    {"theme": 'Категория недоступна для уровня аккаунта ниже "PROFI"'}
-                )
-            if not sign_price:
-                raise ValidationError(
-                    {"sign_price": "Необходимо указать стоимость участия"}
-                )
-            if not scanner_account:
-                raise ValidationError(
-                    {"scanner_account": "Необходимо указать проверяющего"}
-                )
-        if theme.payment_type == Theme.PaymentType.MASTER:
-            if not user_status in [User.Status.MASTER, User.Status.PROFI]:
-                raise ValidationError(
-                    {"theme": 'Категория недоступна для уровня аккаунта ниже "MASTER"'}
                 )
 
         return attrs
@@ -467,7 +455,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             is_organizer=True,
             has_confirmed=True,
         )
-        # do_payment_on_create(event)
+        do_payment_on_create(event)
         HistoryLog.objects.log_actions(
             user_id=user.pk,
             queryset=[event],
@@ -565,18 +553,28 @@ class EventSignSerializer(ModelSerializer):
         if instance.is_draft:
             raise ValidationError({"error": "Событие ещё не опубликовано."})
 
-        if not instance.theme.payment_type == Theme.PaymentType.PROF:
-            participant, created = EventParticipant.objects.get_or_create(
-                event=instance, user=user
+        price = 0
+        if not instance.organizer_will_pay:
+            price = instance.theme.participant_price
+            if not user.wallet.has_coin(price):
+                raise NoCoinsError
+
+        participant, created = EventParticipant.objects.get_or_create(
+            event=instance, user=user
+        )
+        if created and price > 0:  # плата за вступление
+            user.wallet.spend(price)
+            participant.payed = price
+            participant.save()
+
+        if created:
+            HistoryLog.objects.log_actions(
+                user_id=user.pk,
+                queryset=[instance],
+                action_flag=ActionFlag.ADDITION,
+                change_message="Записался на событие",
+                is_admin=False,
             )
-            if created:
-                HistoryLog.objects.log_actions(
-                    user_id=user.pk,
-                    queryset=[instance],
-                    action_flag=ActionFlag.ADDITION,
-                    change_message="Записался на событие",
-                    is_admin=False,
-                )
 
         return instance
 

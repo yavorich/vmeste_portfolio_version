@@ -1,9 +1,5 @@
-from rest_framework.serializers import (
-    ModelSerializer,
-    IntegerField,
-    SerializerMethodField,
-    FileField,
-)
+from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 from rest_framework_bulk.serializers import BulkListSerializer, BulkSerializerMixin
 
 from django.template.defaultfilters import date as _date
@@ -16,8 +12,8 @@ from apps.api.enums import Gender
 
 class EventMarkingSerializer(ModelSerializer):
     location = LocationSerializer(remove_fields=["city", "country"])
-    date_and_year = SerializerMethodField()
-    day_and_time = SerializerMethodField()
+    date_and_year = serializers.SerializerMethodField()
+    day_and_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -46,9 +42,9 @@ class EventTitleSerializer(ModelSerializer):
 
 
 class EventParticipantUserSerializer(ModelSerializer):
-    profile_id = IntegerField(source="user.id")
-    avatar = FileField(source="user.avatar")
-    name_and_surname = SerializerMethodField()
+    profile_id = serializers.IntegerField(source="user.id")
+    avatar = serializers.FileField(source="user.avatar")
+    name_and_surname = serializers.SerializerMethodField()
 
     class Meta:
         model = EventParticipant
@@ -66,12 +62,12 @@ class EventParticipantUserSerializer(ModelSerializer):
 
 
 class EventParticipantsListSerializer(ModelSerializer):
-    event = SerializerMethodField()
-    amount_men = SerializerMethodField()
-    amount_women = SerializerMethodField()
-    men = SerializerMethodField()
-    women = SerializerMethodField()
-    organizer = SerializerMethodField()
+    event = serializers.SerializerMethodField()
+    amount_men = serializers.SerializerMethodField()
+    amount_women = serializers.SerializerMethodField()
+    men = serializers.SerializerMethodField()
+    women = serializers.SerializerMethodField()
+    organizer = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -139,16 +135,3 @@ class EventParticipantDeleteSerializer(ModelSerializer):
     class Meta:
         model = EventParticipant
         fields = ["id"]
-
-
-class EventParticipantTicketSerializer(ModelSerializer):
-    user_full_name = SerializerMethodField()
-    ticket_id = IntegerField(source="id")
-
-    class Meta:
-        model = EventParticipant
-        fields = ["user_id", "user_full_name", "ticket_id", "payed", "qr_code"]
-
-    @staticmethod
-    def get_user_full_name(obj: EventParticipant):
-        return obj.user.get_full_name()

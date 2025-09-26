@@ -13,7 +13,6 @@ import os
 import uuid as _uuid
 
 from apps.api.enums import Gender
-from core.defaults import DECIMAL_RUB
 from core.model_fields import CompressedImageField
 from .location import Location
 from .theme import Theme
@@ -21,7 +20,7 @@ from .category import Category
 from .city import City
 from .country import Country
 from .participant import EventParticipant
-from apps.api.models.user import User
+from .user import User
 
 
 class EventQuerySet(models.QuerySet):
@@ -172,22 +171,9 @@ class Event(models.Model):
         _("Организатор отметил присутствие"), default=False
     )
 
-    sign_price = models.DecimalField(
-        "Плата за вступление",
-        **DECIMAL_RUB,
-        validators=[MinValueValidator(10)],
-        null=True,
-        blank=True,
+    organizer_will_pay = models.BooleanField(
+        _("Организатор оплатит встречу"), null=True, blank=True
     )
-    scanner_account = models.ForeignKey(
-        User,
-        related_name="events_to_scan",
-        verbose_name="Проверяющий сотрудник",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-    paid_by_organizer = models.BooleanField(default=False)
 
     tracker = FieldTracker()
     objects = EventQuerySet.as_manager()
@@ -267,11 +253,13 @@ class Event(models.Model):
             return None
 
     @property
-    def organizer_transfer_amount(self):
-        if self.theme.payment_type != Theme.PaymentType.PROF:
+    def sign_price(self):
+        if self.organizer_will_pay:
             return 0
-
-        return round(self.sign_price * self.theme.get_commission_percent_factor(), 2)
+        elif self.organizer_will_pay is None:
+            return
+        else:
+            return self.theme.participant_price
 
     def get_stats(self, gender: Gender):
         total_field = "total_" + gender
@@ -315,7 +303,7 @@ class Event(models.Model):
         return localtime() <= start - timedelta(hours=3)
 
     def is_valid_age_to_sign(self, user: User) -> bool:
-        return user.age is None or self.min_age <= user.age <= self.max_age
+        return self.min_age <= user.age <= self.max_age
 
     def is_valid_media_time(self) -> bool:
         start = self.start_datetime

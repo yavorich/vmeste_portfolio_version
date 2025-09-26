@@ -13,7 +13,7 @@ from phonenumber_field.serializerfields import PhoneNumberField
 
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.admin_history.utils import get_object_data_from_obj
-from apps.api.models import Subscription, User, DeletedUser
+from apps.api.models import User, Subscription, DeletedUser
 from apps.api.services import generate_confirmation_code
 from apps.api.tasks import send_mail_confirmation_code, send_phone_confirmation_code
 from config.settings import DEBUG

@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.admin.options import get_content_type_for_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm
 from django.utils.safestring import mark_safe
 from dal.autocomplete import Select2, Select2Multiple
@@ -8,50 +7,18 @@ from dal.autocomplete import Select2, Select2Multiple
 from apps.admin_history.admin import site
 from apps.admin_history.models import HistoryLog, ActionFlag
 from apps.admin_history.utils import get_object_data_from_obj
-
-# from apps.coins.models import Wallet
+from apps.coins.models import Wallet
 from core.admin import ManyToManyMixin
-from apps.api.models import (
-    User,
-    DeletedUser,
-    Verification,
-    LegalEntity,
-    ConfirmationStatus,
-)
+from apps.api.models import User, DeletedUser
 from core.utils.short_text import short_text
 
 
-class LegalEntityInline(admin.StackedInline):
-    model = LegalEntity
-    fields = (
-        "image",
-        "company_name",
-        "legal_address",
-        "resp_full_name",
-        "resp_phone_number",
-        "director_full_name",
-        "inn",
-        "bic",
-        "bank_name",
-        "current_account",
-        "sites",
-        "confirmed",
-    )
-    extra = 0
-
-
-class VerificationInline(admin.StackedInline):
-    model = Verification
-    fields = ("document_file", "confirmed")
-    extra = 0
-
-
-# class WalletInline(admin.StackedInline):
-#     model = Wallet
-#     fields = ("balance", "unlimited_until")
-#     min_num = 1
-#     max_num = 1
-#     can_delete = False
+class WalletInline(admin.StackedInline):
+    model = Wallet
+    fields = ("balance", "unlimited_until")
+    min_num = 1
+    max_num = 1
+    can_delete = False
 
 
 class InterestInline(admin.TabularInline):
@@ -62,16 +29,15 @@ class InterestInline(admin.TabularInline):
 
 class UserForm(ModelForm):
     class Meta:
-        widgets = {"categories": Select2Multiple()}
+        widgets = {"theme": Select2(), "categories": Select2Multiple()}
 
 
 @admin.register(User, site=site)
 class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    inlines = [VerificationInline, LegalEntityInline]
+    inlines = [WalletInline]
     form = UserForm
     list_display = [
         "is_active",
-        "status",
         "id",
         "phone_number",
         "email",
@@ -82,7 +48,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
         "country",
         "date_of_birth",
         "telegram",
-        # "balance",
+        "balance",
         "get_interests",
         "occupation",
         "agreement_applied_at",
@@ -95,7 +61,6 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
             None,
             {
                 "fields": [
-                    "status",
                     "phone_number",
                     "email",
                     "avatar",
@@ -107,7 +72,7 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "date_of_birth",
                     "telegram",
                     "occupation",
-                    # "theme",
+                    "theme",
                     "categories",
                     "profile_is_completed",
                     "email_is_confirmed",
@@ -115,21 +80,20 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
                     "subscription_expires",
                     "agreement_applied_at",
                     "last_login",
-                    "is_added_bank_card",
                 ]
             },
         )
     ]
-    readonly_fields = ["is_added_bank_card", "status"]
+    readonly_fields = []
     search_fields = ["first_name", "last_name", "phone_number", "email"]
     actions = ["block_users", "unblock_users"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_registered=True)
 
-    # @admin.display(description="Баланс")
-    # def balance(self, obj):
-    #     return obj.wallet.balance
+    @admin.display(description="Баланс")
+    def balance(self, obj):
+        return obj.wallet.balance
 
     @admin.display(description="Аватар")
     def _avatar(self, obj):
@@ -151,33 +115,10 @@ class UserAdmin(ManyToManyMixin, admin.ModelAdmin):
     def unblock_users(self, request, queryset):
         queryset.update(is_active=True)
 
-    @admin.display(description="Привязана банковская карта", boolean=True)
-    def is_added_bank_card(self, obj):
-        return obj.is_added_bank_card
-
-    def save_related(self, request, form, formsets, change):
-        super().save_related(request, form, formsets, change)
-
-        user = form.instance
-
-        if user.verification_status == ConfirmationStatus.CONFIRMED:
-            if (
-                user.legal_entity_status == ConfirmationStatus.CONFIRMED
-                or user.is_added_bank_card
-            ):
-                user.status = User.Status.PROFI
-            else:
-                user.status = User.Status.MASTER
-
-        else:
-            user.status = User.Status.FREE
-
-        user.save()
-
 
 @admin.register(DeletedUser, site=site)
 class DeletedUserAdmin(ManyToManyMixin, admin.ModelAdmin):
-    inlines = [InterestInline]
+    inlines = [WalletInline, InterestInline]
     fieldsets = [
         (
             None,

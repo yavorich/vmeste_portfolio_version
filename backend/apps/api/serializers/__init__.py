@@ -32,7 +32,6 @@ from .profile import (
     ProfileRetrieveSerializer,
     SelfProfileDestroySerializer,
     SelfProfileRetrieveSerializer,
-    UserShortSerializer,
 )
 from .token import UserTokenObtainPairSerializer, UserTokenRefreshSerializer
 from .docs import DocsSerializer
@@ -41,11 +40,7 @@ from .participants import (
     EventParticipantsListSerializer,
     EventParticipantBulkSerializer,
     EventParticipantDeleteSerializer,
-    EventParticipantTicketSerializer,
 )
 from .support import SupportThemeListSerializer, SupportMessageCreateSerializer
 from .occupations import OccupationSerializer
 from .media import EventMediaBulkCreateSerializer, EventMediaListSerializer
-from .verification import VerificationSerializer
-from .legal_entity import LegalEntitySerializer
-from .event_prices import EventPriceDetailsSerializer

@@ -12,7 +12,6 @@ from django_elasticsearch_dsl_drf.filter_backends import (
 from django.utils.timezone import localtime, timedelta
 from elasticsearch_dsl import Q
 from elasticsearch.exceptions import NotFoundError
-from rest_framework import status
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -28,7 +27,6 @@ from apps.api.enums import EventStatus
 from apps.api.documents import EventDocument
 from apps.api.models import EventFastFilter
 from apps.api.serializers.event import EventDocumentFullImageSerializer
-from apps.api.services.payment import do_payment_on_create
 from core.pagination import PageNumberSetPagination
 from core.utils import humanize_date
 
@@ -248,11 +246,3 @@ class EventListViewSet(CreateModelMixin, DocumentViewSet):
             response_data["event_rules_applied"] = user.event_rules_applied
 
         return Response(response_data)
-    
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        payment_data = do_payment_on_create(instance, request)
-        headers = self.get_success_headers(serializer.data)
-        return Response({**serializer.data, **payment_data}, status=status.HTTP_201_CREATED, headers=headers)

@@ -2,8 +2,6 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
 from django.shortcuts import get_object_or_404
 
 from apps.api.models import Event
@@ -13,7 +11,6 @@ from apps.api.serializers import (
     EventReportSerializer,
     EventConfirmSerializer,
 )
-from apps.api.services.payment import do_payment_on_sign
 
 
 class EventPublishedViewSet(UpdateModelMixin, GenericViewSet):
@@ -39,10 +36,7 @@ class EventPublishedViewSet(UpdateModelMixin, GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def sign(self, request, *args, **kwargs):
-        self.update(request, *args, **kwargs)
-        event = self.get_object()
-        payment_data = do_payment_on_sign(event, request)
-        return Response(payment_data)
+        return self.update(request, *args, **kwargs)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, *args, **kwargs):

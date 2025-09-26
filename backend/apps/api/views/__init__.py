@@ -21,11 +21,3 @@ from .categories import (
 )
 from .media import EventMediaViewSet
 from .filters import EventFastFiltersListView
-from .legal_entity import LegalEntityView
-from .verification import VerificationView
-from .event_prices import EventPriceDetailsView
-from .ticket import (
-    EventParticipantTicketView,
-    EventTicketScanView,
-    ScannerAccountListView,
-)

@@ -7,7 +7,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import localtime
 from dateutil.relativedelta import relativedelta
@@ -15,6 +15,12 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.api.enums import Gender
 from core.model_fields import CompressedImageField
+from .country import Country
+from .city import City
+from .category import Category
+from .theme import Theme
+from .occupation import Occupation
+from .subscription import Subscription
 
 
 def get_upload_path(instance, filename):
@@ -68,22 +74,7 @@ class AllUserManager(UserManager):
         return super(UserManager, self).get_queryset()
 
 
-class ConfirmationStatus(models.TextChoices):
-    NONE = "none", "Нет данных"
-    PENDING = "pending", "Ожидание"
-    CONFIRMED = "confirmed", "Подтверждено"
-
-
 class User(AbstractBaseUser, PermissionsMixin):
-    class Status(models.TextChoices):
-        FREE = "FREE", "Free"
-        MASTER = "MASTER", "Master"
-        PROFI = "PROFI", "Profi"
-
-    status = models.CharField(
-        "Статус", max_length=8, choices=Status.choices, default=Status.FREE
-    )
-
     username = None
     phone_number = PhoneNumberField(_("Телефон"), unique=True, region="RU")
     confirmation_code = models.CharField(
@@ -109,7 +100,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("Почта"), blank=True, null=True)
     email_is_confirmed = models.BooleanField(_("Почта подтверждена"), default=False)
     country = models.ForeignKey(
-        "api.Country",
+        Country,
         verbose_name=_("Страна"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -117,7 +108,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     city = models.ForeignKey(
-        "api.City",
+        City,
         verbose_name=_("Город"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -126,22 +117,30 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     telegram = models.CharField(_("Телеграм"), max_length=255, null=True, blank=True)
     occupation = models.ForeignKey(
-        "api.Occupation",
+        Occupation,
         verbose_name=_("Профессия"),
         related_name="users",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
+    theme = models.ForeignKey(
+        Theme,
+        verbose_name=_("Тема"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     categories = models.ManyToManyField(
-        "api.Category",
+        Category,
         verbose_name=_("Категории"),
         related_name="users",
         blank=True,
     )
     about_me = models.TextField(_("Обо мне"), max_length=2000, null=True, blank=True)
     subscription = models.ForeignKey(
-        "api.Subscription",
+        Subscription,
         verbose_name=_("Подписка"),
         related_name="users",
         on_delete=models.SET_NULL,
@@ -176,9 +175,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{first_name} {last_name}".strip()
 
     def clean(self):
-        if self.age is None:
-            return
-
         if self.age < 18:
             raise ValidationError(
                 {"date_of_birth": "Возраст должен быть не менее 18 лет"}
@@ -207,41 +203,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
-
-    @property
-    def bank_card(self):
-        try:
-            return self.payment_info
-        except ObjectDoesNotExist:
-            from apps.payment.models import PaymentInfo
-
-            return PaymentInfo.objects.create(user=self)
-
-    @property
-    def is_added_bank_card(self):
-        from apps.payment.payment_manager import PaymentManager
-
-        return PaymentManager().is_added_card(self)
-
-    @property
-    def verification_status(self):
-        if not hasattr(self, "verification"):
-            return ConfirmationStatus.NONE
-        return (
-            ConfirmationStatus.CONFIRMED
-            if self.verification.confirmed
-            else ConfirmationStatus.PENDING
-        )
-
-    @property
-    def legal_entity_status(self):
-        if not hasattr(self, "legal_entity"):
-            return ConfirmationStatus.NONE
-        return (
-            ConfirmationStatus.CONFIRMED
-            if self.legal_entity.confirmed
-            else ConfirmationStatus.PENDING
-        )
 
 
 class DeletedUserManager(UserManager):
